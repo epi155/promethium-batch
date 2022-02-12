@@ -8,6 +8,8 @@
 
     <logger name="io.github.epi155" level="TRACE"/>
 
+    <logger name="io.github.epi155.promethium.batch.TaskGranterImpl" level="DEBUG"/>
+
     <root level="INFO">
         <appender-ref ref="STDOUT" />
     </root>

@@ -1,0 +1,34 @@
+@startuml
+box main
+collections client as C
+participant "//compute//" as G #lightblue
+end box
+queue "queue\nmax **M**" as Q #lightblue
+box listener
+participant listener as L #lightblue
+participant "executor\n**N×**" as E #lightblue
+end box
+collections task as T #lightgreen
+
+C -> G : compute
+activate G
+G -> Q : add
+activate Q
+Q -> L: take
+deactivate Q
+activate L
+L -> E : execute
+deactivate L
+activate E
+E -> T** : call
+deactivate E
+activate T
+G -> G : get
+activate G
+T --> G: result
+destroy T
+G --> G: value
+deactivate G
+G -> C :  value
+deactivate G
+@enduml
