@@ -34,7 +34,7 @@ class TestGranter {
     }
 
     private int stressTest(int nmTask, long delay) throws InterruptedException {
-        TaskGranter<String> granter = TaskGranter.getInstance(20, 2, 20, TimeUnit.SECONDS);
+        TaskGranter granter = TaskGranter.getInstance(20, 2, 20, TimeUnit.SECONDS);
 
         val nmComplete = new AtomicInteger();
         val nmTimeout = new AtomicInteger();
@@ -54,7 +54,7 @@ class TestGranter {
     }
 
 
-    private void attack(TaskGranter<String> granter, int k, AtomicInteger nmComplete, AtomicInteger nmTimeout, AtomicInteger nmDiscard) {
+    private void attack(TaskGranter granter, int k, AtomicInteger nmComplete, AtomicInteger nmTimeout, AtomicInteger nmDiscard) {
         Runnable task = () -> {
             val tiStart = System.currentTimeMillis();
             try {

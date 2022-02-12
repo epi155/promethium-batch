@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-public interface TaskGranter<T> {
+public interface TaskGranter {
     /**
      * Create a {@link TaskGranter} instance.
      *
@@ -21,13 +21,13 @@ public interface TaskGranter<T> {
      * @param unit          the time unit of the timeout argument
      * @return              instance of {@link TaskGranter}
      */
-    static <T> TaskGranter<T> getInstance(
+    static TaskGranter getInstance(
             int nmWaitTask,
             int nmRunTask,
             long timeout,
             TimeUnit unit
     ) {
-        return new TaskGranterImpl<>(nmWaitTask, nmRunTask, timeout, unit);
+        return new TaskGranterImpl(nmWaitTask, nmRunTask, timeout, unit);
     }
 
 
@@ -40,6 +40,7 @@ public interface TaskGranter<T> {
      *     The method waits for execution to finish.
      * </p>
      *
+     * @param <T>       result data type
      * @param jobId     task identifier
      * @param action    task action
      * @return          task result, i.e. <code>action.get()</code>
@@ -49,7 +50,7 @@ public interface TaskGranter<T> {
      *
      * @throws IllegalStateException    the execution queue is full or the task was canceled
      */
-    T compute(String jobId, Supplier<T> action) throws InterruptedException, TimeoutException, ExecutionException;
+    <T> T compute(String jobId, Supplier<T> action) throws InterruptedException, TimeoutException, ExecutionException;
 
     /**
      * Stops graceful the {@link ExecutorService} who manage the queue.

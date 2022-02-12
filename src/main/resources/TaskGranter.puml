@@ -14,19 +14,21 @@ C -> G : compute
 activate G
 G -> Q : add
 activate Q
-Q -> L: take
+loop queue listener
+L -> Q: **take**
 deactivate Q
 activate L
-L -> E : execute
+L -> E : **execute**
 deactivate L
 activate E
-E -> T** : call
+end
+E -> T : run
 deactivate E
 activate T
 G -> G : get
-activate G
+activate G #gold
 T --> G: result
-destroy T
+deactivate T
 G --> G: value
 deactivate G
 G -> C :  value

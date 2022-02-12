@@ -7,8 +7,8 @@ import java.util.concurrent.*;
 import java.util.function.Supplier;
 
 @Slf4j
-public class TaskGranterImpl<T> implements TaskGranter<T> {
-    private final BlockingQueue<LimitTask> taskQueue;
+public class TaskGranterImpl implements TaskGranter {
+    private final BlockingQueue<LimitTask<?>> taskQueue;
     private final CountDownLatch countDown = new CountDownLatch(1); // listener
     private final Semaphore semaphore;
     private final Phaser phaser = new Phaser(1);
@@ -50,7 +50,7 @@ public class TaskGranterImpl<T> implements TaskGranter<T> {
         }
     }
 
-    private void start(LimitTask task) {
+    private void start(LimitTask<?> task) {
         if (task.isCancelled()) {
             log.trace("Expired {}", task.jobId);
             return;
@@ -65,10 +65,10 @@ public class TaskGranterImpl<T> implements TaskGranter<T> {
     }
 
     @Override
-    public T compute(String jobId, Supplier<T> action) throws InterruptedException, TimeoutException, ExecutionException {
+    public <T> T compute(String jobId, Supplier<T> action) throws InterruptedException, TimeoutException, ExecutionException {
         countDown.await();      // wait for the listener to start
         phaser.register();
-        val promise = this.new LimitTask(jobId, action);
+        val promise = this.new LimitTask<>(jobId, action);
         try {
             log.trace("queue {} ({}) ...", jobId, taskQueue.size());
             taskQueue.add(promise);   // IllegalStateException
@@ -104,18 +104,18 @@ public class TaskGranterImpl<T> implements TaskGranter<T> {
         }
     }
 
-    private class LimitTask {
-        private final Supplier<T> action;
+    private class LimitTask<U> {
+        private final Supplier<U> action;
         private final String jobId;
-        private final FutureTask<T> delegate;
+        private final FutureTask<U> delegate;
 
-        public LimitTask(String jobId, Supplier<T> action) {
+        public LimitTask(String jobId, Supplier<U> action) {
             this.jobId = jobId;
             this.action = action;
             this.delegate = new FutureTask<>(this::call);
         }
 
-        public T call() {
+        public U call() {
             try {
                 log.trace("{} go ...", jobId);
                 val value = action.get();   // finally, calls the action
@@ -138,7 +138,7 @@ public class TaskGranterImpl<T> implements TaskGranter<T> {
             return delegate.isCancelled();
         }
 
-        public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        public U get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return delegate.get(timeout, unit);
         }
 
