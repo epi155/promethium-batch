@@ -1,5 +1,7 @@
 ### Example: balance
 
+Inflow and outflow must be sorted in ascending order.
+
 ~~~java
 val src1 = SourceResource.fromIterator(inflow);
 val src2 = SourceResource.fromIterator(outflow);

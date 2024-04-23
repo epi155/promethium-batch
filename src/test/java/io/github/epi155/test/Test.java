@@ -33,7 +33,6 @@ public class Test {
 //        val sink = SinkResource.of(() -> Files.newBufferedWriter(Path.of("foo.txt")), (wr, s) -> wr::write);
     }
 
-    @org.junit.jupiter.api.Test
     void test10() {
         SourceResource<BufferedReader, String> src = SourceResource.fromSupplier(
                 () -> {
