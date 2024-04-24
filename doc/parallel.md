@@ -19,3 +19,15 @@ void forEachParallelFair(int maxThread, Function<? super I,? extends Tuple2<? ex
 ~~~java
 void forEachParallel(int maxThread, Worker2<? super I,Consumer<? super O1>,Consumer<? super O2>> worker)
 ~~~
+
+
+`maxThread` is the maximum number of processing tasks executed in parallel.
+The thread that submits processing tasks stops when the number of active tasks reaches the maximum value, and waits for a task to become free before submitting another.
+
+When all the processing tasks have been submitted, a time limit is waited to allow the active tasks to finish.
+If this time limit is exceeded, the interruption of the processing tasks is forced and this generates an abnormal end of the processing loop.
+The default value for this timeout is 30 seconds, you can change it by calling the `shutdownTimeout` method before `forEachParallel`.
+
+~~~java
+Loop.from(src).into(snk1,snk2).shutdownTimeout(5, TimeUnit.SECONDS).forEachParallel(numTask, ...);
+~~~
