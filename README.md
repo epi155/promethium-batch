@@ -36,6 +36,8 @@ Loop.from(src1, src2).into(snk1, snk2)
 
 [example of balancing](./doc/ex-balance.md)
 
+It can be used from 1 to 3 sources and from 1 to 8 destinations.
+
 In the case of sequential processing, the separation of the processing into a part dedicated to reading data, one dedicated to writing data and a specific part for data processing does not offer particular advantages. This separation is preparatory to parallel processing.
 
 A sequential elaboration in form
@@ -44,10 +46,10 @@ A sequential elaboration in form
 Loop.from(src).into(...).forEach(...);
 ~~~
 
-can be parallel transformed by replacing `forEach` in `forEachParallel`:
+can be parallel transformed by replacing `forEach` in [`forEachParallel`](./doc/parallel.md):
 
 ~~~java
 Loop.from(src).into(...).forEachParallel(numTask, ...);
 ~~~
 
-without any modification of the data processing part.
+without any other modifications.
