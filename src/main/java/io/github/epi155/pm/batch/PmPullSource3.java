@@ -273,4 +273,19 @@ class PmPullSource3<S1 extends AutoCloseable, I1,
             throw new BatchException(e);
         }
     }
+
+    @Override
+    public void proceed(PullWorker3o0<I1, I2, I3> worker) {
+        try (S1 s1 = source1.get();
+             S2 s2 = source2.get();
+             S3 s3 = source3.get()
+        ) {
+            worker.proceed(
+                    source1.supplier(s1),
+                    source2.supplier(s2),
+                    source3.supplier(s3));
+        } catch (Exception e) {
+            throw new BatchException(e);
+        }
+    }
 }

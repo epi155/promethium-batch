@@ -1,8 +1,5 @@
 package io.github.epi155.pm.batch;
 
-import java.util.Iterator;
-import java.util.function.BiConsumer;
-
 /**
  * interface to manage the elements of two input resources.
  * <p>
@@ -15,11 +12,18 @@ import java.util.function.BiConsumer;
  */
 public interface PullSource2<I1, I2> {
     /**
-     * offers the iterators of the elements of the two resource sources to the processing process
+     * processes the data
+     * <pre>
+     * Loop.from(src1, src2).proceed((rd1, rd2) -> {
+     *     val i1 = rd1.get();
+     *     val i2 = rd2.get();
+     *     ...
+     * });
+     * </pre>
      *
-     * @param action the processing process
+     * @param worker worker who read the input values
      */
-    void proceed(BiConsumer<Iterator<? extends I1>, Iterator<? extends I2>> action);
+    void proceed(PullWorker2o0<I1, I2> worker);
 
     /**
      * sets the sink resource to process the data

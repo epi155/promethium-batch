@@ -6,6 +6,7 @@ import io.github.epi155.pm.batch.SourceResource;
 import io.github.epi155.pm.batch.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.junit.jupiter.api.Assertions;
 
 import java.util.stream.IntStream;
 
@@ -43,6 +44,18 @@ public class TestEven {
                 });
     }
 
-    interface Dummy<I> extends AutoCloseable, Iterable<I> {
+    @org.junit.jupiter.api.Test
+    void test03() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+
+        Assertions.assertThrows(RuntimeException.class, () ->
+                Loop.from(src1).forEachParallel(10, it -> {
+            if (it==64) {
+                throw new RuntimeException("BUG");
+            } else {
+                System.out.println(it);
+            }
+        }));
     }
+
 }

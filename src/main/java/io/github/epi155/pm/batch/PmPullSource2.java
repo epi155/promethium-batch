@@ -2,8 +2,6 @@ package io.github.epi155.pm.batch;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -26,11 +24,11 @@ class PmPullSource2<
     }
 
     @Override
-    public void proceed(BiConsumer<Iterator<? extends I1>, Iterator<? extends I2>> action) {
+    public void proceed(PullWorker2o0<I1, I2> worker) {
         try (S1 s1 = source1.get();
              S2 s2 = source2.get()
         ) {
-            action.accept(source1.iterator(s1), source2.iterator(s2));
+            worker.proceed(source1.supplier(s1), source2.supplier(s2));
         } catch (Exception e) {
             throw new BatchException(e);
         }

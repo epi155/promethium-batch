@@ -243,4 +243,18 @@ public interface PullSource3<I1, I2, I3> {
             SinkResource<T7, O7> sink7,
             SinkResource<T8, O8> sink8);
 
+    /**
+     * processes the data
+     * <pre>
+     * Loop.from(src1, src2, src3).proceed((rd1, rd2, rd3) -> {
+     *     val i1 = rd1.get();
+     *     val i2 = rd2.get();
+     *     val i3 = rd3.get();
+     *     ...
+     * });
+     * </pre>
+     *
+     * @param worker worker who read the input values
+     */
+    void proceed(PullWorker3o0<I1, I2, I3> worker);
 }

@@ -1216,29 +1216,14 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
     public void forEachParallel(int maxThread, Consumer<? super I> action) {
         if (maxThread < 1)
             throw new IllegalArgumentException();
-        try (S s = source.get()) {
-            Semaphore sm = new Semaphore(maxThread);
-            Phaser ph = new Phaser(1);
-            source.iterator(s).forEachRemaining(i -> {
-                try {
-                    ph.register();
-                    sm.acquire();
-                    new Thread(() -> {
-                        try {
-                            action.accept(i);
-                        } finally {
-                            sm.release();
-                            ph.arriveAndDeregister();
-                        }
-                    }).start();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+        new DoParallelSlim<I>(maxThread, action) {
+            @Override
+            protected void openResources() throws Exception {
+                try (S s = source.get()) {
+                    doWork(source.iterator(s));
                 }
-            });
-            ph.arriveAndAwaitAdvance();
-        } catch (Exception e) {
-            throw new BatchException(e);
-        }
+            }
+        }.start();
     }
 
     private void shutdown(ExecutorService pool) {
@@ -1665,6 +1650,91 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                     Thread.currentThread().interrupt();
                     return;
                 }
+            }
+        }
+    }
+
+    private abstract class DoParallelSlim<T> {
+        private final int maxThread;
+        private final Consumer<? super T> action;
+
+        DoParallelSlim(int maxThread, Consumer<? super T> action) {
+            this.maxThread = maxThread;
+            this.action = action;
+        }
+
+        public void start() {
+            try {
+                openResources();
+                log.info("Z.=== completed successfully.");
+            } catch (BatchException e) {
+                log.error("Z.### abnormal program end.", e);
+                throw e;
+            } catch (Exception e) {
+                log.error("Z.### abnormal program end.", e);
+                throw new BatchException(e);
+            }
+        }
+
+        protected abstract void openResources() throws Exception;
+
+        protected void doWork(Iterator<T> iterator) {
+            ExecutorService service1 = Executors.newFixedThreadPool(1);
+            try {
+                Future<?> future = service1.submit(() -> {
+                    ExecutorService service2 = Executors.newFixedThreadPool(maxThread);
+                    Semaphore sm = new Semaphore(maxThread);
+                    List<Future<?>> statuses = new LinkedList<>();
+                    try {
+                        while (iterator.hasNext()) {
+                            T t = iterator.next();
+                            try {
+                                sm.acquire();
+                                Future<?> status = service2.submit(() -> {
+                                    try {
+                                        action.accept(t);
+                                    } finally {
+                                        sm.release();
+                                    }
+                                });
+                                statuses.add(status);
+                                probeStatuses(statuses, true);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                break;
+                            }
+                        }
+                        if (Thread.currentThread().isInterrupted()) {
+                            log.warn("Z.>>> Loop interrupted, shutdown taskExecutor ...");
+                        } else {
+                            log.info("Z.--- All task submitted, shutdown taskExecutor ...");
+                        }
+                    } finally {
+                        shutdown(service2);
+                    }
+                    log.info("Z.--- pending futures {}", statuses.size());
+                    probeStatuses(statuses, false);
+                    log.info("Z.--- tasks terminated, flush & close ...");
+                });
+                try {
+                    future.get();
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof BatchException) {
+                        BatchException batchException = (BatchException) cause;
+                        cause = batchException.getCause();
+                        String place = placeOf(cause.getStackTrace());
+                        log.warn("Z.### Error forwarded in reader: {} [{}]", cause.getMessage(), place);
+                        throw batchException;
+                    }
+                    String place = placeOf(cause.getStackTrace());
+                    log.warn("Z.### Error detected in reader: {} [{}]", cause.getMessage(), place);
+                    throw new BatchException((cause));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            } finally {
+                service1.shutdown();
             }
         }
     }
