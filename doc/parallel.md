@@ -26,7 +26,8 @@ void forEachParallel(int maxThread, Worker2<? super I,Consumer<? super O1>,Consu
 The thread that submits processing tasks stops when the number of active tasks reaches the maximum value, and waits for a task to become free before submitting another.
 
 When all the processing tasks have been submitted, a time limit is waited to allow the active tasks to finish.
-If this time limit is exceeded, the interruption of the processing tasks is forced and this generates an abnormal end of the processing loop.
+If this time limit is exceeded, the processing tasks are interrupted, this could generate an abnormal end of the processing loop. If the processing task does not handle the *interrupt flag* the task may not terminate.
+
 The default value for this timeout is 30 seconds, you can change it by calling the `shutdownTimeout` method before `forEachParallel`.
 
 ~~~java

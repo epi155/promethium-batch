@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch;
 
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -63,4 +64,20 @@ public interface ParallelLoop6<I, O1, O2, O3, O4, O5, O6> {
             ? extends O4,
             ? extends O5,
             ? extends O6>> transformer);
+
+    /**
+     * performs repeated transformation from input to output using asynchronous task
+     *
+     * @param maxThread        maximum number of parallel processing
+     * @param asyncTransformer asynchronous function that transforms input into {@link Tuple6} outputs
+     */
+    void forEachAsync(int maxThread,
+                      Function<? super I,
+                              ? extends Future<? extends Tuple6<
+                                      ? extends O1,
+                                      ? extends O2,
+                                      ? extends O3,
+                                      ? extends O4,
+                                      ? extends O5,
+                                      ? extends O6>>> asyncTransformer);
 }

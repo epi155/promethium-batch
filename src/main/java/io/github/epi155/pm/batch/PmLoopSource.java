@@ -68,7 +68,20 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
             }
 
             @Override
-            public ParallelLoop<I, O> shutdownTimeout(long time, TimeUnit unit) {
+            public void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends O>> asyncTransformer) {
+                new DoAsyncParallelFair<I, O>(maxThread, asyncTransformer) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T t = sink.get();
+                             S s = source.get()) {
+                            doWork(source.iterator(s), oo -> sink.accept(t, oo));
+                        }
+                    }
+                }.start();
+            }
+
+            @Override
+            public ParallelLoop1<I, O> shutdownTimeout(long time, TimeUnit unit) {
                 setShutdownTimeout(time, unit);
                 return this;
             }
@@ -129,8 +142,6 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
 
             @Override
             public void forEachParallelFair(int maxThread, Function<? super I, ? extends Tuple2<? extends O1, ? extends O2>> transformer) {
-                if (maxThread < 1)
-                    throw new IllegalArgumentException();
                 new DoParallelFair<I, Tuple2<? extends O1, ? extends O2>>(maxThread, transformer) {
                     @Override
                     protected void openResources() throws Exception {
@@ -148,9 +159,24 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
 
             @Override
             public void forEachParallel(int maxThread, Function<? super I, ? extends Tuple2<? extends O1, ? extends O2>> transformer) {
-                if (maxThread < 1)
-                    throw new IllegalArgumentException();
                 new DoParallelRaw<I, Tuple2<? extends O1, ? extends O2>>(maxThread, transformer) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get();
+                             T2 t2 = sink2.get();
+                             S s = source.get()) {
+                            doWork(source.iterator(s), oo -> {
+                                oo.onT1(v -> sink1.accept(t1, v));
+                                oo.onT2(v -> sink2.accept(t2, v));
+                            });
+                        }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends Tuple2<? extends O1, ? extends O2>>> asyncTransformer) {
+                new DoAsyncParallelFair<I, Tuple2<? extends O1, ? extends O2>>(maxThread, asyncTransformer) {
                     @Override
                     protected void openResources() throws Exception {
                         try (T1 t1 = sink1.get();
@@ -190,8 +216,6 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                     Worker2<? super I,
                             Consumer<? super O1>,
                             Consumer<? super O2>> worker) {
-                if (maxThread < 1)
-                    throw new IllegalArgumentException();
                 new DoParallelWrite(maxThread) {
                     @Override
                     protected void openResources() throws Exception {
@@ -267,6 +291,25 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                 if (maxThread < 1)
                     throw new IllegalArgumentException();
                 new DoParallelRaw<I, Tuple3<? extends O1, ? extends O2, ? extends O3>>(maxThread, transformer) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get();
+                             T2 t2 = sink2.get();
+                             T3 t3 = sink3.get();
+                             S s = source.get()) {
+                            doWork(source.iterator(s), oo -> {
+                                oo.onT1(v -> sink1.accept(t1, v));
+                                oo.onT2(v -> sink2.accept(t2, v));
+                                oo.onT3(v -> sink3.accept(t3, v));
+                            });
+                        }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends Tuple3<? extends O1, ? extends O2, ? extends O3>>> asyncTransformer) {
+                new DoAsyncParallelFair<I, Tuple3<? extends O1, ? extends O2, ? extends O3>>(maxThread, asyncTransformer) {
                     @Override
                     protected void openResources() throws Exception {
                         try (T1 t1 = sink1.get();
@@ -388,6 +431,27 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                 if (maxThread < 1)
                     throw new IllegalArgumentException();
                 new DoParallelRaw<I, Tuple4<? extends O1, ? extends O2, ? extends O3, ? extends O4>>(maxThread, transformer) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get();
+                             T2 t2 = sink2.get();
+                             T3 t3 = sink3.get();
+                             T4 t4 = sink4.get();
+                             S s = source.get()) {
+                            doWork(source.iterator(s), oo -> {
+                                oo.onT1(v -> sink1.accept(t1, v));
+                                oo.onT2(v -> sink2.accept(t2, v));
+                                oo.onT3(v -> sink3.accept(t3, v));
+                                oo.onT4(v -> sink4.accept(t4, v));
+                            });
+                        }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends Tuple4<? extends O1, ? extends O2, ? extends O3, ? extends O4>>> asyncTransformer) {
+                new DoAsyncParallelFair<I, Tuple4<? extends O1, ? extends O2, ? extends O3, ? extends O4>>(maxThread, asyncTransformer) {
                     @Override
                     protected void openResources() throws Exception {
                         try (T1 t1 = sink1.get();
@@ -542,6 +606,30 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                     throw new IllegalArgumentException();
                 new DoParallelRaw<I, Tuple5<? extends O1, ? extends O2, ? extends O3, ? extends O4,
                         ? extends O5>>(maxThread, transformer) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get();
+                             T2 t2 = sink2.get();
+                             T3 t3 = sink3.get();
+                             T4 t4 = sink4.get();
+                             T5 t5 = sink5.get();
+                             S s = source.get()) {
+                            doWork(source.iterator(s), oo -> {
+                                oo.onT1(v -> sink1.accept(t1, v));
+                                oo.onT2(v -> sink2.accept(t2, v));
+                                oo.onT3(v -> sink3.accept(t3, v));
+                                oo.onT4(v -> sink4.accept(t4, v));
+                                oo.onT5(v -> sink5.accept(t5, v));
+                            });
+                        }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends Tuple5<? extends O1, ? extends O2, ? extends O3, ? extends O4, ? extends O5>>> asyncTransformer) {
+                new DoAsyncParallelFair<I, Tuple5<? extends O1, ? extends O2, ? extends O3, ? extends O4,
+                        ? extends O5>>(maxThread, asyncTransformer) {
                     @Override
                     protected void openResources() throws Exception {
                         try (T1 t1 = sink1.get();
@@ -738,6 +826,32 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
             }
 
             @Override
+            public void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends Tuple6<? extends O1, ? extends O2, ? extends O3, ? extends O4, ? extends O5, ? extends O6>>> asyncTransformer) {
+                new DoAsyncParallelFair<I, Tuple6<? extends O1, ? extends O2, ? extends O3, ? extends O4,
+                        ? extends O5, ? extends O6>>(maxThread, asyncTransformer) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get();
+                             T2 t2 = sink2.get();
+                             T3 t3 = sink3.get();
+                             T4 t4 = sink4.get();
+                             T5 t5 = sink5.get();
+                             T6 t6 = sink6.get();
+                             S s = source.get()) {
+                            doWork(source.iterator(s), oo -> {
+                                oo.onT1(v -> sink1.accept(t1, v));
+                                oo.onT2(v -> sink2.accept(t2, v));
+                                oo.onT3(v -> sink3.accept(t3, v));
+                                oo.onT4(v -> sink4.accept(t4, v));
+                                oo.onT5(v -> sink5.accept(t5, v));
+                                oo.onT6(v -> sink6.accept(t6, v));
+                            });
+                        }
+                    }
+                }.start();
+            }
+
+            @Override
             public void forEach(Worker6<? super I, Consumer<? super O1>, Consumer<? super O2>, Consumer<? super O3>, Consumer<? super O4>, Consumer<? super O5>, Consumer<? super O6>> worker) {
                 try (T1 t1 = sink1.get();
                      T2 t2 = sink2.get();
@@ -903,6 +1017,34 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                     throw new IllegalArgumentException();
                 new DoParallelRaw<I, Tuple7<? extends O1, ? extends O2, ? extends O3, ? extends O4,
                         ? extends O5, ? extends O6, ? extends O7>>(maxThread, transformer) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get();
+                             T2 t2 = sink2.get();
+                             T3 t3 = sink3.get();
+                             T4 t4 = sink4.get();
+                             T5 t5 = sink5.get();
+                             T6 t6 = sink6.get();
+                             T7 t7 = sink7.get();
+                             S s = source.get()) {
+                            doWork(source.iterator(s), oo -> {
+                                oo.onT1(v -> sink1.accept(t1, v));
+                                oo.onT2(v -> sink2.accept(t2, v));
+                                oo.onT3(v -> sink3.accept(t3, v));
+                                oo.onT4(v -> sink4.accept(t4, v));
+                                oo.onT5(v -> sink5.accept(t5, v));
+                                oo.onT6(v -> sink6.accept(t6, v));
+                                oo.onT7(v -> sink7.accept(t7, v));
+                            });
+                        }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends Tuple7<? extends O1, ? extends O2, ? extends O3, ? extends O4, ? extends O5, ? extends O6, ? extends O7>>> asyncTransformer) {
+                new DoAsyncParallelFair<I, Tuple7<? extends O1, ? extends O2, ? extends O3, ? extends O4,
+                        ? extends O5, ? extends O6, ? extends O7>>(maxThread, asyncTransformer) {
                     @Override
                     protected void openResources() throws Exception {
                         try (T1 t1 = sink1.get();
@@ -1133,6 +1275,36 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
             }
 
             @Override
+            public void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends Tuple8<? extends O1, ? extends O2, ? extends O3, ? extends O4, ? extends O5, ? extends O6, ? extends O7, ? extends O8>>> asyncTransformer) {
+                new DoAsyncParallelFair<I, Tuple8<? extends O1, ? extends O2, ? extends O3, ? extends O4,
+                        ? extends O5, ? extends O6, ? extends O7, ? extends O8>>(maxThread, asyncTransformer) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get();
+                             T2 t2 = sink2.get();
+                             T3 t3 = sink3.get();
+                             T4 t4 = sink4.get();
+                             T5 t5 = sink5.get();
+                             T6 t6 = sink6.get();
+                             T7 t7 = sink7.get();
+                             T8 t8 = sink8.get();
+                             S s = source.get()) {
+                            doWork(source.iterator(s), oo -> {
+                                oo.onT1(v -> sink1.accept(t1, v));
+                                oo.onT2(v -> sink2.accept(t2, v));
+                                oo.onT3(v -> sink3.accept(t3, v));
+                                oo.onT4(v -> sink4.accept(t4, v));
+                                oo.onT5(v -> sink5.accept(t5, v));
+                                oo.onT6(v -> sink6.accept(t6, v));
+                                oo.onT7(v -> sink7.accept(t7, v));
+                                oo.onT8(v -> sink8.accept(t8, v));
+                            });
+                        }
+                    }
+                }.start();
+            }
+
+            @Override
             public void forEach(Worker8<? super I, Consumer<? super O1>, Consumer<? super O2>, Consumer<? super O3>, Consumer<? super O4>, Consumer<? super O5>, Consumer<? super O6>, Consumer<? super O7>, Consumer<? super O8>> worker) {
                 try (T1 t1 = sink1.get();
                      T2 t2 = sink2.get();
@@ -1202,6 +1374,12 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
     }
 
     @Override
+    public ParallelLoop0<I> shutdownTimeout(long time, TimeUnit unit) {
+        setShutdownTimeout(time, unit);
+        return this;
+    }
+
+    @Override
     public void forEach(Consumer<? super I> action) {
         try (S s = source.get()) {
             source.iterator(s).forEachRemaining(action);
@@ -1221,6 +1399,19 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
             protected void openResources() throws Exception {
                 try (S s = source.get()) {
                     doWork(source.iterator(s));
+                }
+            }
+        }.start();
+    }
+
+    @Override
+    public void forEachAsync(int maxThread, Function<? super I, ? extends Future<Void>> asyncTransformer) {
+        new DoAsyncParallelFair<I, Void>(maxThread, asyncTransformer) {
+            @Override
+            protected void openResources() throws Exception {
+                try (S s = source.get()) {
+                    doWork(source.iterator(s), oo -> {
+                    });
                 }
             }
         }.start();
@@ -1285,6 +1476,11 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
     }
 
     private void probeStatuses(List<Future<?>> statuses, boolean hot) {
+//        if (hot) {
+//            iterateStatus(statuses.iterator());
+//        } else {
+//            terminateStatus(statuses.iterator());
+//        }
         int k = 0;
         do {
             int n = iterateStatus(statuses.iterator());
@@ -1342,6 +1538,132 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
         }
         return k;
     }
+//    private void terminateStatus(Iterator<Future<?>> it) {
+//        while (it.hasNext()) {
+//            Future<?> status = it.next();
+//            try {
+//                if (status.isDone()) {
+//                    status.get();
+//                } else {
+//                    status.get(time, unit);
+//                }
+//            } catch (InterruptedException e) {
+//                log.info("T.>>> task was interrupted. (dead branch?)");
+//                Thread.currentThread().interrupt();
+//            } catch (ExecutionException e) {
+//                Throwable cause = e.getCause();
+//                String place = placeOf(cause.getStackTrace());
+//                log.warn("T.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
+//                throw new BatchException((cause));
+//            } catch (TimeoutException e) {
+//                status.cancel(true);
+//                log.info("T.>>> task cancelled.");
+//            }
+//            it.remove();
+//        }
+//    }
+
+    private abstract static class DoAsyncParallelFair<T, R> {
+        private final Function<? super T, ? extends Future<? extends R>> transformer;
+        private final Thread main;
+        private final BlockingQueue<Future<? extends R>> queue;
+
+        DoAsyncParallelFair(int maxThread, Function<? super T, ? extends Future<? extends R>> asyncTransformer) {
+            if (maxThread < 1)
+                throw new IllegalArgumentException();
+            this.transformer = asyncTransformer;
+            this.main = Thread.currentThread();
+            this.queue = new ArrayBlockingQueue<>(maxThread, true);
+        }
+
+        public void start() {
+            try {
+                openResources();
+                log.info("s.=== completed successfully.");
+            } catch (BatchException e) {
+                log.error("s.### abnormal program end.", e);
+                throw e;
+            } catch (Exception e) {
+                log.error("s.### abnormal program end.", e);
+                throw new BatchException(e);
+            }
+        }
+
+        protected abstract void openResources() throws Exception;
+
+        protected void doWork(Iterator<T> iterator, Consumer<R> action) {
+            ExecutorService service1 = Executors.newFixedThreadPool(1);
+            try {
+                Future<?> future = service1.submit(() -> {
+                    try {
+                        while (iterator.hasNext()) {
+                            T t = iterator.next();
+                            Future<? extends R> promise = transformer.apply(t);
+                            try {
+                                queue.put(promise);
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            }
+                        }
+                        if (Thread.currentThread().isInterrupted()) {
+                            log.warn("s.>>> Loop interrupted ...");
+                        } else {
+                            log.info("s.--- All task submitted ...");
+                        }
+                    } finally {
+                        log.info("s.--- waiting for the end of the tasks ...");
+                        awaitEmptyQueue();
+                        if (!Thread.currentThread().isInterrupted()) {
+                            log.info("s.--- interrupting the write listener");
+                            main.interrupt();
+                        }
+                    }
+                });
+                try {
+                    //noinspection InfiniteLoopStatement
+                    while (true) {
+                        Future<? extends R> fo = queue.take();
+                        try {
+                            R oo = fo.get();
+                            action.accept(oo);
+                        } catch (ExecutionException e) {
+                            Throwable cause = e.getCause();
+                            String place = placeOf(cause.getStackTrace());
+                            log.warn("s.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
+                            future.cancel(true);
+                            throw new BatchException((cause));
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    log.info("s.--- write listener interrupted");
+//                    Thread.currentThread().interrupt();
+                }
+                try {
+                    future.get();
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    String place = placeOf(cause.getStackTrace());
+                    log.warn("s.### Error detected in reader: {} [{}]", cause.getMessage(), place);
+                    throw new BatchException((cause));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            } finally {
+                service1.shutdown();
+            }
+        }
+
+        private void awaitEmptyQueue() {
+            while (!queue.isEmpty()) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+    }
 
     private abstract class DoParallelFair<T, R> {
         private final int maxThread;
@@ -1350,6 +1672,8 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
         private final BlockingQueue<Future<? extends R>> queue;
 
         DoParallelFair(int maxThread, Function<? super T, ? extends R> transformer) {
+            if (maxThread < 1)
+                throw new IllegalArgumentException();
             this.maxThread = maxThread;
             this.transformer = transformer;
             this.main = Thread.currentThread();
@@ -1465,6 +1789,8 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
         private final ExecutorService writerService;
 
         public DoParallelWrite(int maxThread) {
+            if (maxThread < 1)
+                throw new IllegalArgumentException();
             this.maxThread = maxThread;
             this.writerService = Executors.newCachedThreadPool();
         }
@@ -1543,6 +1869,8 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
         private final BlockingQueue<R> queue;
 
         DoParallelRaw(int maxThread, Function<? super T, ? extends R> transformer) {
+            if (maxThread < 1)
+                throw new IllegalArgumentException();
             this.maxThread = maxThread;
             this.transformer = transformer;
             this.main = Thread.currentThread();
@@ -1738,4 +2066,5 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
             }
         }
     }
+
 }

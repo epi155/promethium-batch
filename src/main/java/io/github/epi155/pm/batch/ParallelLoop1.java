@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch;
 
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -9,7 +10,7 @@ import java.util.function.Function;
  * @param <I> input type
  * @param <O> output type
  */
-public interface ParallelLoop<I, O> {
+public interface ParallelLoop1<I, O> {
     /**
      * performs repeated action from input to output in parallel
      * <pre>Loop.from(src).into(snk).forEachParallel(n,(i,wr) -> { ... });</pre>
@@ -38,4 +39,12 @@ public interface ParallelLoop<I, O> {
      * @param transformer function that transforms input into output
      */
     void forEachParallel(int maxThread, Function<? super I, ? extends O> transformer);
+
+    /**
+     * performs repeated transformation from input to output using asynchronous task
+     *
+     * @param maxThread        maximum number of parallel processing
+     * @param asyncTransformer asynchronous function that transforms input into output
+     */
+    void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends O>> asyncTransformer);
 }

@@ -8,6 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
 
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -49,13 +53,99 @@ public class TestEven {
         val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
 
         Assertions.assertThrows(RuntimeException.class, () ->
-                Loop.from(src1).forEachParallel(10, it -> {
-            if (it==64) {
-                throw new RuntimeException("BUG");
-            } else {
-                System.out.println(it);
-            }
-        }));
+                Loop.from(src1)
+                        .shutdownTimeout(1, TimeUnit.SECONDS)
+                        .forEachParallel(10, it -> {
+                            if (it == 64) {
+                                throw new RuntimeException("BUG");
+                            } else {
+                                System.out.println(it);
+                            }
+                        }));
     }
 
+    @org.junit.jupiter.api.Test
+    void test04() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+
+        Loop.from(src1)
+                .shutdownTimeout(25, TimeUnit.MILLISECONDS)
+                .forEachParallel(10, it -> {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(100);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+    }
+
+    @org.junit.jupiter.api.Test
+    void test05() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        val snk1 = SinkResource.of(System.out::println);
+
+        Loop.from(src1).into(snk1)
+                .shutdownTimeout(1, TimeUnit.SECONDS)
+                .forEachParallel(10, it -> {
+                    if (it == 1) {
+                        try {
+                            TimeUnit.MINUTES.sleep(10);
+                        } catch (InterruptedException e) {
+                            log.warn("Someone try to killed me !!!");
+                            for (int k = 0; k < 3; k++) {
+                                try {
+                                    log.info("Hai Ho !!!");
+                                    TimeUnit.MINUTES.sleep(1);
+                                } catch (InterruptedException ex) {
+                                    log.warn("Someone try again killed me !!!");
+                                }
+                            }
+                            Thread.currentThread().interrupt();
+                        } finally {
+                            log.warn("killed !!!");
+                        }
+                    }
+                    //wr.accept(it);
+                    return it;
+                });
+        try {
+            TimeUnit.MINUTES.sleep(5);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @org.junit.jupiter.api.Test
+    void test06() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        val snk1 = SinkResource.of(System.out::println);
+        Random rndm = new Random();
+
+        ExecutorService exec = Executors.newCachedThreadPool();
+        Loop.from(src1).into(snk1)
+                .forEachAsync(10, it -> exec.submit(() -> {
+                    TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
+                    return it;
+                }));
+
+    }
+
+    @org.junit.jupiter.api.Test
+    void test07() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        Random rndm = new Random();
+
+        ExecutorService exec = Executors.newCachedThreadPool();
+        Loop.from(src1)
+                .forEachAsync(10, it -> exec.submit(() -> {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    System.out.println(it);
+                }, null));
+
+    }
 }

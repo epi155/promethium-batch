@@ -10,7 +10,7 @@ import java.util.function.Function;
  * @param <I> input type
  * @param <O> output type
  */
-public interface IterableLoop<I, O> extends ParallelLoop<I, O> {
+public interface IterableLoop<I, O> extends ParallelLoop1<I, O> {
     /**
      * performs repeated transformation from input to output sequentially
      *
@@ -30,7 +30,7 @@ public interface IterableLoop<I, O> extends ParallelLoop<I, O> {
      *
      * @param time time amount
      * @param unit time unit
-     * @return instance of {@link ParallelLoop} for run parallel processing
+     * @return instance of {@link ParallelLoop1} for run parallel processing
      */
-    ParallelLoop<I, O> shutdownTimeout(long time, TimeUnit unit);
+    ParallelLoop1<I, O> shutdownTimeout(long time, TimeUnit unit);
 }

@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -10,7 +11,7 @@ import java.util.function.Consumer;
  *
  * @param <I> input type
  */
-public interface LoopSource<I> {
+public interface LoopSource<I> extends ParallelLoop0<I> {
     /**
      * Performs the specified action for each item taken from the source until all items have been processed or the
      * action throws an exception.
@@ -18,15 +19,6 @@ public interface LoopSource<I> {
      * @param action The action to be performed for each element
      */
     void forEach(Consumer<? super I> action);
-
-    /**
-     * Performs the specified action for each item taken from the source until all items have been processed or the
-     * action throws an exception. Up to {@code maxThread} elements are processed in parallel
-     *
-     * @param maxThread maximum number of parallel processing
-     * @param action    The action to be performed for each element
-     */
-    void forEachParallel(int maxThread, Consumer<? super I> action);
 
     /**
      * sets the sink resource
@@ -284,4 +276,12 @@ public interface LoopSource<I> {
             SinkResource<T7, O7> sink7,
             SinkResource<T8, O8> sink8);
 
+    /**
+     * sets the shutdown timeout for parallel processing
+     *
+     * @param time time amount
+     * @param unit time unit
+     * @return instance of {@link ParallelLoop0} for run parallel processing
+     */
+    ParallelLoop0<I> shutdownTimeout(long time, TimeUnit unit);
 }
