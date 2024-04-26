@@ -20,7 +20,23 @@ void forEachParallelFair(int maxThread, Function<? super I,? extends Tuple2<? ex
 void forEachParallel(int maxThread, Worker2<? super I,Consumer<? super O1>,Consumer<? super O2>> worker)
 ~~~
 
-### General notes
+## Asynchronous Processing
+
+The handling of parallel processing could be handled externally (e.g. a method with the @Async annotation), to deal with these cases, two dedicated methods have been implemented
+
+### 1. Asynchronous Transformer
+
+~~~java
+void forEachAsync(int maxThread, Function<? super I,? extends Future<? extends Tuple2<? extends O1,? extends O2>>> asyncTransformer)
+~~~
+
+### 2. Asynchronous Write
+
+~~~java
+void forEachAsync(int maxThread, AsyncWorker2<? super I,Consumer<? super O1>,Consumer<? super O2>> asyncWorker)
+~~~
+
+## General notes
 
 `maxThread` is the maximum number of processing tasks executed in parallel.
 The thread that submits processing tasks stops when the number of active tasks reaches the maximum value, and waits for a task to become free before submitting another.
