@@ -18,7 +18,7 @@ import java.util.function.Function;
 public interface ParallelLoop6<I, O1, O2, O3, O4, O5, O6> {
     /**
      * performs repeated action from input to output in parallel
-     * <pre>Loop.from(src)
+     * <pre>Batch.from(src)
      *      .into(snk1,snk2,snk3,snk4,snk5,snk6)
      *      .forEachParallel(n,(i,wr1,wr2,wr3,wr4,wr5,wr6) -> { ... });</pre>
      *
@@ -36,7 +36,7 @@ public interface ParallelLoop6<I, O1, O2, O3, O4, O5, O6> {
     /**
      * performs repeated transformation from input to outputs in parallel
      * <p>first starts first writes
-     * <pre>Loop.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
+     * <pre>Batch.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into {@link Tuple6} outputs
@@ -52,7 +52,7 @@ public interface ParallelLoop6<I, O1, O2, O3, O4, O5, O6> {
     /**
      * performs repeated transformation from input to outputs in parallel
      * <p>first ends first writes
-     * <pre>Loop.from(src).into(snk).forEachParallel(n,i -> { ... });</pre>
+     * <pre>Batch.from(src).into(snk).forEachParallel(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into {@link Tuple6} outputs
@@ -80,4 +80,18 @@ public interface ParallelLoop6<I, O1, O2, O3, O4, O5, O6> {
                                       ? extends O4,
                                       ? extends O5,
                                       ? extends O6>>> asyncTransformer);
+
+    /**
+     * performs repeated action from input to output using asynchronous worker
+     *
+     * @param maxThread   maximum number of parallel processing
+     * @param asyncWorker asyncWorker who takes the input value and writes the output using the consumer
+     */
+    void forEachAsync(int maxThread, AsyncWorker6<? super I,
+            Consumer<? super O1>,
+            Consumer<? super O2>,
+            Consumer<? super O3>,
+            Consumer<? super O4>,
+            Consumer<? super O5>,
+            Consumer<? super O6>> asyncWorker);
 }

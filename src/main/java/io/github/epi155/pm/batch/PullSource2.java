@@ -14,7 +14,7 @@ public interface PullSource2<I1, I2> {
     /**
      * processes the data
      * <pre>
-     * Loop.from(src1, src2).proceed((rd1, rd2) -> {
+     * Batch.from(src1, src2).proceed((rd1, rd2) -> {
      *     val i1 = rd1.get();
      *     val i2 = rd2.get();
      *     ...

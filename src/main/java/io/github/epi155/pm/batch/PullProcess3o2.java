@@ -13,7 +13,7 @@ public interface PullProcess3o2<I1, I2, I3, O1, O2> {
     /**
      * processes the data
      * <pre>
-     * Loop.from(src1,src2,src3).into(dst).proceed((rd1,rd2,rd3,wr1,wr2) -> {
+     * Batch.from(src1,src2,src3).into(dst).proceed((rd1,rd2,rd3,wr1,wr2) -> {
      *     val i1 = rd1.get();
      *     val i2 = rd2.get();
      *     val i3 = rd3.get();

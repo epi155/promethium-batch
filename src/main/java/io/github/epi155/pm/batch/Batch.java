@@ -3,13 +3,13 @@ package io.github.epi155.pm.batch;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * root interface for a looping process
+ * root interface for the batch process
  */
-public interface Loop {
+public interface Batch {
     /**
      * Sets a source resource<br>
      * <pre>
-     * Loop<b>.from(source)</b>.into(sink).forEach(src -&gt; ...)
+     * Batch<b>.from(source)</b>.into(sink).forEach(src -&gt; ...)
      * </pre>
      *
      * @param source the source resource
@@ -24,7 +24,7 @@ public interface Loop {
     /**
      * Sets a source resource pair<br>
      * <pre>
-     * Loop.from(source1, source2).into(sink).proceed((it1, it2, wr) -&gt; ...)
+     * Batch.from(source1, source2).into(sink).proceed((it1, it2, wr) -&gt; ...)
      * </pre>
      *
      * @param source1 the 1st source resource
@@ -46,7 +46,7 @@ public interface Loop {
     /**
      * Set three source resources<br>
      * <pre>
-     * Loop.from(src1, src2, src3).into(sink).proceed((it1, it2, it3, wr) -&gt; ...)
+     * Batch.from(src1, src2, src3).into(sink).proceed((it1, it2, it3, wr) -&gt; ...)
      * </pre>
      *
      * @param source1 the 1st source resource

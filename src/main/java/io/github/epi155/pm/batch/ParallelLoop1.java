@@ -13,7 +13,7 @@ import java.util.function.Function;
 public interface ParallelLoop1<I, O> {
     /**
      * performs repeated action from input to output in parallel
-     * <pre>Loop.from(src).into(snk).forEachParallel(n,(i,wr) -> { ... });</pre>
+     * <pre>Batch.from(src).into(snk).forEachParallel(n,(i,wr) -> { ... });</pre>
      *
      * @param maxThread maximum number of parallel processing
      * @param worker    worker who takes the input value and writes the output using the consumer
@@ -23,7 +23,7 @@ public interface ParallelLoop1<I, O> {
     /**
      * performs repeated transformation from input to output in parallel
      * <p>first starts first writes
-     * <pre>Loop.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
+     * <pre>Batch.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into output
@@ -33,7 +33,7 @@ public interface ParallelLoop1<I, O> {
     /**
      * performs repeated transformation from input to output in parallel
      * <p>first ends first writes
-     * <pre>Loop.from(src).into(snk).forEachParallel(n,i -> { ... });</pre>
+     * <pre>Batch.from(src).into(snk).forEachParallel(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into output
@@ -47,4 +47,12 @@ public interface ParallelLoop1<I, O> {
      * @param asyncTransformer asynchronous function that transforms input into output
      */
     void forEachAsync(int maxThread, Function<? super I, ? extends Future<? extends O>> asyncTransformer);
+
+    /**
+     * performs repeated action from input to output using asynchronous worker
+     *
+     * @param maxThread   maximum number of parallel processing
+     * @param asyncWorker asyncWorker who takes the input value and writes the output using the consumer
+     */
+    void forEachAsync(int maxThread, AsyncWorker<? super I, Consumer<? super O>> asyncWorker);
 }

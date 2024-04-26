@@ -31,5 +31,5 @@ If this time limit is exceeded, the processing tasks are interrupted, this could
 The default value for this timeout is 30 seconds, you can change it by calling the `shutdownTimeout` method before `forEachParallel`.
 
 ~~~java
-Loop.from(src).into(snk1,snk2).shutdownTimeout(5, TimeUnit.SECONDS).forEachParallel(maxThread, ...);
+Batch.from(src).into(snk1,snk2).shutdownTimeout(5, TimeUnit.SECONDS).forEachParallel(maxThread, ...);
 ~~~

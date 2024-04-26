@@ -3,11 +3,11 @@ package io.github.epi155.pm.batch;
 import lombok.val;
 
 /**
- * quid wrapper exception
+ * batch wrapper exception
  */
 public class BatchException extends RuntimeException {
     /**
-     * quid exception constructor
+     * batch exception constructor
      *
      * @param e exception wrapped
      */

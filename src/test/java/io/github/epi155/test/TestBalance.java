@@ -1,6 +1,6 @@
 package io.github.epi155.test;
 
-import io.github.epi155.pm.batch.Loop;
+import io.github.epi155.pm.batch.Batch;
 import io.github.epi155.pm.batch.SinkResource;
 import io.github.epi155.pm.batch.SourceResource;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ public class TestBalance {
         SinkResource<?, String> snk1 = SinkResource.of(unbaInc::add);
         SinkResource<?, String> snk2 = SinkResource.of(unbaOutc::add);
 
-        Loop.from(src1, src2).into(snk1, snk2)
+        Batch.from(src1, src2).into(snk1, snk2)
                 .proceed((rd1, rd2, wr1, wr2) -> {
                     String da1 = rd1.get();
                     String da2 = rd2.get();
@@ -81,7 +81,7 @@ public class TestBalance {
         SinkResource<?, Integer> snk1 = SinkResource.of(unbaInc::add);
         SinkResource<?, Integer> snk2 = SinkResource.of(unbaOutc::add);
 
-        Loop.from(src1, src2).into(snk1, snk2)
+        Batch.from(src1, src2).into(snk1, snk2)
                 .proceed((rd1, rd2, wr1, wr2) -> {
                     Integer da1 = rd1.get();
                     Integer da2 = rd2.get();

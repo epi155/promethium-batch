@@ -8,7 +8,7 @@ val src2 = SourceResource.fromIterator(outflow);
 val snk1 = SinkResource.of(unbaIn::add);
 val snk2 = SinkResource.of(unbaOut::add);
 
-Loop.from(src1, src2).into(snk1, snk2)
+Batch.from(src1, src2).into(snk1, snk2)
         .proceed((rd1, rd2, wr1, wr2) -> {
             String da1 = rd1.get();         // read inflow
             String da2 = rd2.get();         // read outflow

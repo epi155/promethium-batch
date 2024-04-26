@@ -81,6 +81,20 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
             }
 
             @Override
+            public void forEachAsync(int maxThread, AsyncWorker<? super I, Consumer<? super O>> asyncWorker) {
+                new DoAsyncWrite(maxThread) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T t = sink.get(); PmQueueWriter<O> w1 = openQueue(sink, t);
+                             S s = source.get()) {
+                            doWork(List.of(w1.getFuture()),
+                                    source.iterator(s), i -> asyncWorker.apply(i, w1::write));
+                        }   // closing writer queues
+                    }
+                }.start();
+            }
+
+            @Override
             public ParallelLoop1<I, O> shutdownTimeout(long time, TimeUnit unit) {
                 setShutdownTimeout(time, unit);
                 return this;
@@ -101,8 +115,6 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
             public void forEachParallel(
                     int maxThread,
                     Worker<? super I, Consumer<? super O>> worker) {
-                if (maxThread < 1)
-                    throw new IllegalArgumentException();
                 new DoParallelWrite(maxThread) {
                     @Override
                     protected void openResources() throws Exception {
@@ -187,6 +199,21 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                                 oo.onT2(v -> sink2.accept(t2, v));
                             });
                         }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(int maxThread, AsyncWorker2<? super I, Consumer<? super O1>, Consumer<? super O2>> asyncWorker) {
+                new DoAsyncWrite(maxThread) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get(); PmQueueWriter<O1> w1 = openQueue(sink1, t1);
+                             T2 t2 = sink2.get(); PmQueueWriter<O2> w2 = openQueue(sink2, t2);
+                             S s = source.get()) {
+                            doWork(List.of(w1.getFuture(), w2.getFuture()),
+                                    source.iterator(s), i -> asyncWorker.apply(i, w1::write, w2::write));
+                        }   // closing writer queues
                     }
                 }.start();
             }
@@ -322,6 +349,22 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                                 oo.onT3(v -> sink3.accept(t3, v));
                             });
                         }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(int maxThread, AsyncWorker3<? super I, Consumer<? super O1>, Consumer<? super O2>, Consumer<? super O3>> asyncWorker) {
+                new DoAsyncWrite(maxThread) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get(); PmQueueWriter<O1> w1 = openQueue(sink1, t1);
+                             T2 t2 = sink2.get(); PmQueueWriter<O2> w2 = openQueue(sink2, t2);
+                             T3 t3 = sink3.get(); PmQueueWriter<O3> w3 = openQueue(sink3, t3);
+                             S s = source.get()) {
+                            doWork(List.of(w1.getFuture(), w2.getFuture(), w3.getFuture()),
+                                    source.iterator(s), i -> asyncWorker.apply(i, w1::write, w2::write, w3::write));
+                        }   // closing writer queues
                     }
                 }.start();
             }
@@ -466,6 +509,23 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                                 oo.onT4(v -> sink4.accept(t4, v));
                             });
                         }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(int maxThread, AsyncWorker4<? super I, Consumer<? super O1>, Consumer<? super O2>, Consumer<? super O3>, Consumer<? super O4>> asyncWorker) {
+                new DoAsyncWrite(maxThread) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get(); PmQueueWriter<O1> w1 = openQueue(sink1, t1);
+                             T2 t2 = sink2.get(); PmQueueWriter<O2> w2 = openQueue(sink2, t2);
+                             T3 t3 = sink3.get(); PmQueueWriter<O3> w3 = openQueue(sink3, t3);
+                             T4 t4 = sink4.get(); PmQueueWriter<O4> w4 = openQueue(sink4, t4);
+                             S s = source.get()) {
+                            doWork(List.of(w1.getFuture(), w2.getFuture(), w3.getFuture(), w4.getFuture()),
+                                    source.iterator(s), i -> asyncWorker.apply(i, w1::write, w2::write, w3::write, w4::write));
+                        }   // closing writer queues
                     }
                 }.start();
             }
@@ -646,6 +706,34 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                                 oo.onT5(v -> sink5.accept(t5, v));
                             });
                         }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(
+                    int maxThread,
+                    AsyncWorker5<? super I,
+                            Consumer<? super O1>,
+                            Consumer<? super O2>,
+                            Consumer<? super O3>,
+                            Consumer<? super O4>,
+                            Consumer<? super O5>> asyncWorker) {
+                new DoAsyncWrite(maxThread) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get(); PmQueueWriter<O1> w1 = openQueue(sink1, t1);
+                             T2 t2 = sink2.get(); PmQueueWriter<O2> w2 = openQueue(sink2, t2);
+                             T3 t3 = sink3.get(); PmQueueWriter<O3> w3 = openQueue(sink3, t3);
+                             T4 t4 = sink4.get(); PmQueueWriter<O4> w4 = openQueue(sink4, t4);
+                             T5 t5 = sink5.get(); PmQueueWriter<O5> w5 = openQueue(sink5, t5);
+                             S s = source.get()) {
+                            doWork(List.of(w1.getFuture(), w2.getFuture(), w3.getFuture(), w4.getFuture(),
+                                            w5.getFuture()),
+                                    source.iterator(s), i -> asyncWorker.apply(i,
+                                            w1::write, w2::write, w3::write, w4::write,
+                                            w5::write));
+                        }   // closing writer queues
                     }
                 }.start();
             }
@@ -847,6 +935,36 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                                 oo.onT6(v -> sink6.accept(t6, v));
                             });
                         }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(
+                    int maxThread,
+                    AsyncWorker6<? super I,
+                            Consumer<? super O1>,
+                            Consumer<? super O2>,
+                            Consumer<? super O3>,
+                            Consumer<? super O4>,
+                            Consumer<? super O5>,
+                            Consumer<? super O6>> asyncWorker) {
+                new DoAsyncWrite(maxThread) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get(); PmQueueWriter<O1> w1 = openQueue(sink1, t1);
+                             T2 t2 = sink2.get(); PmQueueWriter<O2> w2 = openQueue(sink2, t2);
+                             T3 t3 = sink3.get(); PmQueueWriter<O3> w3 = openQueue(sink3, t3);
+                             T4 t4 = sink4.get(); PmQueueWriter<O4> w4 = openQueue(sink4, t4);
+                             T5 t5 = sink5.get(); PmQueueWriter<O5> w5 = openQueue(sink5, t5);
+                             T6 t6 = sink6.get(); PmQueueWriter<O6> w6 = openQueue(sink6, t6);
+                             S s = source.get()) {
+                            doWork(List.of(w1.getFuture(), w2.getFuture(), w3.getFuture(), w4.getFuture(),
+                                            w5.getFuture(), w6.getFuture()),
+                                    source.iterator(s), i -> asyncWorker.apply(i,
+                                            w1::write, w2::write, w3::write, w4::write,
+                                            w5::write, w6::write));
+                        }   // closing writer queues
                     }
                 }.start();
             }
@@ -1065,6 +1183,29 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                                 oo.onT7(v -> sink7.accept(t7, v));
                             });
                         }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(int maxThread, AsyncWorker7<? super I, Consumer<? super O1>, Consumer<? super O2>, Consumer<? super O3>, Consumer<? super O4>, Consumer<? super O5>, Consumer<? super O6>, Consumer<? super O7>> asyncWorker) {
+                new DoAsyncWrite(maxThread) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get(); PmQueueWriter<O1> w1 = openQueue(sink1, t1);
+                             T2 t2 = sink2.get(); PmQueueWriter<O2> w2 = openQueue(sink2, t2);
+                             T3 t3 = sink3.get(); PmQueueWriter<O3> w3 = openQueue(sink3, t3);
+                             T4 t4 = sink4.get(); PmQueueWriter<O4> w4 = openQueue(sink4, t4);
+                             T5 t5 = sink5.get(); PmQueueWriter<O5> w5 = openQueue(sink5, t5);
+                             T6 t6 = sink6.get(); PmQueueWriter<O6> w6 = openQueue(sink6, t6);
+                             T7 t7 = sink7.get(); PmQueueWriter<O7> w7 = openQueue(sink7, t7);
+                             S s = source.get()) {
+                            doWork(List.of(w1.getFuture(), w2.getFuture(), w3.getFuture(), w4.getFuture(),
+                                            w5.getFuture(), w6.getFuture(), w7.getFuture()),
+                                    source.iterator(s), i -> asyncWorker.apply(i,
+                                            w1::write, w2::write, w3::write, w4::write,
+                                            w5::write, w6::write, w7::write));
+                        }   // closing writer queues
                     }
                 }.start();
             }
@@ -1300,6 +1441,40 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                                 oo.onT8(v -> sink8.accept(t8, v));
                             });
                         }
+                    }
+                }.start();
+            }
+
+            @Override
+            public void forEachAsync(
+                    int maxThread,
+                    AsyncWorker8<? super I,
+                            Consumer<? super O1>,
+                            Consumer<? super O2>,
+                            Consumer<? super O3>,
+                            Consumer<? super O4>,
+                            Consumer<? super O5>,
+                            Consumer<? super O6>,
+                            Consumer<? super O7>,
+                            Consumer<? super O8>> asyncWorker) {
+                new DoAsyncWrite(maxThread) {
+                    @Override
+                    protected void openResources() throws Exception {
+                        try (T1 t1 = sink1.get(); PmQueueWriter<O1> w1 = openQueue(sink1, t1);
+                             T2 t2 = sink2.get(); PmQueueWriter<O2> w2 = openQueue(sink2, t2);
+                             T3 t3 = sink3.get(); PmQueueWriter<O3> w3 = openQueue(sink3, t3);
+                             T4 t4 = sink4.get(); PmQueueWriter<O4> w4 = openQueue(sink4, t4);
+                             T5 t5 = sink5.get(); PmQueueWriter<O5> w5 = openQueue(sink5, t5);
+                             T6 t6 = sink6.get(); PmQueueWriter<O6> w6 = openQueue(sink6, t6);
+                             T7 t7 = sink7.get(); PmQueueWriter<O7> w7 = openQueue(sink7, t7);
+                             T8 t8 = sink8.get(); PmQueueWriter<O8> w8 = openQueue(sink8, t8);
+                             S s = source.get()) {
+                            doWork(List.of(w1.getFuture(), w2.getFuture(), w3.getFuture(), w4.getFuture(),
+                                            w5.getFuture(), w6.getFuture(), w7.getFuture(), w8.getFuture()),
+                                    source.iterator(s), i -> asyncWorker.apply(i,
+                                            w1::write, w2::write, w3::write, w4::write,
+                                            w5::write, w6::write, w7::write, w8::write));
+                        }   // closing writer queues
                     }
                 }.start();
             }
@@ -1567,6 +1742,7 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
         private final Function<? super T, ? extends Future<? extends R>> transformer;
         private final Thread main;
         private final BlockingQueue<Future<? extends R>> queue;
+        private final Semaphore sm;
 
         DoAsyncParallelFair(int maxThread, Function<? super T, ? extends Future<? extends R>> asyncTransformer) {
             if (maxThread < 1)
@@ -1574,6 +1750,7 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
             this.transformer = asyncTransformer;
             this.main = Thread.currentThread();
             this.queue = new ArrayBlockingQueue<>(maxThread, true);
+            this.sm = new Semaphore(maxThread);
         }
 
         public void start() {
@@ -1598,6 +1775,7 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                     try {
                         while (iterator.hasNext()) {
                             T t = iterator.next();
+                            sm.acquire();
                             Future<? extends R> promise = transformer.apply(t);
                             try {
                                 queue.put(promise);
@@ -1610,6 +1788,8 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                         } else {
                             log.info("s.--- All task submitted ...");
                         }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     } finally {
                         log.info("s.--- waiting for the end of the tasks ...");
                         awaitEmptyQueue();
@@ -1632,6 +1812,8 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
                             log.warn("s.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
                             future.cancel(true);
                             throw new BatchException((cause));
+                        } finally {
+                            sm.release();
                         }
                     }
                 } catch (InterruptedException e) {
@@ -2067,4 +2249,131 @@ class PmLoopSource<S extends AutoCloseable, I> implements LoopSource<I> {
         }
     }
 
+    private abstract class DoAsyncWrite {
+        private final int maxThread;
+        private final ExecutorService writerService;
+
+        public DoAsyncWrite(int maxThread) {
+            if (maxThread < 1)
+                throw new IllegalArgumentException();
+            this.maxThread = maxThread;
+            this.writerService = Executors.newCachedThreadPool();
+        }
+
+        public void start() {
+            try {
+                try {
+                    openResources();
+                    log.info("w.=== completed successfully.");
+                } catch (InterruptedException e) {
+                    log.info("w.>>> thread interrupted");
+                } finally {
+                    log.info("w.--- resources closed.");
+                }
+            } catch (BatchException e) {
+                log.error("w.### abnormal program end.", e);
+                throw e;
+            } catch (Exception e) {
+                log.error("w.### abnormal program end.", e);
+                throw new BatchException(e);
+            } finally {
+                writerService.shutdown();
+            }
+        }
+
+        protected <T extends AutoCloseable, O> PmQueueWriter<O> openQueue(SinkResource<T, O> sink, T t) {
+            return PmQueueWriter.of(maxThread, writerService, sink, t);
+        }
+
+        //        protected <O> PmQueueWriter<O> openQueue(Consumer<? super O> sink) {
+//            return PmQueueWriter.of(maxThread, writerService, sink);
+//        }
+        protected void doWork(
+                List<Future<?>> writerStatuses,
+                Iterator<I> iterator, Function<I, Future<?>> task) {
+            Thread main = Thread.currentThread();
+            ScheduledExecutorService schedule = Executors.newScheduledThreadPool(1);
+            schedule.scheduleAtFixedRate(() -> monitor(main, writerStatuses), 5, 5, TimeUnit.SECONDS);
+            try {
+                final Semaphore sm = new Semaphore(maxThread);
+                final List<Future<?>> statuses = new LinkedList<>();
+                while (iterator.hasNext()) {
+                    I i = iterator.next();
+                    try {
+                        while (!sm.tryAcquire(5, TimeUnit.MILLISECONDS)) {
+                            probeStatuses(statuses, sm, true);
+                        }
+                        Future<?> status = task.apply(i);
+                        statuses.add(status);
+                        probeStatuses(statuses, sm, true);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                if (Thread.currentThread().isInterrupted()) {
+                    log.warn("w.>>> Loop interrupted, shutdown taskExecutor ...");
+                } else {
+                    log.info("w.--- All task submitted, shutdown taskExecutor ...");
+                }
+                log.info("w.--- pending futures {}", statuses.size());
+                probeStatuses(statuses, sm, false);
+                log.info("w.--- tasks terminated, flush & close ...");
+            } finally {
+                log.debug("w.--- the listener's monitor will be shut down ...");
+                schedule.shutdown();
+            }
+        }
+
+        private void probeStatuses(List<Future<?>> statuses, Semaphore sm, boolean hot) {
+            int k = 0;
+            do {
+                int n = iterateStatus(statuses.iterator(), sm);
+                if (hot || statuses.isEmpty()) {
+                    return;
+                }
+                sendMessage(++k, n);
+                try {
+                    // if task is interrupted: sleep do nothing
+                    TimeUnit.MILLISECONDS.sleep(10);
+                } catch (InterruptedException e) {
+                    try {
+                        // now task IS NOT interrupted and sleep() DO SLEEP
+                        TimeUnit.MILLISECONDS.sleep(10);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                    Thread.currentThread().interrupt();
+                }
+            } while (true);
+        }
+
+        private int iterateStatus(Iterator<Future<?>> it, Semaphore sm) {
+            int k = 0;
+            while (it.hasNext()) {
+                Future<?> status = it.next();
+                if (status.isDone() /*|| status.isCancelled()*/) {
+                    try {
+                        status.get();
+                    } catch (InterruptedException e) {
+                        log.info("w.>>> task was interrupted. (dead branch?)");
+                        Thread.currentThread().interrupt();
+                    } catch (ExecutionException e) {
+                        Throwable cause = e.getCause();
+                        String place = placeOf(cause.getStackTrace());
+                        log.warn("w.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
+                        throw new BatchException((cause));
+                    } finally {
+                        sm.release();
+                    }
+                    it.remove();
+                } else {
+                    k++;
+                }
+            }
+            return k;
+        }
+
+        protected abstract void openResources() throws Exception;
+
+    }
 }

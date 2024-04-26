@@ -14,13 +14,13 @@ The following classes are used to generically manage data sources and destinatio
 If there is only one data source, the processing part can produce a tuple and the infrastructure will send the data to the destinations, in this case the processing format is:
 
 ~~~java
-Loop.from(src).into(snk1,snk2).forEach(it -> { ... });
+Batch.from(src).into(snk1,snk2).forEach(it -> { ... });
 ~~~
 
 as an alternative to the processing part, in addition to the input value, the `Consumers` are provided to write data directly to the corresponding destinations, in this case the processing format is:
 
 ~~~java
-Loop.from(src).into(snk1,snk2).forEach((it,wr1,wr2) -> { ... });
+Batch.from(src).into(snk1,snk2).forEach((it,wr1,wr2) -> { ... });
 ~~~
 
 [loop examples](./doc/ex-loop1to2.md)
@@ -30,7 +30,7 @@ Both formats can be parallelized, but only the former allows an implementation t
 When the destination is a resource external to the program (for example a call to a REST service), the processing loop can be written in the form
 
 ~~~java
-Loop.from(src).forEach(it -> { ... });
+Batch.from(src).forEach(it -> { ... });
 ~~~
 
 this form can also be parallelized (destination must be thread safe),
@@ -38,7 +38,7 @@ this form can also be parallelized (destination must be thread safe),
 If there is more than one data source, the processing part must be provided with `Suppliers` to read the data from the sources, and `Consumers` to write the data, in this case the processing format is:
 
 ~~~java
-Loop.from(src1, src2).into(snk1, snk2)
+Batch.from(src1, src2).into(snk1, snk2)
         .proceed((rd1, rd2, wr1, wr2) -> { ... });
 ~~~
 
@@ -51,13 +51,13 @@ In the case of sequential processing, the separation of the processing into a pa
 A sequential elaboration in form
 
 ~~~java
-Loop.from(src).into(...).forEach(...);
+Batch.from(src).into(...).forEach(...);
 ~~~
 
 can be parallel transformed by replacing `forEach` in [`forEachParallel`](./doc/parallel.md):
 
 ~~~java
-Loop.from(src).into(...).forEachParallel(maxThread, ...);
+Batch.from(src).into(...).forEachParallel(maxThread, ...);
 ~~~
 
 without any other modifications.

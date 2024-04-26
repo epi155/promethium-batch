@@ -16,7 +16,7 @@ import java.util.function.Function;
 public interface ParallelLoop4<I, O1, O2, O3, O4> {
     /**
      * performs repeated action from input to output in parallel
-     * <pre>Loop.from(src)
+     * <pre>Batch.from(src)
      *      .into(snk1,snk2,snk3,snk4)
      *      .forEachParallel(n,(i,wr1,wr2,wr3,wr4) -> { ... });</pre>
      *
@@ -32,7 +32,7 @@ public interface ParallelLoop4<I, O1, O2, O3, O4> {
     /**
      * performs repeated transformation from input to outputs in parallel
      * <p>first starts first writes
-     * <pre>Loop.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
+     * <pre>Batch.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into {@link Tuple4} outputs
@@ -46,7 +46,7 @@ public interface ParallelLoop4<I, O1, O2, O3, O4> {
     /**
      * performs repeated transformation from input to outputs in parallel
      * <p>first ends first writes
-     * <pre>Loop.from(src).into(snk).forEachParallelRaw(n,i -> { ... });</pre>
+     * <pre>Batch.from(src).into(snk).forEachParallelRaw(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into {@link Tuple4} outputs
@@ -70,4 +70,16 @@ public interface ParallelLoop4<I, O1, O2, O3, O4> {
                                       ? extends O2,
                                       ? extends O3,
                                       ? extends O4>>> asyncTransformer);
+
+    /**
+     * performs repeated action from input to output using asynchronous worker
+     *
+     * @param maxThread   maximum number of parallel processing
+     * @param asyncWorker asyncWorker who takes the input value and writes the output using the consumer
+     */
+    void forEachAsync(int maxThread, AsyncWorker4<? super I,
+            Consumer<? super O1>,
+            Consumer<? super O2>,
+            Consumer<? super O3>,
+            Consumer<? super O4>> asyncWorker);
 }

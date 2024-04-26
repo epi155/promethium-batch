@@ -1,7 +1,7 @@
 package io.github.epi155.test;
 
+import io.github.epi155.pm.batch.Batch;
 import io.github.epi155.pm.batch.BatchException;
-import io.github.epi155.pm.batch.Loop;
 import io.github.epi155.pm.batch.SinkResource;
 import io.github.epi155.pm.batch.SourceResource;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class Test {
         SourceResource<?, Integer> src = SourceResource.fromIterator(list);
         val snk = SinkResource.of(System.out::println);
 
-        Loop.from(src).into(snk).forEach(
+        Batch.from(src).into(snk).forEach(
                 it -> it * it);
         System.out.println("Done");
 
@@ -66,7 +66,7 @@ public class Test {
                 });
 
         Assertions.assertThrows(RuntimeException.class, () -> {
-            Loop.from(src).into(snk).forEach(it -> it);
+            Batch.from(src).into(snk).forEach(it -> it);
         });
 
         System.out.println("Done");
@@ -87,7 +87,7 @@ public class Test {
          *    thread principale
          */
         Assertions.assertThrows(BatchException.class, () -> {
-            Loop.from(src).into(snk).forEachParallel(2,
+            Batch.from(src).into(snk).forEachParallel(2,
                     (i, w) -> w.accept(i * i));
         });
         System.out.println("Done");
@@ -115,7 +115,7 @@ public class Test {
         SourceResource<?, Integer> src = SourceResource.fromIterator(list);
         val snk = SinkResource.of(it -> {
         });
-        Assertions.assertThrows(BatchException.class, () -> Loop
+        Assertions.assertThrows(BatchException.class, () -> Batch
                 .from(src).into(snk).forEachParallel(4,
                         (i, w) -> {
                             if (i > 10)
@@ -131,7 +131,7 @@ public class Test {
         SourceResource<?, Integer> src = SourceResource.fromIterator(list);
         val snk = SinkResource.of(it -> {
         });
-        Assertions.assertThrows(BatchException.class, () -> Loop
+        Assertions.assertThrows(BatchException.class, () -> Batch
                 .from(src).into(snk).forEachParallelFair(4,
                         i -> {
                             if (i > 10) {
@@ -149,7 +149,7 @@ public class Test {
         SourceResource<?, Integer> src = SourceResource.fromIterator(list);
         val snk = SinkResource.of(it -> {
         });
-        Assertions.assertDoesNotThrow(() -> Loop
+        Assertions.assertDoesNotThrow(() -> Batch
                 .from(src).into(snk).forEachParallel(4,
                         i -> i * i));
         System.out.println("Done");

@@ -23,7 +23,7 @@ public interface LoopSource<I> extends ParallelLoop0<I> {
     /**
      * sets the sink resource
      * <pre>
-     * Loop.from(source)<b>.into(sink)</b>.forEach(src -&gt; ...)
+     * Batch.from(source)<b>.into(sink)</b>.forEach(src -&gt; ...)
      * </pre>
      *
      * @param sink the sink resource
@@ -36,7 +36,7 @@ public interface LoopSource<I> extends ParallelLoop0<I> {
     /**
      * set 2 output resources
      * <pre>
-     * Loop.from(source)<b>.into(sink1,sink2)</b>.forEach(src -&gt; ...)
+     * Batch.from(source)<b>.into(sink1,sink2)</b>.forEach(src -&gt; ...)
      * </pre>
      *
      * @param sink1 1st sink resource
@@ -54,7 +54,7 @@ public interface LoopSource<I> extends ParallelLoop0<I> {
     /**
      * set 3 output resources
      * <pre>
-     * Loop.from(source)<b>.into(sink1,sink2,sink3)</b>.forEach(src -&gt; ...)
+     * Batch.from(source)<b>.into(sink1,sink2,sink3)</b>.forEach(src -&gt; ...)
      * </pre>
      *
      * @param sink1 1st sink resource
@@ -79,7 +79,7 @@ public interface LoopSource<I> extends ParallelLoop0<I> {
     /**
      * set 4 output resources
      * <pre>
-     * Loop.from(source)<b>.into(sink1,sink2,sink3,sink4)</b>.forEach(src -&gt; ...)
+     * Batch.from(source)<b>.into(sink1,sink2,sink3,sink4)</b>.forEach(src -&gt; ...)
      * </pre>
      *
      * @param sink1 1st sink resource
@@ -109,7 +109,7 @@ public interface LoopSource<I> extends ParallelLoop0<I> {
     /**
      * set 5 output resources
      * <pre>
-     * Loop.from(source)<b>.into(sink1,sink2,sink3,sink4,sink5)</b>.forEach(src -&gt; ...)
+     * Batch.from(source)<b>.into(sink1,sink2,sink3,sink4,sink5)</b>.forEach(src -&gt; ...)
      * </pre>
      *
      * @param sink1 1st sink resource
@@ -144,7 +144,7 @@ public interface LoopSource<I> extends ParallelLoop0<I> {
     /**
      * set 6 output resources
      * <pre>
-     * Loop.from(source)<b>.into(sink1,sink2,sink3,sink4,sink5,sink6)</b>.forEach(src -&gt; ...)
+     * Batch.from(source)<b>.into(sink1,sink2,sink3,sink4,sink5,sink6)</b>.forEach(src -&gt; ...)
      * </pre>
      *
      * @param sink1 1st sink resource
@@ -184,7 +184,7 @@ public interface LoopSource<I> extends ParallelLoop0<I> {
     /**
      * set 7 output resources
      * <pre>
-     * Loop.from(source)<b>.into(sink1,sink2,sink3,sink4,sink5,sink6,sink7)</b>.forEach(src -&gt; ...)
+     * Batch.from(source)<b>.into(sink1,sink2,sink3,sink4,sink5,sink6,sink7)</b>.forEach(src -&gt; ...)
      * </pre>
      *
      * @param sink1 1st sink resource
@@ -229,7 +229,7 @@ public interface LoopSource<I> extends ParallelLoop0<I> {
     /**
      * set 8 output resources
      * <pre>
-     * Loop.from(source)<b>.into(sink1,sink2,sink3,sink4,sink5,sink6,sink7,sink8)</b>.forEach(src -&gt; ...)
+     * Batch.from(source)<b>.into(sink1,sink2,sink3,sink4,sink5,sink6,sink7,sink8)</b>.forEach(src -&gt; ...)
      * </pre>
      *
      * @param sink1 1st sink resource
