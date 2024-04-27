@@ -161,7 +161,7 @@ public class TestEven {
                         throw new RuntimeException(e);
                     }
                     wr.accept(it);
-                }, null));
+                }));
     }
 
     @org.junit.jupiter.api.Test
@@ -171,18 +171,159 @@ public class TestEven {
         Random rndm = new Random();
 
         ExecutorService exec = Executors.newCachedThreadPool();
-        Assertions.assertThrows(BatchException.class, () -> {
-            Batch.from(src1).into(snk1)
-                    .forEachAsync(10, (it, wr) -> exec.submit(() -> {
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        if (it == 64)
-                            throw new IllegalStateException("64 is forbidden");
-                        wr.accept(it);
-                    }, null));
-        });
+        Assertions.assertThrows(BatchException.class, () -> Batch.from(src1).into(snk1)
+                .forEachAsync(10, (it, wr) -> exec.submit(() -> {
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (it == 64)
+                        throw new IllegalStateException("64 is forbidden");
+                    wr.accept(it);
+                })));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test10() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        val snk1 = SinkResource.of(System.out::println);
+
+        Assertions.assertThrows(BatchException.class, () ->
+                Batch.from(src1)
+                        .map(it -> {
+                            if (it == 64) throw new IllegalArgumentException("64");
+                            return it * 2;
+                        })
+                        .into(snk1)
+                        .forEachParallel(10, it -> it));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test11() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        val snk1 = SinkResource.of(System.out::println);
+
+        Assertions.assertThrows(BatchException.class, () ->
+                Batch.from(src1)
+                        .map(it -> {
+                            if (it == 64) throw new IllegalArgumentException("64");
+                            return it * 2;
+                        })
+                        .into(snk1)
+                        .forEachParallel(10, (it, wr) -> wr.accept(it)));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test12() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        val snk1 = SinkResource.of(System.out::println);
+
+        Assertions.assertThrows(BatchException.class, () ->
+                Batch.from(src1)
+                        .map(it -> {
+                            if (it == 64) throw new IllegalArgumentException("64");
+                            return it * 2;
+                        })
+                        .into(snk1)
+                        .forEachParallelFair(10, it -> it));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test13() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        val snk1 = SinkResource.of(System.out::println);
+        ExecutorService exec = Executors.newCachedThreadPool();
+
+        Assertions.assertThrows(BatchException.class, () ->
+                Batch.from(src1)
+                        .map(it -> {
+                            if (it == 64) throw new IllegalArgumentException("64");
+                            return it * 2;
+                        })
+                        .into(snk1)
+                        .forEachAsync(10, it -> exec.submit(() -> it)));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test14() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        val snk1 = SinkResource.of(System.out::println);
+        ExecutorService exec = Executors.newCachedThreadPool();
+
+        Assertions.assertThrows(BatchException.class, () ->
+                Batch.from(src1)
+                        .map(it -> {
+                            if (it == 64) throw new IllegalArgumentException("64");
+                            return it * 2;
+                        })
+                        .into(snk1)
+                        .forEachAsync(10, (it, wr) -> exec.submit(() -> wr.accept(it))));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test15() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        val snk1 = SinkResource.of(System.out::println);
+
+        Assertions.assertThrows(BatchException.class, () ->
+                Batch.from(src1)
+                        .map(it -> {
+                            if (it == 64) throw new IllegalArgumentException("64");
+                            return it * 2;
+                        })
+                        .into(snk1)
+                        .forEach(it -> it));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test16() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+        val snk1 = SinkResource.of(System.out::println);
+
+        Assertions.assertThrows(BatchException.class, () ->
+                Batch.from(src1)
+                        .map(it -> {
+                            if (it == 64) throw new IllegalArgumentException("64");
+                            return it * 2;
+                        })
+                        .into(snk1)
+                        .forEach((it, wr) -> wr.accept(it)));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test17() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+
+        Assertions.assertThrows(BatchException.class, () ->
+                Batch.from(src1)
+                        .map(it -> {
+                            if (it == 64) throw new IllegalArgumentException("64");
+                            return it * 2;
+                        })
+                        .forEach(System.out::println));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test18() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+
+        Assertions.assertThrows(BatchException.class, () ->
+                Batch.from(src1)
+                        .map(it -> {
+                            if (it == 64) throw new IllegalArgumentException("64");
+                            return it * 2;
+                        })
+                        .forEachParallel(10, System.out::println));
+    }
+
+    @org.junit.jupiter.api.Test
+    void test20() {
+        val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
+
+        Assertions.assertDoesNotThrow(() ->
+                Batch.from(src1)
+                        .terminate(it -> it == 64)
+                        .forEachParallel(10, System.out::println));
     }
 }

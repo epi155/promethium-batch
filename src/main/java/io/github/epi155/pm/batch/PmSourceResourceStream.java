@@ -8,9 +8,11 @@ import java.util.stream.Stream;
 
 class PmSourceResourceStream<U extends Stream<I>, I> implements SourceResource<U, I> {
     private final Stream<I> stream;
+    private final Iterator<I> iterator;
 
     public PmSourceResourceStream(@NotNull Stream<I> stream) {
         this.stream = stream;
+        this.iterator = stream.iterator();
     }
 
     @Override
@@ -21,12 +23,13 @@ class PmSourceResourceStream<U extends Stream<I>, I> implements SourceResource<U
 
     @Override
     public Iterator<I> iterator(U u) {
-        return u.iterator();
+        if (!u.equals(stream)) throw new IllegalStateException();
+        return iterator;
     }
 
     @Override
     public Supplier<I> supplier(U u) {
-        Iterator<I> it = u.iterator();
-        return () -> it.hasNext() ? it.next() : null;
+        if (!u.equals(stream)) throw new IllegalStateException();
+        return () -> iterator.hasNext() ? iterator.next() : null;
     }
 }
