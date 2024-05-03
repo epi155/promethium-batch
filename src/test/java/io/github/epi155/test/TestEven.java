@@ -1,6 +1,6 @@
 package io.github.epi155.test;
 
-import io.github.epi155.pm.batch.*;
+import io.github.epi155.pm.batch.step.*;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;
@@ -12,14 +12,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 @Slf4j
-public class TestEven {
+class TestEven {
     @org.junit.jupiter.api.Test
     void test01() {
         val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
         val snk1 = SinkResource.of(System.out::println);
         val snk2 = SinkResource.of(System.err::println);
 
-        Batch.from(src).into(snk1, snk2).forEach(
+        Pgm.from(src).into(snk1, snk2).forEach(
                 it -> {
                     if (it % 2 == 0) {
                         return Tuple2.of(it, null);
@@ -35,7 +35,7 @@ public class TestEven {
         val snk1 = SinkResource.of(System.out::println);
         val snk2 = SinkResource.of(System.err::println);
 
-        Batch.from(src).into(snk1, snk2).forEach(
+        Pgm.from(src).into(snk1, snk2).forEach(
                 (it, wr1, wr2) -> {
                     if (it % 2 == 0) {
                         wr1.accept(it);
@@ -50,7 +50,7 @@ public class TestEven {
         val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
 
         Assertions.assertThrows(RuntimeException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .shutdownTimeout(1, TimeUnit.SECONDS)
                         .forEachParallel(10, it -> {
                             if (it == 64) {
@@ -65,7 +65,7 @@ public class TestEven {
     void test04() {
         val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
 
-        Batch.from(src1)
+        Pgm.from(src1)
                 .shutdownTimeout(25, TimeUnit.MILLISECONDS)
                 .forEachParallel(10, it -> {
                     try {
@@ -120,7 +120,7 @@ public class TestEven {
         Random rndm = new Random();
 
         ExecutorService exec = Executors.newCachedThreadPool();
-        Batch.from(src1).into(snk1)
+        Pgm.from(src1).into(snk1)
                 .forEachAsync(10, it -> exec.submit(() -> {
                     TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
                     return it;
@@ -134,7 +134,7 @@ public class TestEven {
         Random rndm = new Random();
 
         ExecutorService exec = Executors.newCachedThreadPool();
-        Batch.from(src1)
+        Pgm.from(src1)
                 .forEachAsync(10, it -> exec.submit(() -> {
                     try {
                         TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
@@ -153,7 +153,7 @@ public class TestEven {
         Random rndm = new Random();
 
         ExecutorService exec = Executors.newCachedThreadPool();
-        Batch.from(src1).into(snk1)
+        Pgm.from(src1).into(snk1)
                 .forEachAsync(10, (it, wr) -> exec.submit(() -> {
                     try {
                         TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
@@ -171,7 +171,7 @@ public class TestEven {
         Random rndm = new Random();
 
         ExecutorService exec = Executors.newCachedThreadPool();
-        Assertions.assertThrows(BatchException.class, () -> Batch.from(src1).into(snk1)
+        Assertions.assertThrows(BatchException.class, () -> Pgm.from(src1).into(snk1)
                 .forEachAsync(10, (it, wr) -> exec.submit(() -> {
                     try {
                         TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
@@ -190,7 +190,7 @@ public class TestEven {
         val snk1 = SinkResource.of(System.out::println);
 
         Assertions.assertThrows(BatchException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .map(it -> {
                             if (it == 64) throw new IllegalArgumentException("64");
                             return it * 2;
@@ -205,7 +205,7 @@ public class TestEven {
         val snk1 = SinkResource.of(System.out::println);
 
         Assertions.assertThrows(BatchException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .map(it -> {
                             if (it == 64) throw new IllegalArgumentException("64");
                             return it * 2;
@@ -220,7 +220,7 @@ public class TestEven {
         val snk1 = SinkResource.of(System.out::println);
 
         Assertions.assertThrows(BatchException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .map(it -> {
                             if (it == 64) throw new IllegalArgumentException("64");
                             return it * 2;
@@ -236,7 +236,7 @@ public class TestEven {
         ExecutorService exec = Executors.newCachedThreadPool();
 
         Assertions.assertThrows(BatchException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .map(it -> {
                             if (it == 64) throw new IllegalArgumentException("64");
                             return it * 2;
@@ -252,7 +252,7 @@ public class TestEven {
         ExecutorService exec = Executors.newCachedThreadPool();
 
         Assertions.assertThrows(BatchException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .map(it -> {
                             if (it == 64) throw new IllegalArgumentException("64");
                             return it * 2;
@@ -267,7 +267,7 @@ public class TestEven {
         val snk1 = SinkResource.of(System.out::println);
 
         Assertions.assertThrows(BatchException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .map(it -> {
                             if (it == 64) throw new IllegalArgumentException("64");
                             return it * 2;
@@ -282,7 +282,7 @@ public class TestEven {
         val snk1 = SinkResource.of(System.out::println);
 
         Assertions.assertThrows(BatchException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .map(it -> {
                             if (it == 64) throw new IllegalArgumentException("64");
                             return it * 2;
@@ -296,7 +296,7 @@ public class TestEven {
         val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
 
         Assertions.assertThrows(BatchException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .map(it -> {
                             if (it == 64) throw new IllegalArgumentException("64");
                             return it * 2;
@@ -309,7 +309,7 @@ public class TestEven {
         val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
 
         Assertions.assertThrows(BatchException.class, () ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .map(it -> {
                             if (it == 64) throw new IllegalArgumentException("64");
                             return it * 2;
@@ -322,7 +322,7 @@ public class TestEven {
         val src1 = SourceResource.fromStream(IntStream.range(1, 100).boxed());
 
         Assertions.assertDoesNotThrow(() ->
-                Batch.from(src1)
+                Pgm.from(src1)
                         .terminate(it -> it == 64)
                         .forEachParallel(10, System.out::println));
     }
