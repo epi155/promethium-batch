@@ -8,9 +8,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 
@@ -18,7 +16,8 @@ import java.util.function.*;
 class PmJCL implements JCL {
     private final ErrorCodeFactory factory;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
-    private final List<Future<StepStatus>> futures = new LinkedList<>();
+    private final List<Future<JobStatus>> futures = new LinkedList<>();
+    private final Deque<Integer> stack = new LinkedList<>();
 
     private PmJCL() {
         ServiceLoader<ErrorCodeProvider> loader = ServiceLoader.load(ErrorCodeProvider.class);
@@ -59,7 +58,7 @@ class PmJCL implements JCL {
         return factory.rcErrorSQL();
     }
 
-    private StepStatus wrapper(StepCount c, IntSupplier submit) {
+    private JobStatus wrapper(StepCount c, IntSupplier submit) {
         Instant tiStart = Instant.now();
         int returnCode = Integer.MAX_VALUE;
         try {
@@ -75,31 +74,31 @@ class PmJCL implements JCL {
             c.recap();
             Instant tiEnd = Instant.now();
             Duration lapse = Duration.between(tiStart, tiEnd);
-            log.info("Step end: {}", DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
+            log.info("Step {} end: {}", c.name(), DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
         }
-        return PmStepStatus.of(returnCode);
+        return PmJobStatus.of(returnCode,factory);
     }
 
-    public <P, C extends StepCount> StepStatus execPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
-        log.info("Step {} start: {}", c.name(), p);
+    public <P, C extends StepCount> JobStatus execPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
+        log.info("C.Step {} start: {}", c.name(), p);
         return wrapper(c, () -> pgm.apply(p, c));
     }
 
-    public <C extends StepCount> StepStatus execPgm(C c, ToIntFunction<C> pgm) {
-        log.info("Step {} start", c.name());
+    public <C extends StepCount> JobStatus execPgm(C c, ToIntFunction<C> pgm) {
+        log.info("C.Step {} start", c.name());
         return wrapper(c, () -> pgm.applyAsInt(c));
     }
 
-    public <P, C extends StepCount> StepStatus execPgm(P p, C c, BiConsumer<P, C> pgm) {
-        log.info("Step {} start: {}", c.name(), p);
+    public <P, C extends StepCount> JobStatus execPgm(P p, C c, BiConsumer<P, C> pgm) {
+        log.info("A.Step {} start: {}", c.name(), p);
         return wrapper(c, () -> {
             pgm.accept(p, c);
             return factory.rcOk();
         });
     }
 
-    public <C extends StepCount> StepStatus execPgm(C c, Consumer<C> pgm) {
-        log.info("Step {} start", c.name());
+    public <C extends StepCount> JobStatus execPgm(C c, Consumer<C> pgm) {
+        log.info("A:Step {} start", c.name());
         return wrapper(c, () -> {
             pgm.accept(c);
             return factory.rcOk();
@@ -107,60 +106,92 @@ class PmJCL implements JCL {
     }
 
     @Override
-    public <P, C extends StepCount> StepStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
-        futures.add(executorService.submit(() -> execPgm(p, c, pgm)));
-        return StepStatus.OK;
+    public <P, C extends StepCount> JobStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
+        return submit(() -> execPgm(p, c, pgm));
+    }
+
+    private JobStatus submit(Callable<JobStatus> step) {
+        futures.add(executorService.submit(step));
+        return PmJobStatus.of(factory.rcOk(), factory);
     }
 
     @Override
-    public <C extends StepCount> StepStatus forkPgm(C c, ToIntFunction<C> pgm) {
-        futures.add(executorService.submit(() -> execPgm(c, pgm)));
-        return StepStatus.OK;
+    public <C extends StepCount> JobStatus forkPgm(C c, ToIntFunction<C> pgm) {
+        return submit(() -> execPgm(c, pgm));
     }
 
     @Override
-    public <P, C extends StepCount> StepStatus forkPgm(P p, C c, BiConsumer<P, C> pgm) {
-        futures.add(executorService.submit(() -> execPgm(p, c, pgm)));
-        return StepStatus.OK;
+    public <P, C extends StepCount> JobStatus forkPgm(P p, C c, BiConsumer<P, C> pgm) {
+        return submit(() -> execPgm(p, c, pgm));
     }
 
     @Override
-    public <C extends StepCount> StepStatus forkPgm(C c, Consumer<C> pgm) {
-        futures.add(executorService.submit(() -> execPgm(c, pgm)));
-        return StepStatus.OK;
+    public <C extends StepCount> JobStatus forkPgm(C c, Consumer<C> pgm) {
+        return submit(() -> execPgm(c, pgm));
     }
 
-    StepStatus join(StepStatus currentStatus) {
-        StepStatus result = currentStatus;
+    JobStatus join(JobStatus currentStatus) {
+        JobStatus result = currentStatus;
+        int k=0;
         while (!futures.isEmpty()) {
             val it = futures.iterator();
+            int nmAlive = 0;
             try {
                 while (it.hasNext()) {
                     val ele = it.next();
                     if (ele.isDone()) {
                         result = maxResult(ele, result);
                         it.remove();
+                    } else {
+                        nmAlive++;
                     }
                 }
-                TimeUnit.MILLISECONDS.sleep(50);
+                if (nmAlive > 0) {
+                    sendMessage(++k, nmAlive);
+                    TimeUnit.MILLISECONDS.sleep(40);
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
         return result;
     }
+    private void sendMessage(int j, int r) {
+        if ((j & 0x03ff) != 0) {
+            int n = 0;
+            while (j != 0) {
+                if ((j & 0x01) == 1) n++;
+                j >>= 1;
+            }
+            if (n != 1) return;
+        }
+        log.info("Waiting {} running step", r);
+    }
 
-    private StepStatus maxResult(Future<StepStatus> ele, StepStatus result) throws InterruptedException {
+
+    private JobStatus maxResult(Future<JobStatus> ele, JobStatus result) throws InterruptedException {
         try {
-            StepStatus status = ele.get();
+            JobStatus status = ele.get();
             if (status.returnCode() > result.returnCode()) {
                 return status;
             }
         } catch (ExecutionException e) {
             log.error("Unhandled Error", e);
-            return StepStatus.of(factory.rcErrorStep());
+            return PmJobStatus.of(factory.rcErrorStep(),factory);
         }
         return result;
+    }
+
+    public void push(int returnCode) {
+        stack.push(returnCode);
+    }
+
+    public Optional<Integer> pop() {
+        if (stack.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(stack.pop());
+        }
     }
 
     private static class Helper {

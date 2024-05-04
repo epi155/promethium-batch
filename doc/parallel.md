@@ -51,5 +51,5 @@ The default value for this timeout is 30 seconds, you can change it by calling t
 before `forEachParallel`.
 
 ~~~java
-Batch.from(src).into(snk1,snk2).shutdownTimeout(5, TimeUnit.SECONDS).forEachParallel(maxThread, ...);
+Pgm.from(src).into(snk1,snk2).shutdownTimeout(5, TimeUnit.SECONDS).forEachParallel(maxThread, ...);
 ~~~

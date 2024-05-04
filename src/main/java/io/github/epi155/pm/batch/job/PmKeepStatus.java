@@ -9,11 +9,11 @@ import java.util.function.ToIntFunction;
 
 @AllArgsConstructor(staticName = "of")
 class PmKeepStatus implements KeepStatus {
-    private final StepStatus mainStatus;
-    private StepStatus lastStatus;
+    private final JobStatus mainStatus;
+    private JobStatus lastStatus;
 
     @Override
-    public <P, C extends StepCount> StepStatus orFailure(P p, C c, BiFunction<P, C, Integer> pgm) {
+    public <P, C extends StepCount> JobStatus orFailure(P p, C c, BiFunction<P, C, Integer> pgm) {
         if (!mainStatus.isSuccess()) {
             lastStatus = JCL.getInstance().execPgm(p, c, pgm);
         }
@@ -21,7 +21,7 @@ class PmKeepStatus implements KeepStatus {
     }
 
     @Override
-    public <C extends StepCount> StepStatus orFailure(C c, ToIntFunction<C> pgm) {
+    public <C extends StepCount> JobStatus orFailure(C c, ToIntFunction<C> pgm) {
         if (!mainStatus.isSuccess()) {
             lastStatus = JCL.getInstance().execPgm(c, pgm);
         }
@@ -29,7 +29,7 @@ class PmKeepStatus implements KeepStatus {
     }
 
     @Override
-    public <P, C extends StepCount> StepStatus orFailure(P p, C c, BiConsumer<P, C> pgm) {
+    public <P, C extends StepCount> JobStatus orFailure(P p, C c, BiConsumer<P, C> pgm) {
         if (!mainStatus.isSuccess()) {
             lastStatus = JCL.getInstance().execPgm(p, c, pgm);
         }
@@ -37,7 +37,7 @@ class PmKeepStatus implements KeepStatus {
     }
 
     @Override
-    public <C extends StepCount> StepStatus orFailure(C c, Consumer<C> pgm) {
+    public <C extends StepCount> JobStatus orFailure(C c, Consumer<C> pgm) {
         if (!mainStatus.isSuccess()) {
             lastStatus = JCL.getInstance().execPgm(c, pgm);
         }

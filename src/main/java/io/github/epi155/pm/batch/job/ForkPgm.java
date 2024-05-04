@@ -17,9 +17,9 @@ public interface ForkPgm {
      * @param pgm program (step) to execute
      * @param <P> class to provide job parameters
      * @param <C> class to manage program statistics
-     * @return instance of {@link StepStatus}
+     * @return instance of {@link JobStatus}
      */
-    <P, C extends StepCount> StepStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm);
+    <P, C extends StepCount> JobStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm);
 
     /**
      * Program launcher in background with user returnCode
@@ -27,9 +27,9 @@ public interface ForkPgm {
      * @param c   program statistics
      * @param pgm program (step) to execute
      * @param <C> class to manage program statistics
-     * @return instance of {@link StepStatus}
+     * @return instance of {@link JobStatus}
      */
-    <C extends StepCount> StepStatus forkPgm(C c, ToIntFunction<C> pgm);
+    <C extends StepCount> JobStatus forkPgm(C c, ToIntFunction<C> pgm);
 
     /**
      * Program launcher in background with automatic returnCode
@@ -39,9 +39,9 @@ public interface ForkPgm {
      * @param pgm program (step) to execute
      * @param <P> class to provide job parameters
      * @param <C> class to manage program statistics
-     * @return instance of {@link StepStatus}
+     * @return instance of {@link JobStatus}
      */
-    <P, C extends StepCount> StepStatus forkPgm(P p, C c, BiConsumer<P, C> pgm);
+    <P, C extends StepCount> JobStatus forkPgm(P p, C c, BiConsumer<P, C> pgm);
 
     /**
      * Program launcher in background with automatic returnCode
@@ -49,7 +49,7 @@ public interface ForkPgm {
      * @param c   program statistics
      * @param pgm program (step) to execute
      * @param <C> class to manage program statistics
-     * @return instance of {@link StepStatus}
+     * @return instance of {@link JobStatus}
      */
-    <C extends StepCount> StepStatus forkPgm(C c, Consumer<C> pgm);
+    <C extends StepCount> JobStatus forkPgm(C c, Consumer<C> pgm);
 }

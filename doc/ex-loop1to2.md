@@ -7,7 +7,7 @@ val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
 val snk1 = SinkResource.of(System.out::println);
 val snk2 = SinkResource.of(System.err::println);
 
-Batch.from(src).into(snk1,snk2).forEach(
+Pgm.from(src).into(snk1,snk2).forEach(
         it -> {
             if (it %2 == 0) {
                 return Tuple2.of(it,null);
@@ -24,7 +24,7 @@ val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
 val snk1 = SinkResource.of(System.out::println);
 val snk2 = SinkResource.of(System.err::println);
 
-Batch.from(src).into(snk1,snk2).forEach(
+Pgm.from(src).into(snk1,snk2).forEach(
         (it,wr1,wr2) -> {
             if (it %2 == 0) {
                 wr1.accept(it);

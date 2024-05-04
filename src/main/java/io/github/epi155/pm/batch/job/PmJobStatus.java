@@ -11,11 +11,12 @@ import java.util.function.*;
 @Getter
 @AllArgsConstructor(staticName = "of")
 @EqualsAndHashCode
-class PmStepStatus implements StepStatus {
+class PmJobStatus implements JobStatus {
     @Accessors(fluent = true)
     private int returnCode;
+    private final ErrorCodeFactory factory;
 
-    public <P, C extends StepCount> StepStatus nextPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
+    public <P, C extends StepCount> JobStatus nextPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
         if (isSuccess()) {
             return JCL.getInstance().execPgm(p, c, pgm);
         } else {
@@ -23,7 +24,7 @@ class PmStepStatus implements StepStatus {
         }
     }
 
-    public <C extends StepCount> StepStatus nextPgm(C c, ToIntFunction<C> pgm) {
+    public <C extends StepCount> JobStatus nextPgm(C c, ToIntFunction<C> pgm) {
         if (isSuccess()) {
             return JCL.getInstance().execPgm(c, pgm);
         } else {
@@ -31,7 +32,7 @@ class PmStepStatus implements StepStatus {
         }
     }
 
-    public <P, C extends StepCount> StepStatus nextPgm(P p, C c, BiConsumer<P, C> pgm) {
+    public <P, C extends StepCount> JobStatus nextPgm(P p, C c, BiConsumer<P, C> pgm) {
         if (isSuccess()) {
             return JCL.getInstance().execPgm(p, c, pgm);
         } else {
@@ -39,7 +40,7 @@ class PmStepStatus implements StepStatus {
         }
     }
 
-    public <C extends StepCount> StepStatus nextPgm(C c, Consumer<C> pgm) {
+    public <C extends StepCount> JobStatus nextPgm(C c, Consumer<C> pgm) {
         if (isSuccess()) {
             return JCL.getInstance().execPgm(c, pgm);
         } else {
@@ -47,46 +48,54 @@ class PmStepStatus implements StepStatus {
         }
     }
 
-    public StepStatus map(@NotNull UnaryOperator<StepStatus> map) {
+    public JobStatus map(@NotNull UnaryOperator<JobStatus> map) {
         return map.apply(this);
     }
 
     @Override
     public boolean isSuccess() {
-        if (OK.returnCode() <= WARN.returnCode()) {
-            return OK.returnCode() <= returnCode && returnCode <= WARN.returnCode();
-        } else {
-            return OK.returnCode() >= returnCode && returnCode >= WARN.returnCode();
-        }
+        return factory.rcOk() <= returnCode && returnCode <= factory.rcWarning();
     }
 
     @Override
-    public StepStatus join() {
+    public JobStatus join() {
         return PmJCL.getInstance().join(this);
     }
 
     @Override
-    public <P, C extends StepCount> StepStatus execPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
+    public JobStatus push() {
+        PmJCL.getInstance().push(returnCode);
+        return this;
+    }
+
+    @Override
+    public JobStatus pop() {
+        PmJCL.getInstance().pop().ifPresent(it -> returnCode = it);
+        return this;
+    }
+
+    @Override
+    public <P, C extends StepCount> JobStatus execPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
         return JCL.getInstance().execPgm(p, c, pgm);
     }
 
     @Override
-    public <C extends StepCount> StepStatus execPgm(C c, ToIntFunction<C> pgm) {
+    public <C extends StepCount> JobStatus execPgm(C c, ToIntFunction<C> pgm) {
         return JCL.getInstance().execPgm(c, pgm);
     }
 
     @Override
-    public <P, C extends StepCount> StepStatus execPgm(P p, C c, BiConsumer<P, C> pgm) {
+    public <P, C extends StepCount> JobStatus execPgm(P p, C c, BiConsumer<P, C> pgm) {
         return JCL.getInstance().execPgm(p, c, pgm);
     }
 
     @Override
-    public <C extends StepCount> StepStatus execPgm(C c, Consumer<C> pgm) {
+    public <C extends StepCount> JobStatus execPgm(C c, Consumer<C> pgm) {
         return JCL.getInstance().execPgm(c, pgm);
     }
 
     @Override
-    public <P, C extends StepCount> StepStatus elsePgm(P p, C c, BiFunction<P, C, Integer> pgm) {
+    public <P, C extends StepCount> JobStatus elsePgm(P p, C c, BiFunction<P, C, Integer> pgm) {
         if (!isSuccess()) {
             return JCL.getInstance().execPgm(p, c, pgm);
         } else {
@@ -95,7 +104,7 @@ class PmStepStatus implements StepStatus {
     }
 
     @Override
-    public <C extends StepCount> StepStatus elsePgm(C c, ToIntFunction<C> pgm) {
+    public <C extends StepCount> JobStatus elsePgm(C c, ToIntFunction<C> pgm) {
         if (!isSuccess()) {
             return JCL.getInstance().execPgm(c, pgm);
         } else {
@@ -104,7 +113,7 @@ class PmStepStatus implements StepStatus {
     }
 
     @Override
-    public <P, C extends StepCount> StepStatus elsePgm(P p, C c, BiConsumer<P, C> pgm) {
+    public <P, C extends StepCount> JobStatus elsePgm(P p, C c, BiConsumer<P, C> pgm) {
         if (!isSuccess()) {
             return JCL.getInstance().execPgm(p, c, pgm);
         } else {
@@ -113,7 +122,7 @@ class PmStepStatus implements StepStatus {
     }
 
     @Override
-    public <C extends StepCount> StepStatus elsePgm(C c, Consumer<C> pgm) {
+    public <C extends StepCount> JobStatus elsePgm(C c, Consumer<C> pgm) {
         if (!isSuccess()) {
             return JCL.getInstance().execPgm(c, pgm);
         } else {
@@ -122,22 +131,22 @@ class PmStepStatus implements StepStatus {
     }
 
     @Override
-    public <P, C extends StepCount> StepStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
+    public <P, C extends StepCount> JobStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
         return JCL.getInstance().forkPgm(p, c, pgm);
     }
 
     @Override
-    public <C extends StepCount> StepStatus forkPgm(C c, ToIntFunction<C> pgm) {
+    public <C extends StepCount> JobStatus forkPgm(C c, ToIntFunction<C> pgm) {
         return JCL.getInstance().forkPgm(c, pgm);
     }
 
     @Override
-    public <P, C extends StepCount> StepStatus forkPgm(P p, C c, BiConsumer<P, C> pgm) {
+    public <P, C extends StepCount> JobStatus forkPgm(P p, C c, BiConsumer<P, C> pgm) {
         return JCL.getInstance().forkPgm(p, c, pgm);
     }
 
     @Override
-    public <C extends StepCount> StepStatus forkPgm(C c, Consumer<C> pgm) {
+    public <C extends StepCount> JobStatus forkPgm(C c, Consumer<C> pgm) {
         return JCL.getInstance().forkPgm(c, pgm);
     }
 

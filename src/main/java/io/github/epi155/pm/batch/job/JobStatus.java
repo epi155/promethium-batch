@@ -7,28 +7,28 @@ import java.util.function.UnaryOperator;
 /**
  * Step return status interface
  */
-public interface StepStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm, OnSuccess {
-    /**
-     * Complete Success Status
-     */
-    StepStatus OK = PmStepStatus.of(JCL.getInstance().rcOk());
-    /**
-     * Complete with Warning Status
-     */
-    StepStatus WARN = PmStepStatus.of(JCL.getInstance().rcWarning());
+public interface JobStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm, OnSuccess {
+//    /**
+//     * Complete Success Status
+//     */
+//    JobStatus OK = PmJobStatus.of(JCL.getInstance().rcOk());
+//    /**
+//     * Complete with Warning Status
+//     */
+//    JobStatus WARN = PmJobStatus.of(JCL.getInstance().rcWarning());
+
+//    /**
+//     * Static JobStatus constructor
+//     *
+//     * @param returnCode step return code
+//     * @return instance of {@link JobStatus}
+//     */
+//    static JobStatus of(int returnCode) {
+//        return PmJobStatus.of(returnCode);
+//    }
 
     /**
-     * Static StepStatus constructor
-     *
-     * @param returnCode step return code
-     * @return instance of {@link StepStatus}
-     */
-    static StepStatus of(int returnCode) {
-        return PmStepStatus.of(returnCode);
-    }
-
-    /**
-     * Compose StepStatus
+     * Compose JobStatus
      * <p>used for conditional step
      * <pre>
      * int xc = JCL.getInstance()
@@ -39,9 +39,9 @@ public interface StepStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm, OnSucces
      * </pre>
      *
      * @param map function to compose status
-     * @return composed StepStatus
+     * @return composed JobStatus
      */
-    StepStatus map(@NotNull UnaryOperator<StepStatus> map);
+    JobStatus map(@NotNull UnaryOperator<JobStatus> map);
 
     /**
      * Step return code
@@ -64,5 +64,9 @@ public interface StepStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm, OnSucces
      *
      * @return status with the highest returnCode
      */
-    StepStatus join();
+    JobStatus join();
+
+    JobStatus push();
+
+    JobStatus pop();
 }

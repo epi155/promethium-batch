@@ -21,14 +21,14 @@ If there is only one data source, the processing part can produce a tuple and th
 the destinations, in this case the processing format is:
 
 ~~~java
-Batch.from(src).into(snk1,snk2).forEach(it -> { ... });
+Pgm.from(src).into(snk1,snk2).forEach(it -> { ... });
 ~~~
 
 as an alternative to the processing part, in addition to the input value, the `Consumers` are provided to write data
 directly to the corresponding destinations, in this case the processing format is:
 
 ~~~java
-Batch.from(src).into(snk1,snk2).forEach((it,wr1,wr2) -> { ... });
+Pgm.from(src).into(snk1,snk2).forEach((it,wr1,wr2) -> { ... });
 ~~~
 
 [loop examples](./doc/ex-loop1to2.md)
@@ -39,7 +39,7 @@ When the destination is a resource external to the program (for example a call t
 can be written in the form
 
 ~~~java
-Batch.from(src).forEach(it -> { ... });
+Pgm.from(src).forEach(it -> { ... });
 ~~~
 
 this form can also be parallelized (destination must be thread safe),
@@ -48,7 +48,7 @@ If there is more than one data source, the processing part must be provided with
 sources, and `Consumers` to write the data, in this case the processing format is:
 
 ~~~java
-Batch.from(src1, src2).into(snk1, snk2)
+Pgm.from(src1, src2).into(snk1, snk2)
         .proceed((rd1, rd2, wr1, wr2) -> { ... });
 ~~~
 
@@ -63,13 +63,13 @@ is preparatory to parallel processing.
 A sequential elaboration in form
 
 ~~~java
-Batch.from(src).into(...).forEach(...);
+Pgm.from(src).into(...).forEach(...);
 ~~~
 
 can be parallel transformed by replacing `forEach` in [`forEachParallel`](./doc/parallel.md):
 
 ~~~java
-Batch.from(src).into(...).forEachParallel(maxThread, ...);
+Pgm.from(src).into(...).forEachParallel(maxThread, ...);
 ~~~
 
 without any other modifications.
