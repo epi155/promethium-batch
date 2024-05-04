@@ -28,17 +28,17 @@ class TestJob {
         MyCount count3 = new MyCount("Step03");
         MyCount count4 = new MyCount("Step04");
         MyCount count5 = new MyCount("Step05");
-        int x = JCL.getInstance()
-                .forkPgm(count1, this::step01)
-                .forkPgm(count2, this::step01)
-                .execPgm(count3, this::step02)
+        int x = JCL.getInstance().job("Job01")
+                .forkExecPgm(count1, this::step01)
+                .forkExecPgm(count2, this::step01)
+                .execPgm(count3, this::step01)
                 .join()
                 .push() // save rc
                 .nextPgm(count4, this::step02) // execute if ok
                 .peek()
                 .elsePgm(count5, this::step01) // execute in ko
                 .pop()
-                .returnCode();
+                .complete();
         log.info("Job returnCode: {}", x);
     }
 

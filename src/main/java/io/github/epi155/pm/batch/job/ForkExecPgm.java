@@ -8,7 +8,7 @@ import java.util.function.ToIntFunction;
 /**
  * interface for running a program unconditionally in background
  */
-public interface ForkPgm {
+public interface ForkExecPgm {
     /**
      * Program launcher in background with user returnCode
      *
@@ -19,7 +19,7 @@ public interface ForkPgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm);
+    <P, C extends StatsCount> JobStatus forkExecPgm(P p, C c, BiFunction<P, C, Integer> pgm);
 
     /**
      * Program launcher in background with user returnCode
@@ -29,7 +29,7 @@ public interface ForkPgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <C extends StatsCount> JobStatus forkPgm(C c, ToIntFunction<C> pgm);
+    <C extends StatsCount> JobStatus forkExecPgm(C c, ToIntFunction<C> pgm);
 
     /**
      * Program launcher in background with automatic returnCode
@@ -41,7 +41,7 @@ public interface ForkPgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiConsumer<P, C> pgm);
+    <P, C extends StatsCount> JobStatus forkExecPgm(P p, C c, BiConsumer<P, C> pgm);
 
     /**
      * Program launcher in background with automatic returnCode
@@ -51,5 +51,5 @@ public interface ForkPgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <C extends StatsCount> JobStatus forkPgm(C c, Consumer<C> pgm);
+    <C extends StatsCount> JobStatus forkExecPgm(C c, Consumer<C> pgm);
 }

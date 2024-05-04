@@ -2,31 +2,15 @@ package io.github.epi155.pm.batch.job;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 /**
  * Step return status interface
  */
-public interface JobStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm {
-//    /**
-//     * Complete Success Status
-//     */
-//    JobStatus OK = PmJobStatus.of(JCL.getInstance().rcOk());
-//    /**
-//     * Complete with Warning Status
-//     */
-//    JobStatus WARN = PmJobStatus.of(JCL.getInstance().rcWarning());
-
-//    /**
-//     * Static JobStatus constructor
-//     *
-//     * @param returnCode step return code
-//     * @return instance of {@link JobStatus}
-//     */
-//    static JobStatus of(int returnCode) {
-//        return PmJobStatus.of(returnCode);
-//    }
-
+public interface JobStatus
+        extends ExecPgm, NextPgm, ElsePgm,
+        ForkExecPgm, ForkNextPgm, ForkElsePgm {
     /**
      * Compose JobStatus
      * <p>used for conditional step
@@ -44,11 +28,28 @@ public interface JobStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm {
     JobStatus map(@NotNull UnaryOperator<JobStatus> map);
 
     /**
-     * Step return code
+     * Max step return code
      *
-     * @return return code
+     * @return max step return code
      */
-    int returnCode();
+    int maximumConditionCode();
+
+    /**
+     * Petrieves the returnCode of the step with the indicated name
+     * <p>
+     * if a step with the indicated name does not exist or has not been executed, an Optional.empty() is returned
+     *
+     * @param stepName step name
+     * @return optional step return code
+     */
+    Optional<Integer> returnCode(String stepName);
+
+    /**
+     * Complete job, and get job return code
+     *
+     * @return job return code
+     */
+    int complete();
 
     /**
      * indicates whether the status completed successfully
@@ -66,9 +67,24 @@ public interface JobStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm {
      */
     JobStatus join();
 
+    /**
+     * Pushes jobReturnCode onto the internal stack
+     *
+     * @return original jobStatus
+     */
     JobStatus push();
 
+    /**
+     * Pops jobReturnCode from the stack
+     *
+     * @return jobStatus with restored jobReturnCode
+     */
     JobStatus pop();
 
+    /**
+     * Retrieves, but does not remove, the head of the stack
+     *
+     * @return jobStatus with restored jobReturnCode
+     */
     JobStatus peek();
 }

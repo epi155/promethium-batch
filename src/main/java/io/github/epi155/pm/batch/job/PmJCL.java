@@ -2,8 +2,7 @@ package io.github.epi155.pm.batch.job;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.ServiceLoader;
 
 @Slf4j
 class PmJCL implements JCL {
@@ -16,6 +15,10 @@ class PmJCL implements JCL {
 
     public static PmJCL getInstance() {
         return PmJCL.Helper.INSTANCE;
+    }
+
+    public JobStatus job(String name) {
+        return PmJobStatus.of(rcOk(), this, name);
     }
 
     @Override
@@ -46,46 +49,6 @@ class PmJCL implements JCL {
     @Override
     public int rcErrorSQL() {
         return factory.rcErrorSQL();
-    }
-
-    private JobStatus iefbr14() {
-        return PmJobStatus.of(rcOk(), this);
-    }
-
-    public <P, C extends StatsCount> JobStatus execPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
-        return iefbr14().execPgm(p,c,pgm);
-    }
-
-    public <C extends StatsCount> JobStatus execPgm(C c, ToIntFunction<C> pgm) {
-        return iefbr14().execPgm(c,pgm);
-    }
-
-    public <P, C extends StatsCount> JobStatus execPgm(P p, C c, BiConsumer<P, C> pgm) {
-        return iefbr14().execPgm(p,c,pgm);
-    }
-
-    public <C extends StatsCount> JobStatus execPgm(C c, Consumer<C> pgm) {
-        return iefbr14().execPgm(c,pgm);
-    }
-
-    @Override
-    public <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
-        return iefbr14().forkPgm(p,c,pgm);
-    }
-
-    @Override
-    public <C extends StatsCount> JobStatus forkPgm(C c, ToIntFunction<C> pgm) {
-        return iefbr14().forkPgm(c,pgm);
-    }
-
-    @Override
-    public <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiConsumer<P, C> pgm) {
-        return iefbr14().forkPgm(p,c,pgm);
-    }
-
-    @Override
-    public <C extends StatsCount> JobStatus forkPgm(C c, Consumer<C> pgm) {
-        return iefbr14().forkPgm(c,pgm);
     }
 
     private static class Helper {

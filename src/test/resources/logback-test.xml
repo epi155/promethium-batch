@@ -1,14 +1,11 @@
-<configuration
-        xmlns="http://ch.qos.logback/xml/ns/logback"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://ch.qos.logback/xml/ns/logback https://raw.githubusercontent.com/enricopulatzo/logback-XSD/master/src/main/xsd/logback.xsd">
+<configuration>
 
     <property name="LOG_PATH" value="logs" />
     <property name="LOG_FILE" value="main" />
 
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %red(%X{step}) %magenta([%thread]) %highlight(%-5level) %logger{36}.%M - %msg%n</pattern>
+            <pattern>%d{dd-MM-yyyy HH:mm:ss.SSS} %red(%X{jobName}.%X{stepName}) %magenta([%thread]) %highlight(%-5level) %logger{36}.%M - %msg%n</pattern>
         </encoder>
     </appender>
 
