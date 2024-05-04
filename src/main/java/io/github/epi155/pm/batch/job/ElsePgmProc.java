@@ -6,12 +6,12 @@ import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 
 /**
- * interface to run a program if the previous step complete successfully
+ * interface to run a program if the previous step did not complete successfully
  */
-public interface NextPgm {
+public interface ElsePgmProc {
     /**
      * Program launcher with user returnCode
-     * <p>if the previous step did not complete successfully,
+     * <p>if the previous step is completed successfully,
      * the status of its execution is returned,
      * and the indicated program is not launched
      *
@@ -20,26 +20,26 @@ public interface NextPgm {
      * @param pgm program (step) to execute
      * @param <P> class to provide job parameters
      * @param <C> class to manage program statistics
-     * @return instance of {@link JobStatus}
+     * @return instance of {@link ProcStatus}
      */
-    <P, C extends StatsCount> JobStatus nextPgm(P p, C c, BiFunction<P, C, Integer> pgm);
+    <P, C extends StatsCount> ProcStatus elsePgm(P p, C c, BiFunction<P, C, Integer> pgm);
 
     /**
      * Program launcher with user returnCode
-     * <p>if the previous step did not complete successfully,
+     * <p>if the previous step is completed successfully,
      * the status of its execution is returned,
      * and the indicated program is not launched
      *
      * @param c   program statistics
      * @param pgm program (step) to execute
      * @param <C> class to manage program statistics
-     * @return instance of {@link JobStatus}
+     * @return instance of {@link ProcStatus}
      */
-    <C extends StatsCount> JobStatus nextPgm(C c, ToIntFunction<C> pgm);
+    <C extends StatsCount> ProcStatus elsePgm(C c, ToIntFunction<C> pgm);
 
     /**
      * Program launcher with automatic returnCode
-     * <p>if the previous step did not complete successfully,
+     * <p>if the previous step is completed successfully,
      * the status of its execution is returned,
      * and the indicated program is not launched
      *
@@ -48,20 +48,20 @@ public interface NextPgm {
      * @param pgm program (step) to execute
      * @param <P> class to provide job parameters
      * @param <C> class to manage program statistics
-     * @return instance of {@link JobStatus}
+     * @return instance of {@link ProcStatus}
      */
-    <P, C extends StatsCount> JobStatus nextPgm(P p, C c, BiConsumer<P, C> pgm);
+    <P, C extends StatsCount> ProcStatus elsePgm(P p, C c, BiConsumer<P, C> pgm);
 
     /**
      * Program launcher with automatic returnCode
-     * <p>if the previous step did not complete successfully,
+     * <p>if the previous step is completed successfully,
      * the status of its execution is returned,
      * and the indicated program is not launched
      *
      * @param c   program statistics
      * @param pgm program (step) to execute
      * @param <C> class to manage program statistics
-     * @return instance of {@link JobStatus}
+     * @return instance of {@link ProcStatus}
      */
-    <C extends StatsCount> JobStatus nextPgm(C c, Consumer<C> pgm);
+    <C extends StatsCount> ProcStatus elsePgm(C c, Consumer<C> pgm);
 }

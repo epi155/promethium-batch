@@ -42,6 +42,52 @@ class TestJob {
         log.info("Job returnCode: {}", x);
     }
 
+    @Test
+    void job02() {
+        MyCount count1 = new MyCount("Step01");
+        MyCount count2 = new MyCount("Step02");
+        MyCount count3 = new MyCount("Step03");
+        MyCount count4 = new MyCount("Step04");
+        MyCount count5 = new MyCount("Step05");
+        int rc = JCL.getInstance().job("Job01")
+                .forkExecProc("Proc01", it -> it
+                        .execPgm(count1, this::step01)
+                        .nextPgm(count2, this::step01)
+                )
+                .execPgm(count3, this::step01)
+                .join()
+                .push() // save rc
+                .nextPgm(count4, this::step02) // execute if ok
+                .peek()
+                .elsePgm(count5, this::step01) // execute in ko
+                .pop()
+                .complete();
+        log.info("Job returnCode: {}", rc);
+    }
+
+    @Test
+    void job03() {
+        MyCount count1 = new MyCount("Step01");
+        MyCount count2 = new MyCount("Step02");
+        MyCount count3 = new MyCount("Step03");
+        MyCount count4 = new MyCount("Step04");
+        MyCount count5 = new MyCount("Step05");
+        int rc = JCL.getInstance().job("Job01")
+                .execProc("Proc01", it -> it
+                        .execPgm(count1, this::step01)
+                        .nextPgm(count2, this::step01)
+                )
+                .execPgm(count3, this::step01)
+                .join()
+                .push() // save rc
+                .nextPgm(count4, this::step02) // execute if ok
+                .peek()
+                .elsePgm(count5, this::step01) // execute in ko
+                .pop()
+                .complete();
+        log.info("Job returnCode: {}", rc);
+    }
+
     private void step01(MyCount c) {
         val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
         val snk1 = SinkResource.of(System.out::println, c::incEven);

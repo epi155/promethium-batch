@@ -8,7 +8,7 @@ import java.util.function.ToIntFunction;
 /**
  * interface to run a program if the previous step did not complete successfully
  */
-public interface ElsePgm {
+public interface ElsePgmJob extends ElsePgmProc {
     /**
      * Program launcher with user returnCode
      * <p>if the previous step is completed successfully,
