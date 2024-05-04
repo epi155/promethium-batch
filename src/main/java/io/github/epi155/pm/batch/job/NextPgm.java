@@ -22,7 +22,7 @@ public interface NextPgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <P, C extends StepCount> JobStatus nextPgm(P p, C c, BiFunction<P, C, Integer> pgm);
+    <P, C extends StatsCount> JobStatus nextPgm(P p, C c, BiFunction<P, C, Integer> pgm);
 
     /**
      * Program launcher with user returnCode
@@ -35,7 +35,7 @@ public interface NextPgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <C extends StepCount> JobStatus nextPgm(C c, ToIntFunction<C> pgm);
+    <C extends StatsCount> JobStatus nextPgm(C c, ToIntFunction<C> pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -50,7 +50,7 @@ public interface NextPgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <P, C extends StepCount> JobStatus nextPgm(P p, C c, BiConsumer<P, C> pgm);
+    <P, C extends StatsCount> JobStatus nextPgm(P p, C c, BiConsumer<P, C> pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -63,5 +63,5 @@ public interface NextPgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <C extends StepCount> JobStatus nextPgm(C c, Consumer<C> pgm);
+    <C extends StatsCount> JobStatus nextPgm(C c, Consumer<C> pgm);
 }

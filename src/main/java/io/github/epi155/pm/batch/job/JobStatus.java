@@ -7,7 +7,7 @@ import java.util.function.UnaryOperator;
 /**
  * Step return status interface
  */
-public interface JobStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm, OnSuccess {
+public interface JobStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm {
 //    /**
 //     * Complete Success Status
 //     */
@@ -69,4 +69,6 @@ public interface JobStatus extends NextPgm, ExecPgm, ElsePgm, ForkPgm, OnSuccess
     JobStatus push();
 
     JobStatus pop();
+
+    JobStatus peek();
 }

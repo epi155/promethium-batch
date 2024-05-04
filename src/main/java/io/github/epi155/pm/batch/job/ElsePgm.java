@@ -22,7 +22,7 @@ public interface ElsePgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <P, C extends StepCount> JobStatus elsePgm(P p, C c, BiFunction<P, C, Integer> pgm);
+    <P, C extends StatsCount> JobStatus elsePgm(P p, C c, BiFunction<P, C, Integer> pgm);
 
     /**
      * Program launcher with user returnCode
@@ -35,7 +35,7 @@ public interface ElsePgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <C extends StepCount> JobStatus elsePgm(C c, ToIntFunction<C> pgm);
+    <C extends StatsCount> JobStatus elsePgm(C c, ToIntFunction<C> pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -50,7 +50,7 @@ public interface ElsePgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <P, C extends StepCount> JobStatus elsePgm(P p, C c, BiConsumer<P, C> pgm);
+    <P, C extends StatsCount> JobStatus elsePgm(P p, C c, BiConsumer<P, C> pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -63,5 +63,5 @@ public interface ElsePgm {
      * @param <C> class to manage program statistics
      * @return instance of {@link JobStatus}
      */
-    <C extends StepCount> JobStatus elsePgm(C c, Consumer<C> pgm);
+    <C extends StatsCount> JobStatus elsePgm(C c, Consumer<C> pgm);
 }

@@ -1,16 +1,24 @@
 package io.github.epi155.test;
 
+import io.github.epi155.pm.batch.job.BatchIOException;
 import io.github.epi155.pm.batch.job.JCL;
-import io.github.epi155.pm.batch.job.StepCount;
+import io.github.epi155.pm.batch.job.StatsCount;
 import io.github.epi155.pm.batch.step.Pgm;
 import io.github.epi155.pm.batch.step.SinkResource;
 import io.github.epi155.pm.batch.step.SourceResource;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+@Slf4j
 class TestJob {
 
     @Test
@@ -23,19 +31,22 @@ class TestJob {
         int x = JCL.getInstance()
                 .forkPgm(count1, this::step01)
                 .forkPgm(count2, this::step01)
-                .execPgm(count3, this::step01)
+                .execPgm(count3, this::step02)
                 .join()
                 .push() // save rc
-                .nextPgm(count4, this::step01) // execute if ok
+                .nextPgm(count4, this::step02) // execute if ok
+                .peek()
                 .elsePgm(count5, this::step01) // execute in ko
                 .pop()
                 .returnCode();
+        log.info("Job returnCode: {}", x);
     }
 
     private void step01(MyCount c) {
         val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
         val snk1 = SinkResource.of(System.out::println, c::incEven);
         val snk2 = SinkResource.of(System.err::println, c::incOdd);
+        Random rndm = new Random();
 
         Pgm.from(src).before(c::incRead).into(snk1, snk2).forEach(
                 (it, wr1, wr2) -> {
@@ -44,10 +55,23 @@ class TestJob {
                     } else {
                         wr2.accept(it);
                     }
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 });
     }
 
-    private static class MyCount extends StepCount {
+    private void step02(MyCount c) {
+        try {
+            Files.delete(Path.of("/dev/null"));
+        } catch (IOException e) {
+            throw new BatchIOException(e);
+        }
+    }
+
+    private static class MyCount extends StatsCount {
         private int nEven = 0;
         private int nOdd = 0;
         private int nRead = 0;

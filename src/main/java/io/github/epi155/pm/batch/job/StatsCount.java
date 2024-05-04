@@ -1,36 +1,30 @@
 package io.github.epi155.pm.batch.job;
 
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * super class to manage the execution statistics of a single step (program)
+ * super class to manage the execution statistics
  */
 @Slf4j
-public abstract class StepCount {
-    private final String stepName;
-    /**
-     * Step return code
-     */
-    @Setter
-    protected int returnCode;
+public abstract class StatsCount {
+    private final String name;
 
     /**
      * class constructor
      *
-     * @param stepName step custom name
+     * @param name step custom name
      */
-    protected StepCount(String stepName) {
-        this.stepName = stepName;
+    protected StatsCount(String name) {
+        this.name = name;
     }
 
-    void recap() {
+    void recap(int returnCode) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        pw.printf("Report %s:%n", stepName);
+        pw.printf("Report %s:%n", name);
         recap(pw);
         pw.printf("ReturnCode: %d", returnCode);
         log.info(sw.toString());
@@ -44,6 +38,6 @@ public abstract class StepCount {
     protected abstract void recap(PrintWriter pw);
 
     String name() {
-        return stepName;
+        return name;
     }
 }
