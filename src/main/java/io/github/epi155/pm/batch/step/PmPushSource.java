@@ -2,6 +2,7 @@ package io.github.epi155.pm.batch.step;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.slf4j.MDC;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -11,6 +12,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static io.github.epi155.pm.batch.job.StatsCount.JOB_NAME;
+import static io.github.epi155.pm.batch.job.StatsCount.STEP_NAME;
 import static io.github.epi155.pm.batch.step.BatchException.placeOf;
 
 @Slf4j
@@ -1696,13 +1699,18 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
             log.trace("··· task ready to be submitted");
             sm.acquire();
             log.trace("··· task going to be submitted");
+            String jobName = MDC.get(JOB_NAME);
+            String stepName = MDC.get(STEP_NAME);
             return taskService.submit(() -> {
+                MDC.put(JOB_NAME, jobName);
+                MDC.put(STEP_NAME, stepName);
                 try {
                     log.trace("··· task entry.");
                     runnable.run();
                 } finally {
                     sm.release();
                     log.trace("··· task exit.");
+                    MDC.clear();
                 }
             });
         } catch (InterruptedException e) {
@@ -1827,8 +1835,12 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
 
         protected void doWork(Iterator<I> iterator, Consumer<R> action) {
             ExecutorService service1 = Executors.newFixedThreadPool(1);
+            String jobName = MDC.get(JOB_NAME);
+            String stepName = MDC.get(STEP_NAME);
             try {
                 Future<?> future = service1.submit(() -> {
+                    MDC.put(JOB_NAME, jobName);
+                    MDC.put(STEP_NAME, stepName);
                     try {
                         while (iterator.hasNext()) {
                             I i = iterator.next();
@@ -1862,6 +1874,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                             log.info("s.--- interrupting the write listener");
                             main.interrupt();
                         }
+                        MDC.clear();
                     }
                 });
                 try {
@@ -1944,8 +1957,12 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
 
         protected void doWork(Iterator<I> iterator, Consumer<R> action) {
             ExecutorService service1 = Executors.newFixedThreadPool(1);
+            String jobName = MDC.get(JOB_NAME);
+            String stepName = MDC.get(STEP_NAME);
             try {
                 Future<?> future = service1.submit(() -> {
+                    MDC.put(JOB_NAME, jobName);
+                    MDC.put(STEP_NAME, stepName);
                     ExecutorService service2 = Executors.newFixedThreadPool(maxThread);
                     Semaphore sm = new Semaphore(maxThread);
                     try {
@@ -1959,10 +1976,13 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                             try {
                                 sm.acquire();
                                 Future<? extends R> promise = service2.submit(() -> {
+                                    MDC.put(JOB_NAME, jobName);
+                                    MDC.put(STEP_NAME, stepName);
                                     try {
                                         return transformer.apply(i);
                                     } finally {
                                         sm.release();
+                                        MDC.clear();
                                     }
                                 });
                                 try {
@@ -1987,6 +2007,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         shutdown(service2);
                         log.info("S.--- waiting for the end of the tasks ...");
                         awaitEmptyQueue();
+                        MDC.clear();
                         if (!Thread.currentThread().isInterrupted()) {
                             log.info("S.--- interrupting the write listener");
                             main.interrupt();
@@ -2154,8 +2175,12 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
 
         protected void doWork(Iterator<I> iterator, Consumer<R> action) {
             ExecutorService service1 = Executors.newFixedThreadPool(1);
+            String jobName = MDC.get(JOB_NAME);
+            String stepName = MDC.get(STEP_NAME);
             try {
                 Future<?> future = service1.submit(() -> {
+                    MDC.put(JOB_NAME, jobName);
+                    MDC.put(STEP_NAME, stepName);
                     ExecutorService service2 = Executors.newFixedThreadPool(maxThread);
                     Semaphore sm = new Semaphore(maxThread);
                     try {
@@ -2171,12 +2196,15 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                                 try {
                                     sm.acquire();
                                     Future<?> status = service2.submit(() -> {
+                                        MDC.put(JOB_NAME, jobName);
+                                        MDC.put(STEP_NAME, stepName);
                                         try {
                                             queue.put(transformer.apply(i));
                                         } catch (InterruptedException e) {
                                             Thread.currentThread().interrupt();
                                         } finally {
                                             sm.release();
+                                            MDC.clear();
                                         }
                                     });
                                     statuses.add(status);
@@ -2203,6 +2231,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     } finally {
                         awaitEmptyQueue();
                         log.info("E.--- interrupting the write listener");
+                        MDC.clear();
                         main.interrupt();
                     }
                 });
@@ -2276,8 +2305,12 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
 
         protected void doWork(Iterator<I> iterator) {
             ExecutorService service1 = Executors.newFixedThreadPool(1);
+            String jobName = MDC.get(JOB_NAME);
+            String stepName = MDC.get(STEP_NAME);
             try {
                 Future<?> future = service1.submit(() -> {
+                    MDC.put(JOB_NAME, jobName);
+                    MDC.put(STEP_NAME, stepName);
                     ExecutorService service2 = Executors.newFixedThreadPool(maxThread);
                     Semaphore sm = new Semaphore(maxThread);
                     List<Future<?>> statuses = new LinkedList<>();
@@ -2292,10 +2325,13 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                             try {
                                 sm.acquire();
                                 Future<?> status = service2.submit(() -> {
+                                    MDC.put(JOB_NAME, jobName);
+                                    MDC.put(STEP_NAME, stepName);
                                     try {
                                         action.accept(i);
                                     } finally {
                                         sm.release();
+                                        MDC.clear();
                                     }
                                 });
                                 statuses.add(status);
@@ -2316,6 +2352,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     log.info("Z.--- pending futures {}", statuses.size());
                     probeStatuses(statuses, false);
                     log.info("Z.--- tasks terminated, flush & close ...");
+                    MDC.clear();
                 });
                 try {
                     future.get();

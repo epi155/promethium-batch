@@ -6,6 +6,7 @@ import io.github.epi155.pm.batch.job.StatsCount;
 import io.github.epi155.pm.batch.step.Pgm;
 import io.github.epi155.pm.batch.step.SinkResource;
 import io.github.epi155.pm.batch.step.SourceResource;
+import io.github.epi155.pm.batch.step.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Test;
@@ -87,6 +88,15 @@ class TestJob {
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
+    @Test
+    void job04() {
+        int rc = JCL.getInstance().job("Job04")
+                .execPgm(new MyCount("Step03e"), this::step03e)
+                .nextPgm(new MyCount("Step03s"), this::step03s)
+                .nextPgm(new MyCount("Step03w"), this::step03w)
+                .complete();
+        log.info("Job returnCode: {}", rc);
+    }
 
     private void step01(MyCount c) {
         val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
@@ -105,6 +115,70 @@ class TestJob {
                         TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
+                    }
+                });
+    }
+    private void step03w(MyCount c) {
+        val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
+        val snk1 = SinkResource.of(it -> log.info("{} is even", it), c::incEven);
+        val snk2 = SinkResource.of(it -> log.info("{} is odd", it), c::incOdd);
+        Random rndm = new Random();
+
+        Pgm.from(src).before(c::incRead).into(snk1, snk2).forEachParallel(5,
+                (it, wr1, wr2) -> {
+                    log.info("Hi {}", it);
+                    if (it % 2 == 0) {
+                        wr1.accept(it);
+                    } else {
+                        wr2.accept(it);
+                    }
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                });
+    }
+    private void step03s(MyCount c) {
+        val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
+        val snk1 = SinkResource.of(it -> log.info("{} is even", it), c::incEven);
+        val snk2 = SinkResource.of(it -> log.info("{} is odd", it), c::incOdd);
+        Random rndm = new Random();
+
+        Pgm.from(src).before(c::incRead).into(snk1, snk2).forEachParallelFair(5,
+                (it) -> {
+                    log.info("Hi {}", it);
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    if (rndm.nextInt(5) == 0) throw new NullPointerException("Oops");
+                    if (it % 2 == 0) {
+                        return Tuple2.of(it,null);
+                    } else {
+                        return Tuple2.of(null,it);
+                    }
+                });
+    }
+    private void step03e(MyCount c) {
+        val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
+        val snk1 = SinkResource.of(it -> log.info("{} is even", it), c::incEven);
+        val snk2 = SinkResource.of(it -> log.info("{} is odd", it), c::incOdd);
+        Random rndm = new Random();
+
+        Pgm.from(src).before(c::incRead).into(snk1, snk2).forEachParallel(5,
+                (it) -> {
+                    log.info("Hi {}", it);
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(rndm.nextInt(200));
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    if (it % 2 == 0) {
+                        return Tuple2.of(it,null);
+                    } else {
+                        return Tuple2.of(null,it);
                     }
                 });
     }

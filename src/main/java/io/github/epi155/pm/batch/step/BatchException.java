@@ -50,7 +50,13 @@ public class BatchException extends RuntimeException {
         this.returnCode = returnCode;
     }
 
-    static String placeOf(StackTraceElement[] stackTrace) {
+    /**
+     * Constructs the string with the location where the error occurred
+     *
+     * @param stackTrace full stack trace array
+     * @return String with error position
+     */
+    public static String placeOf(StackTraceElement[] stackTrace) {
         for (val ste : stackTrace) {
             if (ste.isNativeMethod() || "java.base".equals(ste.getModuleName()))
                 continue;

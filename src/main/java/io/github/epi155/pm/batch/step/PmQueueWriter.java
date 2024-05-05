@@ -3,11 +3,14 @@ package io.github.epi155.pm.batch.step;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.MDC;
 
 import java.io.Closeable;
 import java.util.Objects;
 import java.util.concurrent.*;
 
+import static io.github.epi155.pm.batch.job.StatsCount.JOB_NAME;
+import static io.github.epi155.pm.batch.job.StatsCount.STEP_NAME;
 import static io.github.epi155.pm.batch.step.BatchException.placeOf;
 
 @Slf4j
@@ -27,7 +30,11 @@ class PmQueueWriter<T> implements Closeable {
             ExecutorService pool,
             SinkResource<T, O> sink, T t) {
         BlockingQueue<Tuple1<O>> queue = new LinkedBlockingDeque<>(2 * maxThread + 1);
+        String jobName = MDC.get(JOB_NAME);
+        String stepName = MDC.get(STEP_NAME);
         Future<?> promise = pool.submit(() -> {
+            MDC.put(JOB_NAME, jobName);
+            MDC.put(STEP_NAME, stepName);
             try {
                 Tuple1<O> o;
                 do {
@@ -37,6 +44,8 @@ class PmQueueWriter<T> implements Closeable {
             } catch (InterruptedException e) {
                 log.warn("W.>>> writer listener interrupted.");
                 Thread.currentThread().interrupt();
+            } finally {
+                MDC.clear();
             }
         });
         return new PmQueueWriter<>(queue, promise);

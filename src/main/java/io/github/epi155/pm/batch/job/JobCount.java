@@ -21,7 +21,7 @@ class JobCount extends StatsCount {
     @Override
     protected void recap(PrintWriter pw) {
         stepInfos.sort(Comparator.comparing(a -> a.tmStart));
-        pw.printf("      Step Name      ! rc !         ts start/skip         !            ts end             !       lapse       %n");
+        pw.printf("   Step/Proc Name    ! rc !     Date-Time Start/Skip      !         Date-Time End         !       Lapse       %n");
         pw.printf("---------------------+----+-------------------------------+-------------------------------+-------------------%n");
         stepInfos.forEach(it -> it.info(pw));
         pw.printf("---------------------^----^-------------------------------^-------------------------------^-------------------%n");

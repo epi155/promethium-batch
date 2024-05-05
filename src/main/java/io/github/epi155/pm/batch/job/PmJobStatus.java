@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.*;
 
+import static io.github.epi155.pm.batch.job.StatsCount.JOB_NAME;
+
 @Slf4j
 class PmJobStatus extends PmProcStatus implements JobStatus {
     private final ExecutorService executorService = Executors.newCachedThreadPool();
