@@ -1,9 +1,6 @@
 package io.github.epi155.pm.batch.job;
 
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.ToIntFunction;
+import java.util.function.*;
 
 /**
  * interface to run a program if the previous step complete successfully
@@ -23,6 +20,7 @@ public interface NextPgmJob {
      * @return instance of {@link JobStatus}
      */
     <P, C extends StatsCount> JobStatus nextPgm(P p, C c, BiFunction<P, C, Integer> pgm);
+    <P> JobStatus nextPgm(P p, String stepName, Function<P, Integer> pgm);
 
     /**
      * Program launcher with user returnCode
@@ -36,6 +34,7 @@ public interface NextPgmJob {
      * @return instance of {@link JobStatus}
      */
     <C extends StatsCount> JobStatus nextPgm(C c, ToIntFunction<C> pgm);
+    JobStatus nextPgm(String stepName, Supplier<Integer> pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -51,6 +50,7 @@ public interface NextPgmJob {
      * @return instance of {@link JobStatus}
      */
     <P, C extends StatsCount> JobStatus nextPgm(P p, C c, BiConsumer<P, C> pgm);
+    <P> JobStatus nextPgm(P p, String stepName, Consumer<P> pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -64,4 +64,5 @@ public interface NextPgmJob {
      * @return instance of {@link JobStatus}
      */
     <C extends StatsCount> JobStatus nextPgm(C c, Consumer<C> pgm);
+    JobStatus nextPgm(String stepName, Runnable pgm);
 }

@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
@@ -96,6 +98,28 @@ class TestJob {
                 .nextPgm(new MyCount("Step03w"), this::step03w)
                 .complete();
         log.info("Job returnCode: {}", rc);
+    }
+    void job05() {
+        List<String> ls = new ArrayList<>();
+        int rc = JCL.getInstance().job("JobPk")
+                .execPgm("lock", this::step00)
+                .nextPgm(ls, new MyCount("list"), this::step04)
+                .nextLoopPgm(ls, MyCount::new, this::step05)
+                .push()
+                .exec(s -> s.returnCode("lock")
+                        .filter(rcLock -> (rcLock == 0))
+                        .ifPresent(rcLock -> s.execPgm(new MyCount("unlock"), this::step01)))
+                .pop()
+                .complete();
+        log.info("Job returnCode: {}", rc);
+    }
+
+    private void step00() {
+    }
+
+    private void step04(List<String> cs, MyCount cnt) {
+    }
+    private void step05(MyCount cnt) {
     }
 
     private void step01(MyCount c) {

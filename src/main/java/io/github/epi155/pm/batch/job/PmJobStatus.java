@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -62,6 +63,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
         return this;
     }
 
+    @Override
+    public <P> JobStatus nextPgm(P p, String stepName, Function<P, Integer> pgm) {
+        return nextPgm(p, new BareCount(stepName), (xp, xc) -> {
+            return pgm.apply(xp);
+        });
+    }
+
     public <C extends StatsCount> JobStatus nextPgm(C c, ToIntFunction<C> pgm) {
         if (isSuccess()) {
             return execPgm(c, pgm);
@@ -69,6 +77,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
             jobCount.add(c.name());
         }
         return this;
+    }
+
+    @Override
+    public JobStatus nextPgm(String stepName, Supplier<Integer> pgm) {
+        return nextPgm(new BareCount(stepName), (xc) -> {
+            return pgm.get();
+        });
     }
 
     public <P, C extends StatsCount> JobStatus nextPgm(P p, C c, BiConsumer<P, C> pgm) {
@@ -80,6 +95,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
         return this;
     }
 
+    @Override
+    public <P> JobStatus nextPgm(P p, String stepName, Consumer<P> pgm) {
+        return nextPgm(p, new BareCount(stepName), (xp, xc) -> {
+            pgm.accept(xp);
+        });
+    }
+
     public <C extends StatsCount> JobStatus nextPgm(C c, Consumer<C> pgm) {
         if (isSuccess()) {
             return execPgm(c, pgm);
@@ -89,8 +111,16 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
         return this;
     }
 
-    public JobStatus map(@NotNull UnaryOperator<JobStatus> map) {
-        return map.apply(this);
+    @Override
+    public JobStatus nextPgm(String stepName, Runnable pgm) {
+        return nextPgm(new BareCount(stepName), (xc) -> {
+            pgm.run();
+        });
+    }
+
+    public JobStatus exec(@NotNull Consumer<JobStatus> action) {
+        action.accept(this);
+        return this;
     }
 
     @Override
@@ -230,9 +260,23 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus execPgm(P p, String stepName, Function<P, Integer> pgm) {
+        return execPgm(p, new BareCount(stepName), (xp, xc) -> {
+            return pgm.apply(xp);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus execPgm(C c, ToIntFunction<C> pgm) {
         wrapper(c, () -> pgm.applyAsInt(c));
         return this;
+    }
+
+    @Override
+    public JobStatus execPgm(String stepName, Supplier<Integer> pgm) {
+        return execPgm(new BareCount(stepName), (xc) -> {
+            return pgm.get();
+        });
     }
 
     @Override
@@ -245,12 +289,26 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus execPgm(P p, String stepName, Consumer<P> pgm) {
+        return execPgm(p, new BareCount(stepName), (xp, xc) -> {
+            pgm.accept(xp);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus execPgm(C c, Consumer<C> pgm) {
         wrapper(c, () -> {
             pgm.accept(c);
             return jcl.rcOk();
         });
         return this;
+    }
+
+    @Override
+    public JobStatus execPgm(String stepName, Runnable pgm) {
+        return execPgm(new BareCount(stepName), (xc) -> {
+            pgm.run();
+        });
     }
 
     @Override
@@ -264,6 +322,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus elsePgm(P p, String stepName, Function<P, Integer> pgm) {
+        return elsePgm(p, new BareCount(stepName), (xp,xc) -> {
+            return pgm.apply(p);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus elsePgm(C c, ToIntFunction<C> pgm) {
         if (!isSuccess()) {
             return execPgm(c, pgm);
@@ -271,6 +336,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
             jobCount.add(c.name());
         }
         return this;
+    }
+
+    @Override
+    public JobStatus elsePgm(String stepName, Supplier<Integer> pgm) {
+        return elsePgm(new BareCount(stepName), (xc) -> {
+            return pgm.get();
+        });
     }
 
     @Override
@@ -284,6 +356,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus elsePgm(P p, String stepName, Consumer<P> pgm) {
+        return elsePgm(p, new BareCount(stepName), (xp,xc) -> {
+            pgm.accept(p);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus elsePgm(C c, Consumer<C> pgm) {
         if (!isSuccess()) {
             return execPgm(c, pgm);
@@ -291,6 +370,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
             jobCount.add(c.name());
         }
         return this;
+    }
+
+    @Override
+    public JobStatus elsePgm(String stepName, Runnable pgm) {
+        return elsePgm(new BareCount(stepName), (xc) -> {
+            pgm.run();
+        });
     }
 
     private JobStatus submit(Callable<Integer> step) {
@@ -328,8 +414,22 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus forkExecPgm(P p, String stepName, Function<P, Integer> pgm) {
+        return forkExecPgm(p, new BareCount(stepName), (xp,xc) -> {
+            return pgm.apply(p);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus forkExecPgm(C c, ToIntFunction<C> pgm) {
         return submit(() -> runStep(c, () -> pgm.applyAsInt(c)));
+    }
+
+    @Override
+    public JobStatus forkExecPgm(String stepName, Supplier<Integer> pgm) {
+        return forkExecPgm(new BareCount(stepName), (xc) -> {
+            return pgm.get();
+        });
     }
 
     @Override
@@ -341,11 +441,25 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus forkExecPgm(P p, String stepName, Consumer<P> pgm) {
+        return forkExecPgm(p, new BareCount(stepName), (xp,xc) -> {
+            pgm.accept(p);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus forkExecPgm(C c, Consumer<C> pgm) {
         return submit(() -> runStep(c, () -> {
             pgm.accept(c);
             return jcl.rcOk();
         }));
+    }
+
+    @Override
+    public JobStatus forkExecPgm(String stepName, Runnable pgm) {
+        return forkExecPgm(new BareCount(stepName), (xc) -> {
+            pgm.run();
+        });
     }
 
     @Override
@@ -359,6 +473,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus forkElsePgm(P p, String stepName, Function<P, Integer> pgm) {
+        return forkElsePgm(p, new BareCount(stepName), (xp,xc) -> {
+            return pgm.apply(xp);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus forkElsePgm(C c, ToIntFunction<C> pgm) {
         if (!isSuccess()) {
             return forkExecPgm(c, pgm);
@@ -366,6 +487,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
             jobCount.add(c.name());
         }
         return this;
+    }
+
+    @Override
+    public JobStatus forkElsePgm(String stepName, Supplier<Integer> pgm) {
+        return forkElsePgm(new BareCount(stepName), (xc) -> {
+            return pgm.get();
+        });
     }
 
     @Override
@@ -379,6 +507,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus forkElsePgm(P p, String stepName, Consumer<P> pgm) {
+        return forkElsePgm(p, new BareCount(stepName), (xp,xc) -> {
+            pgm.accept(xp);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus forkElsePgm(C c, Consumer<C> pgm) {
         if (!isSuccess()) {
             return forkExecPgm(c, pgm);
@@ -386,6 +521,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
             jobCount.add(c.name());
         }
         return this;
+    }
+
+    @Override
+    public JobStatus forkElsePgm(String stepName, Runnable pgm) {
+        return forkElsePgm(new BareCount(stepName), (xc) -> {
+            pgm.run();
+        });
     }
 
     @Override
@@ -399,6 +541,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus forkNextPgm(P p, String stepName, Function<P, Integer> pgm) {
+        return forkNextPgm(p, new BareCount(stepName), (xp,xc) -> {
+            return pgm.apply(xp);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus forkNextPgm(C c, ToIntFunction<C> pgm) {
         if (isSuccess()) {
             return forkExecPgm(c, pgm);
@@ -406,6 +555,13 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
             jobCount.add(c.name());
         }
         return this;
+    }
+
+    @Override
+    public JobStatus forkNextPgm(String stepName, Supplier<Integer> pgm) {
+        return forkNextPgm(new BareCount(stepName), (xc) -> {
+            return pgm.get();
+        });
     }
 
     @Override
@@ -419,11 +575,65 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
+    public <P> JobStatus forkNextPgm(P p, String stepName, Consumer<P> pgm) {
+        return forkNextPgm(p, new BareCount(stepName), (xp,xc) -> {
+            pgm.accept(xp);
+        });
+    }
+
+    @Override
     public <C extends StatsCount> JobStatus forkNextPgm(C c, Consumer<C> pgm) {
         if (isSuccess()) {
             return forkExecPgm(c, pgm);
         } else {
             jobCount.add(c.name());
+        }
+        return this;
+    }
+
+    @Override
+    public JobStatus forkNextPgm(String stepName, Runnable pgm) {
+        return forkNextPgm(new BareCount(stepName), (xc) -> {
+            pgm.run();
+        });
+    }
+
+    @Override
+    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus nextLoopPgm(P p, Function<Q, C> c, BiFunction<P, C, Integer> pgm) {
+        if (isSuccess()) {
+            for (Q q : p) {
+                nextPgm(p, c.apply(q), pgm);
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus nextLoopPgm(P p, Function<Q, C> c, ToIntFunction<C> pgm) {
+        if (isSuccess()) {
+            for (Q q : p) {
+                nextPgm(c.apply(q), pgm);
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus nextLoopPgm(P p, Function<Q, C> c, BiConsumer<P, C> pgm) {
+        if (isSuccess()) {
+            for (Q q : p) {
+                nextPgm(p, c.apply(q), pgm);
+            }
+        }
+        return this;
+    }
+
+    @Override
+    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus nextLoopPgm(P p, Function<Q, C> c, Consumer<C> pgm) {
+        if (isSuccess()) {
+            for (Q q : p) {
+                nextPgm(c.apply(q), pgm);
+            }
         }
         return this;
     }

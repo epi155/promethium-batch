@@ -2,6 +2,7 @@ package io.github.epi155.pm.batch.job;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 /**
@@ -10,22 +11,21 @@ import java.util.function.UnaryOperator;
 public interface JobStatus
         extends ProcStatus,
         ExecPgmJob, NextPgmJob, ElsePgmJob,
-        ForkExecPgm, ForkNextPgm, ForkElsePgm {
+        ForkExecPgm, ForkNextPgm, ForkElsePgm, NextLoopPgm {
     /**
-     * Compose JobStatus
+     * Action on JobStatus
      * <p>used for conditional step
      * <pre>
-     * int xc = JCL.getInstance()
+     * int xc = JCL.getInstance(),job("job")
      *             .execPgm(count1, this::step01)
-     *             .map(s -> s.isSuccess() ? s.execPgm(count2, this::step02)
+     *             .exec(s -> s.isSuccess() ? s.execPgm(count2, this::step02)
      *                                     : s.execPgm(count3, this::step03))
-     *             .returnCode();
+     *             .complete();
      * </pre>
      *
-     * @param map function to compose status
-     * @return composed JobStatus
+     * @param action action ontatus
      */
-    JobStatus map(@NotNull UnaryOperator<JobStatus> map);
+    JobStatus exec(@NotNull Consumer<JobStatus> action);
 
     /**
      * Max step return code
