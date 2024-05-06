@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch.step;
 
+import io.github.epi155.pm.batch.job.JCL;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.slf4j.MDC;
@@ -12,12 +13,18 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static io.github.epi155.pm.batch.job.StatsCount.JOB_NAME;
-import static io.github.epi155.pm.batch.job.StatsCount.STEP_NAME;
 import static io.github.epi155.pm.batch.step.BatchException.placeOf;
 
 @Slf4j
 abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I> {
+    private static final String JOB_NAME;
+    private static final String STEP_NAME;
+
+    static {
+        JOB_NAME = JCL.getInstance().jobName();
+        STEP_NAME = JCL.getInstance().stepName();
+    }
+
     protected final SourceResource<S, I> source;
     private Runnable beforeAction;
     private long time = 30;

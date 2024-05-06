@@ -1,9 +1,9 @@
 package io.github.epi155.pm.batch.job;
 
-class PmErrorCode implements ErrorCodeProvider {
+class PmValue implements ValueProvider {
     @Override
-    public ErrorCodeFactory getInstance() {
-        return new ErrorCodeFactory() {
+    public ValueFactory getInstance() {
+        return new ValueFactory() {
             @Override
             public int rcOk() {
                 return 0;
@@ -32,6 +32,16 @@ class PmErrorCode implements ErrorCodeProvider {
             @Override
             public int rcErrorJob() {
                 return 20;
+            }
+
+            @Override
+            public String jobName() {
+                return "jobName";
+            }
+
+            @Override
+            public String stepName() {
+                return "stepName";
             }
         };
     }

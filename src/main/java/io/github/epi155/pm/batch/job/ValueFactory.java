@@ -3,7 +3,7 @@ package io.github.epi155.pm.batch.job;
 /**
  * ErrorCode Factory Interface
  */
-public interface ErrorCodeFactory {
+public interface ValueFactory {
     /**
      * Success error code
      *
@@ -45,4 +45,18 @@ public interface ErrorCodeFactory {
      * @return job error code
      */
     int rcErrorJob();
+
+    /**
+     * MDC key for jobName
+     *
+     * @return MDC key for jobName
+     */
+    String jobName();
+
+    /**
+     * MDC key for stepName
+     *
+     * @return MDC key for stepName
+     */
+    String stepName();
 }

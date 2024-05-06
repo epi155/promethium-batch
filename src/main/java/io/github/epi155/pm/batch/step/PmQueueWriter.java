@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch.step;
 
+import io.github.epi155.pm.batch.job.JCL;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -9,15 +10,22 @@ import java.io.Closeable;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-import static io.github.epi155.pm.batch.job.StatsCount.JOB_NAME;
-import static io.github.epi155.pm.batch.job.StatsCount.STEP_NAME;
 import static io.github.epi155.pm.batch.step.BatchException.placeOf;
 
 @Slf4j
 class PmQueueWriter<T> implements Closeable {
+    private static final String JOB_NAME;
+    private static final String STEP_NAME;
+
+    static {
+        JOB_NAME = JCL.getInstance().jobName();
+        STEP_NAME = JCL.getInstance().stepName();
+    }
+
     private final BlockingQueue<Tuple1<T>> queue;
     @Getter
     private final Future<?> future;
+
 
     private PmQueueWriter(BlockingQueue<Tuple1<T>> queue, Future<?> promise) {
         this.queue = queue;

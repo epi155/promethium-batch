@@ -13,11 +13,16 @@ import java.util.LinkedList;
 import java.util.Optional;
 import java.util.function.*;
 
-import static io.github.epi155.pm.batch.job.StatsCount.JOB_NAME;
-import static io.github.epi155.pm.batch.job.StatsCount.STEP_NAME;
-
 @Slf4j
 class PmProcStatus implements ProcStatus {
+    private static final String STEP_NAME;
+    private static final String JOB_NAME;
+
+    static {
+        STEP_NAME = JCL.getInstance().stepName();
+        JOB_NAME = JCL.getInstance().jobName();
+    }
+
     protected final JCL jcl;
     protected final String jobName;
     protected final Deque<Integer> stack = new LinkedList<>();
@@ -74,7 +79,7 @@ class PmProcStatus implements ProcStatus {
             log.error("Execution Error", e);
             returnCode = e.getReturnCode();
             Throwable cause = e.getCause();
-            c.error(cause==null ? e : cause);
+            c.error(cause == null ? e : cause);
         } catch (Exception e) {
             log.error("Unhandled Error", e);
             returnCode = jcl.rcErrorStep();

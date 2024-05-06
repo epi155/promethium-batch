@@ -11,10 +11,14 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.*;
 
-import static io.github.epi155.pm.batch.job.StatsCount.JOB_NAME;
-
 @Slf4j
 class PmJobStatus extends PmProcStatus implements JobStatus {
+    private static final String JOB_NAME;
+
+    static {
+        JOB_NAME = JCL.getInstance().jobName();
+    }
+
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final List<Future<Integer>> futures = new LinkedList<>();
 

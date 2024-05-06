@@ -6,11 +6,11 @@ import java.util.ServiceLoader;
 
 @Slf4j
 class PmJCL implements JCL {
-    private final ErrorCodeFactory factory;
+    private final ValueFactory factory;
 
     private PmJCL() {
-        ServiceLoader<ErrorCodeProvider> loader = ServiceLoader.load(ErrorCodeProvider.class);
-        this.factory = loader.findFirst().orElseGet(PmErrorCode::new).getInstance();
+        ServiceLoader<ValueProvider> loader = ServiceLoader.load(ValueProvider.class);
+        this.factory = loader.findFirst().orElseGet(PmValue::new).getInstance();
     }
 
     public static PmJCL getInstance() {
@@ -39,6 +39,16 @@ class PmJCL implements JCL {
     @Override
     public int rcErrorJob() {
         return factory.rcErrorJob();
+    }
+
+    @Override
+    public String jobName() {
+        return factory.jobName();
+    }
+
+    @Override
+    public String stepName() {
+        return factory.stepName();
     }
 
     @Override

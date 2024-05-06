@@ -13,14 +13,6 @@ import static io.github.epi155.pm.batch.step.BatchException.placeOf;
  */
 @Slf4j
 public abstract class StatsCount {
-    /**
-     * MDC key for stepName
-     */
-    public static final String STEP_NAME = "stepName";
-    /**
-     * MDC key for jobName
-     */
-    public static final String JOB_NAME = "jobName";
     private static final Marker RECAP_MARKER = org.slf4j.MarkerFactory.getMarker("REPORT");
     private final String name;
     private Throwable error;
@@ -39,7 +31,7 @@ public abstract class StatsCount {
         PrintWriter pw = new PrintWriter(sw);
         pw.printf("Report %s:%n", name);
         recap(pw);
-        if (error!=null) {
+        if (error != null) {
             pw.printf("Error: %s%n- at %s%n", error.getMessage(), placeOf(error.getStackTrace()));
         }
         pw.printf("ReturnCode: %d", returnCode);
