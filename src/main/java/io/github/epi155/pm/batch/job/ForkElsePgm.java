@@ -20,7 +20,20 @@ public interface ForkElsePgm {
      * @return instance of {@link JobStatus}
      */
     <P, C extends StatsCount> JobStatus forkElsePgm(P p, C c, BiFunction<P, C, Integer> pgm);
-    <P> JobStatus forkElsePgm(P p, String stepName, Function<P, Integer> pgm);
+
+    /**
+     * Program launcher with user returnCode
+     * <p>if the previous step is completed successfully,
+     * the status of its execution is returned,
+     * and the indicated program is not launched
+     *
+     * @param p        job parameters
+     * @param stepName step name
+     * @param pgm      program (step) to execute
+     * @param <P>      class to provide job parameters
+     * @return instance of {@link JobStatus}
+     */
+    <P> JobStatus forkElsePgm(P p, String stepName, ToIntFunction<P> pgm);
 
     /**
      * Program launcher with user returnCode
@@ -34,7 +47,18 @@ public interface ForkElsePgm {
      * @return instance of {@link JobStatus}
      */
     <C extends StatsCount> JobStatus forkElsePgm(C c, ToIntFunction<C> pgm);
-    JobStatus forkElsePgm(String stepName, Supplier<Integer> pgm);
+
+    /**
+     * Program launcher with user returnCode
+     * <p>if the previous step is completed successfully,
+     * the status of its execution is returned,
+     * and the indicated program is not launched
+     *
+     * @param stepName step name
+     * @param pgm      program (step) to execute
+     * @return instance of {@link JobStatus}
+     */
+    JobStatus forkElsePgm(String stepName, IntSupplier pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -50,6 +74,19 @@ public interface ForkElsePgm {
      * @return instance of {@link JobStatus}
      */
     <P, C extends StatsCount> JobStatus forkElsePgm(P p, C c, BiConsumer<P, C> pgm);
+
+    /**
+     * Program launcher with automatic returnCode
+     * <p>if the previous step is completed successfully,
+     * the status of its execution is returned,
+     * and the indicated program is not launched
+     *
+     * @param p        job parameters
+     * @param stepName step name
+     * @param pgm      program (step) to execute
+     * @param <P>      class to provide job parameters
+     * @return instance of {@link JobStatus}
+     */
     <P> JobStatus forkElsePgm(P p, String stepName, Consumer<P> pgm);
 
     /**
@@ -64,5 +101,16 @@ public interface ForkElsePgm {
      * @return instance of {@link JobStatus}
      */
     <C extends StatsCount> JobStatus forkElsePgm(C c, Consumer<C> pgm);
+
+    /**
+     * Program launcher with automatic returnCode
+     * <p>if the previous step is completed successfully,
+     * the status of its execution is returned,
+     * and the indicated program is not launched
+     *
+     * @param stepName step name
+     * @param pgm      program (step) to execute
+     * @return instance of {@link JobStatus}
+     */
     JobStatus forkElsePgm(String stepName, Runnable pgm);
 }

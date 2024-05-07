@@ -17,7 +17,17 @@ public interface ExecPgmJob extends ExecPgmProc {
      * @return instance of {@link JobStatus}
      */
     <P, C extends StatsCount> JobStatus execPgm(P p, C c, BiFunction<P, C, Integer> pgm);
-    <P> JobStatus execPgm(P p, String stepName, Function<P, Integer> pgm);
+
+    /**
+     * Program launcher with user returnCode
+     *
+     * @param p        job parameters
+     * @param stepName step name
+     * @param pgm      program (step) to execute
+     * @param <P>      class to provide job parameters
+     * @return instance of {@link JobStatus}
+     */
+    <P> JobStatus execPgm(P p, String stepName, ToIntFunction<P> pgm);
 
     /**
      * Program launcher with user returnCode
@@ -28,7 +38,15 @@ public interface ExecPgmJob extends ExecPgmProc {
      * @return instance of {@link JobStatus}
      */
     <C extends StatsCount> JobStatus execPgm(C c, ToIntFunction<C> pgm);
-    JobStatus execPgm(String stepName, Supplier<Integer> pgm);
+
+    /**
+     * Program launcher with user returnCode
+     *
+     * @param stepName step name
+     * @param pgm      program (step) to execute
+     * @return instance of {@link JobStatus}
+     */
+    JobStatus execPgm(String stepName, IntSupplier pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -41,6 +59,16 @@ public interface ExecPgmJob extends ExecPgmProc {
      * @return instance of {@link JobStatus}
      */
     <P, C extends StatsCount> JobStatus execPgm(P p, C c, BiConsumer<P, C> pgm);
+
+    /**
+     * Program launcher with automatic returnCode
+     *
+     * @param p        job parameters
+     * @param stepName step name
+     * @param pgm      program (step) to execute
+     * @param <P>      class to provide job parameters
+     * @return instance of {@link JobStatus}
+     */
     <P> JobStatus execPgm(P p, String stepName, Consumer<P> pgm);
 
     /**
@@ -52,5 +80,13 @@ public interface ExecPgmJob extends ExecPgmProc {
      * @return instance of {@link JobStatus}
      */
     <C extends StatsCount> JobStatus execPgm(C c, Consumer<C> pgm);
+
+    /**
+     * Program launcher with automatic returnCode
+     *
+     * @param stepName step name
+     * @param pgm      program (step) to execute
+     * @return instance of {@link JobStatus}
+     */
     JobStatus execPgm(String stepName, Runnable pgm);
 }

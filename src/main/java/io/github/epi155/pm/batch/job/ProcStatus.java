@@ -43,4 +43,6 @@ public interface ProcStatus extends ExecPgmProc, NextPgmProc, ElsePgmProc {
      * @return jobStatus with restored jobReturnCode
      */
     ProcStatus peek();
+
+//    ProcStatus onSuccessOrFailure(Consumer<? super ProcStatus> successAction, Consumer<? super ProcStatus> failureAction);
 }

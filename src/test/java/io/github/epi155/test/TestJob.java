@@ -99,11 +99,13 @@ class TestJob {
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
+    @Test
     void job05() {
         List<String> ls = new ArrayList<>();
         int rc = JCL.getInstance().job("JobPk")
                 .execPgm("lock", this::step00)
                 .nextPgm(ls, new MyCount("list"), this::step04)
+//                .nextLoopProc(ls, )
                 .nextLoopPgm(ls, MyCount::new, this::step05)
                 .push()
                 .exec(s -> s.returnCode("lock")
@@ -113,11 +115,28 @@ class TestJob {
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
+    @Test
+    void job06() {
+        MyCount count1 = new MyCount("Step01");
+        MyCount count2 = new MyCount("Step02");
+        MyCount count3 = new MyCount("Step03");
+        int rc = JCL.getInstance().job("job06")
+                .execPgm(count1, this::step01)
+                .exec(s -> {
+                    if (s.isSuccess())
+                        s.execPgm(count2, this::step02);
+                    else
+                        s.execPgm(count3, this::step01);
+                })
+                .complete();
+        log.info("Job returnCode: {}", rc);
+    }
 
     private void step00() {
     }
 
     private void step04(List<String> cs, MyCount cnt) {
+        cs.addAll(List.of("eins", "zwei", "drei"));
     }
     private void step05(MyCount cnt) {
     }

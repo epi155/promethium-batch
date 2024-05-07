@@ -1,18 +1,19 @@
 package io.github.epi155.pm.batch.job;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.val;
 
 import java.io.PrintWriter;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 class JobCount extends StatsCount {
-    private final List<StepInfo> stepInfos = new ArrayList<>();
+    private static final String L_STEP = "Step Name";
+    private final ConcurrentLinkedQueue<StepInfo> stepInfos = new ConcurrentLinkedQueue<>();
 
     public JobCount(String jobName) {
         super(jobName);
@@ -20,15 +21,29 @@ class JobCount extends StatsCount {
 
     @Override
     protected void recap(PrintWriter pw) {
-        stepInfos.sort(Comparator.comparing(a -> a.tmStart));
-        pw.printf("   Step/Proc Name    ! rc !     Date-Time Start/Skip      !         Date-Time End         !       Lapse       %n");
-        pw.printf("---------------------+----+-------------------------------+-------------------------------+-------------------%n");
-        stepInfos.forEach(it -> it.info(pw));
-        pw.printf("---------------------^----^-------------------------------^-------------------------------^-------------------%n");
+        int wid = Math.max(L_STEP.length(), 3 + stepInfos.stream().map(StepInfo::getStepName).map(String::length).max(Integer::compareTo).orElse(0));
+        int lpad = (wid - L_STEP.length()) / 2;
+        int rpad = wid - L_STEP.length() - lpad;
+
+        pw.print(" ".repeat(lpad));
+        pw.print(L_STEP);
+        pw.print(" ".repeat(rpad));
+        pw.printf("! rc !     Date-Time Start/Skip      !         Date-Time End         !       Lapse       %n");
+
+        pw.print("-".repeat(wid));
+        pw.printf("+----+-------------------------------+-------------------------------+-------------------%n");
+
+        stepInfos.stream().sorted(Comparator.comparing(a -> a.tmStart)).forEach(it -> it.info(pw, wid));
+        pw.print("-".repeat(wid));
+        pw.printf("^----^-------------------------------^-------------------------------^-------------------%n");
     }
 
     void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
         stepInfos.add(new StepDone(name, returnCode, tiStart, tiEnd));
+    }
+
+    void add(String name, int returnCode) {
+        stepInfos.add(new StepCmnd(name, returnCode));
     }
 
     void add(String name) {
@@ -45,16 +60,15 @@ class JobCount extends StatsCount {
     }
 
     @AllArgsConstructor
-    static abstract
-    class StepInfo {
+    @Getter
+    static abstract class StepInfo {
         protected final String stepName;
         protected final Instant tmStart;
 
-        protected abstract void info(PrintWriter pw);
+        protected abstract void info(PrintWriter pw, int width);
     }
 
-    static
-    class StepDone extends StepInfo {
+    static class StepDone extends StepInfo {
         private final int returnCode;
         private final Instant tmEnd;
 
@@ -65,10 +79,11 @@ class JobCount extends StatsCount {
         }
 
         @Override
-        protected void info(PrintWriter pw) {
+        protected void info(PrintWriter pw, int width) {
             Duration lapse = Duration.between(tmStart, tmEnd);
-
-            pw.printf("%-20s ! %2d ! %-29s ! %-29s ! %s%n", stepName, returnCode,
+            pw.print(stepName);
+            pw.print(".".repeat(width - stepName.length()));
+            pw.printf("! %2d ! %-29s ! %-29s ! %s%n", returnCode,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                             .format(LocalDateTime.ofInstant(tmStart, ZoneOffset.systemDefault())),
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
@@ -79,18 +94,38 @@ class JobCount extends StatsCount {
         }
     }
 
-    static
-    class StepSkip extends StepInfo {
+    static class StepSkip extends StepInfo {
 
         public StepSkip(String stepName) {
             super(stepName, Instant.now());
         }
 
         @Override
-        protected void info(PrintWriter pw) {
-            pw.printf("%-20s !skip! %-29s !                               !%n", stepName,
+        protected void info(PrintWriter pw, int width) {
+            pw.print(stepName);
+            pw.print(".".repeat(width - stepName.length()));
+            pw.printf("!skip! %-29s !                               !%n",
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                             .format(LocalDateTime.ofInstant(tmStart, ZoneOffset.systemDefault())));
+        }
+    }
+
+    static class StepCmnd extends StepInfo {
+        private final int returnCode;
+
+        public StepCmnd(String stepName, int rc) {
+            super(stepName, Instant.now());
+            this.returnCode = rc;
+        }
+
+        @Override
+        protected void info(PrintWriter pw, int width) {
+            pw.print(stepName);
+            pw.print(".".repeat(width - stepName.length()));
+            pw.printf("! %2d ! %-29s !                               !%n", returnCode,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                            .format(LocalDateTime.ofInstant(tmStart, ZoneOffset.systemDefault()))
+            );
         }
     }
 }

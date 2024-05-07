@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import java.time.Instant;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -35,6 +34,7 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     @Override
     public JobStatus push() {
         stack.push(maxcc);
+        jobCount.add("push()", maxcc);
         return this;
     }
 
@@ -42,6 +42,7 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     public JobStatus pop() {
         if (!stack.isEmpty()) {
             maxcc = stack.pop();
+            jobCount.add("pop()", maxcc);
         }
         return this;
     }
@@ -50,9 +51,20 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     public JobStatus peek() {
         if (!stack.isEmpty()) {
             maxcc = stack.peek();
+            jobCount.add("peek()", maxcc);
         }
         return this;
     }
+
+//    @Override
+//    public JobStatus onSuccessOrFailure(Consumer<? super JobStatus> successAction, Consumer<? super JobStatus> failureAction) {
+//        if (isSuccess()) {
+//            successAction.accept(this);
+//        } else {
+//            failureAction.accept(this);
+//        }
+//        return this;
+//    }
 
     public <P, C extends StatsCount> JobStatus nextPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
         if (isSuccess()) {
@@ -64,9 +76,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public <P> JobStatus nextPgm(P p, String stepName, Function<P, Integer> pgm) {
+    public <P> JobStatus nextPgm(P p, String stepName, ToIntFunction<P> pgm) {
         return nextPgm(p, new BareCount(stepName), (xp, xc) -> {
-            return pgm.apply(xp);
+            return pgm.applyAsInt(xp);
         });
     }
 
@@ -80,9 +92,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public JobStatus nextPgm(String stepName, Supplier<Integer> pgm) {
+    public JobStatus nextPgm(String stepName, IntSupplier pgm) {
         return nextPgm(new BareCount(stepName), (xc) -> {
-            return pgm.get();
+            return pgm.getAsInt();
         });
     }
 
@@ -164,7 +176,22 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
 
     @Override
     public JobStatus forkExecProc(String procName, UnaryOperator<ProcStatus> proc) {
-        ProcStatus procStatus = new PmProcStatus(jcl.rcOk(), jcl, procName);
+        ProcStatus procStatus = new PmProcStatus(jcl.rcOk(), jcl, procName, new JobTrace() {
+            @Override
+            public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
+                jobCount.add(procName + "." + name, returnCode, tiStart, tiEnd);
+            }
+
+            @Override
+            public void add(String name, int returnCode) {
+                jobCount.add(procName + "." + name, returnCode);
+            }
+
+            @Override
+            public void add(String name) {
+                jobCount.add(procName + "." + name);
+            }
+        });
         return submit(procName, () -> ((PmProcStatus) proc.apply(procStatus)).complete());
     }
 
@@ -190,7 +217,22 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
 
     @Override
     public JobStatus execProc(String procName, UnaryOperator<ProcStatus> proc) {
-        ProcStatus procStatus = new PmProcStatus(jcl.rcOk(), jcl, procName);
+        ProcStatus procStatus = new PmProcStatus(jcl.rcOk(), jcl, procName, new JobTrace() {
+            @Override
+            public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
+                jobCount.add(procName + "." + name, returnCode, tiStart, tiEnd);
+            }
+
+            @Override
+            public void add(String name, int returnCode) {
+                jobCount.add(procName + "." + name, returnCode);
+            }
+
+            @Override
+            public void add(String name) {
+                jobCount.add(procName + "." + name);
+            }
+        });
         Instant tiStart = Instant.now();
         int returnCode = -1;
         try {
@@ -211,6 +253,14 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
             return execProc(procName, proc);
         } else {
             jobCount.add(procName);
+        }
+        return this;
+    }
+
+    @Override
+    public <P extends Iterable<Q>, Q> JobStatus nextLoopProc(P p, Function<Q, String> name, UnaryOperator<ProcStatus> proc) {
+        for (Q q : p) {
+            nextProc(name.apply(q), proc);
         }
         return this;
     }
@@ -260,9 +310,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public <P> JobStatus execPgm(P p, String stepName, Function<P, Integer> pgm) {
+    public <P> JobStatus execPgm(P p, String stepName, ToIntFunction<P> pgm) {
         return execPgm(p, new BareCount(stepName), (xp, xc) -> {
-            return pgm.apply(xp);
+            return pgm.applyAsInt(xp);
         });
     }
 
@@ -273,9 +323,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public JobStatus execPgm(String stepName, Supplier<Integer> pgm) {
+    public JobStatus execPgm(String stepName, IntSupplier pgm) {
         return execPgm(new BareCount(stepName), (xc) -> {
-            return pgm.get();
+            return pgm.getAsInt();
         });
     }
 
@@ -322,9 +372,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public <P> JobStatus elsePgm(P p, String stepName, Function<P, Integer> pgm) {
-        return elsePgm(p, new BareCount(stepName), (xp,xc) -> {
-            return pgm.apply(p);
+    public <P> JobStatus elsePgm(P p, String stepName, ToIntFunction<P> pgm) {
+        return elsePgm(p, new BareCount(stepName), (xp, xc) -> {
+            return pgm.applyAsInt(xp);
         });
     }
 
@@ -339,9 +389,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public JobStatus elsePgm(String stepName, Supplier<Integer> pgm) {
+    public JobStatus elsePgm(String stepName, IntSupplier pgm) {
         return elsePgm(new BareCount(stepName), (xc) -> {
-            return pgm.get();
+            return pgm.getAsInt();
         });
     }
 
@@ -357,8 +407,8 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
 
     @Override
     public <P> JobStatus elsePgm(P p, String stepName, Consumer<P> pgm) {
-        return elsePgm(p, new BareCount(stepName), (xp,xc) -> {
-            pgm.accept(p);
+        return elsePgm(p, new BareCount(stepName), (xp, xc) -> {
+            pgm.accept(xp);
         });
     }
 
@@ -414,9 +464,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public <P> JobStatus forkExecPgm(P p, String stepName, Function<P, Integer> pgm) {
-        return forkExecPgm(p, new BareCount(stepName), (xp,xc) -> {
-            return pgm.apply(p);
+    public <P> JobStatus forkExecPgm(P p, String stepName, ToIntFunction<P> pgm) {
+        return forkExecPgm(p, new BareCount(stepName), (xp, xc) -> {
+            return pgm.applyAsInt(xp);
         });
     }
 
@@ -426,9 +476,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public JobStatus forkExecPgm(String stepName, Supplier<Integer> pgm) {
+    public JobStatus forkExecPgm(String stepName, IntSupplier pgm) {
         return forkExecPgm(new BareCount(stepName), (xc) -> {
-            return pgm.get();
+            return pgm.getAsInt();
         });
     }
 
@@ -442,8 +492,8 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
 
     @Override
     public <P> JobStatus forkExecPgm(P p, String stepName, Consumer<P> pgm) {
-        return forkExecPgm(p, new BareCount(stepName), (xp,xc) -> {
-            pgm.accept(p);
+        return forkExecPgm(p, new BareCount(stepName), (xp, xc) -> {
+            pgm.accept(xp);
         });
     }
 
@@ -473,9 +523,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public <P> JobStatus forkElsePgm(P p, String stepName, Function<P, Integer> pgm) {
-        return forkElsePgm(p, new BareCount(stepName), (xp,xc) -> {
-            return pgm.apply(xp);
+    public <P> JobStatus forkElsePgm(P p, String stepName, ToIntFunction<P> pgm) {
+        return forkElsePgm(p, new BareCount(stepName), (xp, xc) -> {
+            return pgm.applyAsInt(xp);
         });
     }
 
@@ -490,9 +540,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public JobStatus forkElsePgm(String stepName, Supplier<Integer> pgm) {
+    public JobStatus forkElsePgm(String stepName, IntSupplier pgm) {
         return forkElsePgm(new BareCount(stepName), (xc) -> {
-            return pgm.get();
+            return pgm.getAsInt();
         });
     }
 
@@ -508,7 +558,7 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
 
     @Override
     public <P> JobStatus forkElsePgm(P p, String stepName, Consumer<P> pgm) {
-        return forkElsePgm(p, new BareCount(stepName), (xp,xc) -> {
+        return forkElsePgm(p, new BareCount(stepName), (xp, xc) -> {
             pgm.accept(xp);
         });
     }
@@ -541,9 +591,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public <P> JobStatus forkNextPgm(P p, String stepName, Function<P, Integer> pgm) {
-        return forkNextPgm(p, new BareCount(stepName), (xp,xc) -> {
-            return pgm.apply(xp);
+    public <P> JobStatus forkNextPgm(P p, String stepName, ToIntFunction<P> pgm) {
+        return forkNextPgm(p, new BareCount(stepName), (xp, xc) -> {
+            return pgm.applyAsInt(xp);
         });
     }
 
@@ -558,9 +608,9 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public JobStatus forkNextPgm(String stepName, Supplier<Integer> pgm) {
+    public JobStatus forkNextPgm(String stepName, IntSupplier pgm) {
         return forkNextPgm(new BareCount(stepName), (xc) -> {
-            return pgm.get();
+            return pgm.getAsInt();
         });
     }
 
@@ -576,7 +626,7 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
 
     @Override
     public <P> JobStatus forkNextPgm(P p, String stepName, Consumer<P> pgm) {
-        return forkNextPgm(p, new BareCount(stepName), (xp,xc) -> {
+        return forkNextPgm(p, new BareCount(stepName), (xp, xc) -> {
             pgm.accept(xp);
         });
     }
