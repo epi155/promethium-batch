@@ -167,7 +167,7 @@ public interface JobStatus
      * @param <Q>  class on which to repeat the procedure execution
      * @return instance of {@link JobStatus}
      */
-    <P extends Iterable<Q>, Q> JobStatus nextLoopProc(P p, Function<Q, String> name, UnaryOperator<ProcStatus> proc);
+    <P extends Iterable<Q>, Q> JobStatus forEachProc(P p, Function<Q, String> name, UnaryOperator<SubStatus<Q>> proc);
 
     /**
      * Procedure launcher if the previous step did not complete successfully
@@ -209,4 +209,6 @@ public interface JobStatus
      * @return jobStatus with restored jobReturnCode
      */
     JobStatus peek();
+
+    ParallelStatus parallel(int nThreads);
 }

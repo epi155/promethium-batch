@@ -1,11 +1,11 @@
 package io.github.epi155.pm.batch.job;
 
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
-/**
- * interface to run a program multiple times if the previous step completes successfully
- */
-public interface NextLoopPgm {
+public interface ParallelStatus {
     /**
      * Loop program launcher with user returnCode
      * <p>if the previous step did not complete successfully,
@@ -21,8 +21,6 @@ public interface NextLoopPgm {
      * @return instance of {@link JobStatus}
      */
     <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus forEachPgm(P p, Function<Q, C> c, BiFunction<Q, C, Integer> pgm);
-
-    <P extends Iterable<Q>, Q> JobStatus forEachPgm(P p, Function<Q, String> name, ToIntFunction<Q> pgm);
 
     /**
      * Loop program launcher with automatic returnCode
@@ -40,5 +38,15 @@ public interface NextLoopPgm {
      */
     <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus forEachPgm(P p, Function<Q, C> c, BiConsumer<Q, C> pgm);
 
-    <P extends Iterable<Q>, Q> JobStatus forEachPgm(P p, Function<Q, String> name, Consumer<Q> pgm);
+    /**
+     * Loop procedure launcher
+     *
+     * @param p    job parameters
+     * @param name function that maps the procedure name from the iterable element of the job parameters
+     * @param proc procedure
+     * @param <P>  class to provide job parameters
+     * @param <Q>  class on which to repeat the procedure execution
+     * @return instance of {@link JobStatus}
+     */
+    <P extends Iterable<Q>, Q> JobStatus forEachProc(P p, Function<Q, String> name, UnaryOperator<SubStatus<Q>> proc);
 }

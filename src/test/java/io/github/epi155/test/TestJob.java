@@ -106,7 +106,7 @@ class TestJob {
                 .execPgm("lock", this::step00)
                 .nextPgm(ls, new MyCount("list"), this::step04)
 //                .nextLoopProc(ls, )
-                .nextLoopPgm(ls, MyCount::new, this::step05)
+                .forEachPgm(ls, MyCount::new, this::step05)
                 .push()
                 .exec(s -> s.returnCode("lock")
                         .filter(rcLock -> (rcLock == 0))
@@ -131,6 +131,46 @@ class TestJob {
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
+    @Test
+    void job07() {
+        List<String> ls = new ArrayList<>();
+        int rc = JCL.getInstance().job("JobPk")
+                .execPgm("lock", this::step00)
+                .nextPgm(ls, new MyCount("list"), this::step04)
+//                .nextLoopProc(ls, )
+                .parallel(2).forEachPgm(ls, MyCount::new, this::step05)
+                .push()
+                .exec(s -> s.returnCode("lock")
+                        .filter(rcLock -> (rcLock == 0))
+                        .ifPresent(rcLock -> s.execPgm(new MyCount("unlock"), this::step01)))
+                .pop()
+                .complete();
+        log.info("Job returnCode: {}", rc);
+    }
+    @Test
+    void job08() {
+        MyCount count1 = new MyCount("Step01");
+        List<String> ls = new ArrayList<>();
+        int rc = JCL.getInstance().job("JobPk")
+                .execPgm("lock", this::step00)
+                .nextPgm(ls, new MyCount("list"), this::step04)
+//                .execProc("Proc01", it -> it
+//                        .execPgm(count1, this::step01)
+//                        .nextPgm(count2, this::step01)
+//                )
+                .parallel(2)
+                .forEachProc(ls, q->q, it->it
+                        .execPgm(count1, this::step05)
+                        .nextPgm("Step02", this::step07)
+                )
+                .push()
+                .exec(s -> s.returnCode("lock")
+                        .filter(rcLock -> (rcLock == 0))
+                        .ifPresent(rcLock -> s.execPgm(new MyCount("unlock"), this::step01)))
+                .pop()
+                .complete();
+        log.info("Job returnCode: {}", rc);
+    }
 
     private void step00() {
     }
@@ -138,7 +178,29 @@ class TestJob {
     private void step04(List<String> cs, MyCount cnt) {
         cs.addAll(List.of("eins", "zwei", "drei"));
     }
-    private void step05(MyCount cnt) {
+    private void step05(String s, MyCount cnt) {
+        Random rndm = new Random();
+        try {
+            TimeUnit.MILLISECONDS.sleep(rndm.nextInt(2000));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+    private void step07(String q) {
+        Random rndm = new Random();
+        try {
+            TimeUnit.MILLISECONDS.sleep(rndm.nextInt(2000));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+    private void step06(MyCount cnt) {
+        Random rndm = new Random();
+        try {
+            TimeUnit.MILLISECONDS.sleep(rndm.nextInt(2000));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void step01(MyCount c) {

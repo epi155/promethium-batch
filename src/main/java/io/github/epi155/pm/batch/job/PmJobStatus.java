@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -56,15 +57,111 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
         return this;
     }
 
-//    @Override
-//    public JobStatus onSuccessOrFailure(Consumer<? super JobStatus> successAction, Consumer<? super JobStatus> failureAction) {
-//        if (isSuccess()) {
-//            successAction.accept(this);
-//        } else {
-//            failureAction.accept(this);
-//        }
-//        return this;
-//    }
+    @Override
+    public ParallelStatus parallel(int nThreads) {
+        return new ParallelStatus() {
+            private final Semaphore semaphore = new Semaphore(nThreads);
+            private final List<Future<Integer>> promises = new LinkedList<>();
+
+            private <Q> JobStatus submit(Iterable<Q> qs, ToIntFunction<Q> fcn) {
+                final ExecutorService loopService = Executors.newFixedThreadPool(nThreads);
+                try {
+                    for (Q q : qs) {
+                        if (!PmJobStatus.this.isSuccess())
+                            break;
+                        try {
+                            while (!semaphore.tryAcquire(5, TimeUnit.MILLISECONDS)) {
+                                probePromise(true);
+                            }
+                            Future<Integer> promise = loopService.submit(() -> {
+                                MDC.put(JOB_NAME, jobName);
+                                try {
+                                    return fcn.applyAsInt(q);
+                                } finally {
+                                    MDC.clear();
+                                }
+                            });
+                            promises.add(promise);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    probePromise(false);
+                } finally {
+                    loopService.shutdown();
+                }
+                return PmJobStatus.this;
+            }
+
+            private void probePromise(boolean hot) {
+                do {
+                    int n = iteratePromise();
+                    if (hot || promises.isEmpty())
+                        return;
+                    try {
+                        // if task is interrupted: sleep do nothing
+                        TimeUnit.MILLISECONDS.sleep(10);
+                    } catch (InterruptedException e) {
+                        try {
+                            // now task IS NOT interrupted and sleep() DO SLEEP
+                            TimeUnit.MILLISECONDS.sleep(10);
+                        } catch (InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                        }
+                        Thread.currentThread().interrupt();
+                    }
+                } while (true);
+            }
+
+            private int iteratePromise() {
+                Iterator<Future<Integer>> it = promises.iterator();
+                int k = 0;
+                while (it.hasNext()) {
+                    Future<Integer> promise = it.next();
+                    if (promise.isDone()) {
+                        try {
+                            int rc = promise.get();
+                            PmJobStatus.this.maxcc(rc);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        } catch (ExecutionException e) {    // dead branch
+                            PmJobStatus.this.maxcc(jcl.rcErrorJob());
+                        } finally {
+                            semaphore.release();
+                        }
+                        it.remove();
+                    } else {
+                        k++;
+                    }
+                }
+                return k;
+            }
+
+            @Override
+            public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus forEachPgm(P qs, Function<Q, C> c, BiFunction<Q, C, Integer> pgm) {
+                return submit(qs, q -> {
+                    C count = c.apply(q);
+                    return runStep(count, () -> pgm.apply(q, count));
+                });
+            }
+
+            @Override
+            public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus forEachPgm(P qs, Function<Q, C> c, BiConsumer<Q, C> pgm) {
+                return submit(qs, q -> {
+                    C count = c.apply(q);
+                    return runStep(count, () -> {
+                        pgm.accept(q, count);
+                        return jcl.rcOk();
+                    });
+                });
+            }
+
+            @Override
+            public <P extends Iterable<Q>, Q> JobStatus forEachProc(P qs, Function<Q, String> name, UnaryOperator<SubStatus<Q>> proc) {
+                return submit(qs, q -> runSub(q, name.apply(q), proc));
+            }
+        };
+    }
 
     public <P, C extends StatsCount> JobStatus nextPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
         if (isSuccess()) {
@@ -258,11 +355,55 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public <P extends Iterable<Q>, Q> JobStatus nextLoopProc(P p, Function<Q, String> name, UnaryOperator<ProcStatus> proc) {
+    public <P extends Iterable<Q>, Q> JobStatus forEachProc(P p, Function<Q, String> name, UnaryOperator<SubStatus<Q>> proc) {
         for (Q q : p) {
-            nextProc(name.apply(q), proc);
+            nextSub(q, name.apply(q), proc);
         }
         return this;
+    }
+
+    private <Q> JobStatus nextSub(Q q, String subName, UnaryOperator<SubStatus<Q>> sub) {
+        if (isSuccess()) {
+            wrapSub(q, subName, sub);
+        } else {
+            jobCount.add(subName);
+        }
+        return this;
+    }
+
+    private <Q> int runSub(Q q, String subName, UnaryOperator<SubStatus<Q>> sub) {
+        SubStatus<Q> subStatus = new PmSubStatus<Q>(jcl.rcOk(), jcl, q, subName, new JobTrace() {
+            @Override
+            public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
+                jobCount.add(subName + "." + name, returnCode, tiStart, tiEnd);
+            }
+
+            @Override
+            public void add(String name, int returnCode) {
+                jobCount.add(subName + "." + name, returnCode);
+            }
+
+            @Override
+            public void add(String name) {
+                jobCount.add(subName + "." + name);
+            }
+        });
+        Instant tiStart = Instant.now();
+        int returnCode = -1;
+        try {
+            MDC.put(JOB_NAME, subName);
+            returnCode = ((PmSubStatus<Q>) sub.apply(subStatus)).complete();
+        } finally {
+            Instant tiEnd = Instant.now();
+            MDC.put(JOB_NAME, jobName);
+            jobCount.add(subName, returnCode, tiStart, tiEnd);
+        }
+        return returnCode;
+    }
+
+    private <Q> void wrapSub(Q q, String subName, UnaryOperator<SubStatus<Q>> sub) {
+        int returnCode = runSub(q, subName, sub);
+        maxcc(returnCode);
     }
 
     @Override
@@ -649,42 +790,43 @@ class PmJobStatus extends PmProcStatus implements JobStatus {
     }
 
     @Override
-    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus nextLoopPgm(P p, Function<Q, C> c, BiFunction<P, C, Integer> pgm) {
+    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus forEachPgm(P p, Function<Q, C> c, BiFunction<Q, C, Integer> pgm) {
         if (isSuccess()) {
             for (Q q : p) {
-                nextPgm(p, c.apply(q), pgm);
+                nextPgm(q, c.apply(q), pgm);
             }
         }
         return this;
     }
 
     @Override
-    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus nextLoopPgm(P p, Function<Q, C> c, ToIntFunction<C> pgm) {
+    public <P extends Iterable<Q>, Q> JobStatus forEachPgm(P p, Function<Q, String> name, ToIntFunction<Q> pgm) {
         if (isSuccess()) {
             for (Q q : p) {
-                nextPgm(c.apply(q), pgm);
+                nextPgm(q, name.apply(q), pgm);
             }
         }
         return this;
     }
 
     @Override
-    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus nextLoopPgm(P p, Function<Q, C> c, BiConsumer<P, C> pgm) {
+    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus forEachPgm(P p, Function<Q, C> c, BiConsumer<Q, C> pgm) {
         if (isSuccess()) {
             for (Q q : p) {
-                nextPgm(p, c.apply(q), pgm);
+                nextPgm(q, c.apply(q), pgm);
             }
         }
         return this;
     }
 
     @Override
-    public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus nextLoopPgm(P p, Function<Q, C> c, Consumer<C> pgm) {
+    public <P extends Iterable<Q>, Q> JobStatus forEachPgm(P p, Function<Q, String> name, Consumer<Q> pgm) {
         if (isSuccess()) {
             for (Q q : p) {
-                nextPgm(c.apply(q), pgm);
+                nextPgm(q, name.apply(q), pgm);
             }
         }
         return this;
     }
+
 }
