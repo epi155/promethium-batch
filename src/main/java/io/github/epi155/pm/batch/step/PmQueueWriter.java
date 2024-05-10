@@ -84,7 +84,7 @@ class PmQueueWriter<T> implements Closeable {
             Throwable cause = e.getCause();
             String place = placeOf(cause.getStackTrace());
             log.warn("W.### Error in writer listener: {} [{}]", cause.getMessage(), place);
-            throw new BatchException((cause));
+            throw new BatchException(cause);
         }
     }
 }

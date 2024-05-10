@@ -1800,7 +1800,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     Throwable cause = e.getCause();
                     String place = placeOf(cause.getStackTrace());
                     log.warn("*.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
-                    throw new BatchException((cause));
+                    throw new BatchException(cause);
                 }
                 it.remove();
             } else {
@@ -1896,7 +1896,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                             String place = placeOf(cause.getStackTrace());
                             log.warn("s.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
                             future.cancel(true);
-                            throw new BatchException((cause));
+                            throw new BatchException(cause);
                         } finally {
                             sm.release();
                         }
@@ -1911,7 +1911,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     Throwable cause = e.getCause();
                     String place = placeOf(cause.getStackTrace());
                     log.warn("s.### Error detected in reader: {} [{}]", cause.getMessage(), place);
-                    throw new BatchException((cause));
+                    throw new BatchException(cause);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -2033,7 +2033,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                             String place = placeOf(cause.getStackTrace());
                             log.warn("S.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
                             future.cancel(true);
-                            throw new BatchException((cause));
+                            throw new BatchException(cause);
                         }
                     }
                 } catch (InterruptedException e) {
@@ -2046,7 +2046,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     Throwable cause = e.getCause();
                     String place = placeOf(cause.getStackTrace());
                     log.warn("S.### Error detected in reader: {} [{}]", cause.getMessage(), place);
-                    throw new BatchException((cause));
+                    throw new BatchException(cause);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -2265,7 +2265,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     }
                     String place = placeOf(cause.getStackTrace());
                     log.warn("E.### Error detected in reader: {} [{}]", cause.getMessage(), place);
-                    throw new BatchException((cause));
+                    throw new BatchException(cause);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -2374,7 +2374,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     }
                     String place = placeOf(cause.getStackTrace());
                     log.warn("Z.### Error detected in reader: {} [{}]", cause.getMessage(), place);
-                    throw new BatchException((cause));
+                    throw new BatchException(cause);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -2501,7 +2501,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         Throwable cause = e.getCause();
                         String place = placeOf(cause.getStackTrace());
                         log.warn("w.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
-                        throw new BatchException((cause));
+                        throw new BatchException(cause);
                     } finally {
                         sm.release();
                     }

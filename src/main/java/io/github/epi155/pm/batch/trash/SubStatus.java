@@ -1,4 +1,6 @@
-package io.github.epi155.pm.batch.job;
+package io.github.epi155.pm.batch.trash;
+
+import io.github.epi155.pm.batch.job.StatsCount;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;

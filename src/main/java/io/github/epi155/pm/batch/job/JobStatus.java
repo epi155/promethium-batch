@@ -2,17 +2,17 @@ package io.github.epi155.pm.batch.job;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 /**
  * Job environment
  */
 public interface JobStatus
-        extends ProcStatus,
-        ExecPgmJob, NextPgmJob, ElsePgmJob,
-        ForkExecPgm, ForkNextPgm, ForkElsePgm, NextLoopPgm {
+        extends ExecPgm<JobStatus>, LoopPgm<JobStatus>, ExecProc<JobStatus>, LoopProc<JobStatus>
+//        ProcStatus, ExecPgmJob,
+//        ForkExecPgm, ForkNextPgm, ForkElsePgm, NextLoopPgm
+{
     /**
      * Action on JobStatus
      * <p>used for conditional step
@@ -50,7 +50,7 @@ public interface JobStatus
      *
      * @return status with the highest returnCode
      */
-    JobStatus join();
+//    JobStatus join();
 
     /**
      * Procedure launcher in background unconditionally
@@ -71,7 +71,7 @@ public interface JobStatus
      * @param proc     procedure
      * @return instance of {@link JobStatus}
      */
-    JobStatus forkExecProc(String procName, UnaryOperator<ProcStatus> proc);
+//    JobStatus forkExecProc(String procName, UnaryOperator<ProcStatus> proc);
 
     /**
      * Procedure launcher in background if the previous step complete successfully
@@ -93,7 +93,7 @@ public interface JobStatus
      * @param proc     procedure
      * @return instance of {@link JobStatus}
      */
-    JobStatus forkNextProc(String procName, UnaryOperator<ProcStatus> proc);
+//    JobStatus forkNextProc(String procName, UnaryOperator<ProcStatus> proc);
 
     /**
      * Procedure launcher in background if the previous step did not complete successfully
@@ -115,7 +115,7 @@ public interface JobStatus
      * @param proc     procedure
      * @return instance of {@link JobStatus}
      */
-    JobStatus forkElseProc(String procName, UnaryOperator<ProcStatus> proc);
+//    JobStatus forkElseProc(String procName, UnaryOperator<ProcStatus> proc);
 
     /**
      * Procedure launcher unconditionally
@@ -135,7 +135,7 @@ public interface JobStatus
      * @param proc     procedure
      * @return instance of {@link JobStatus}
      */
-    JobStatus execProc(String procName, UnaryOperator<ProcStatus> proc);
+//    JobStatus execProc(String procName, UnaryOperator<ProcStatus> proc);
 
     /**
      * Procedure launcher if the previous step complete successfully
@@ -155,7 +155,7 @@ public interface JobStatus
      * @param proc     procedure
      * @return instance of {@link JobStatus}
      */
-    JobStatus nextProc(String procName, UnaryOperator<ProcStatus> proc);
+//    JobStatus nextProc(String procName, UnaryOperator<ProcStatus> proc);
 
     /**
      * Loop procedure launcher
@@ -167,7 +167,7 @@ public interface JobStatus
      * @param <Q>  class on which to repeat the procedure execution
      * @return instance of {@link JobStatus}
      */
-    <P extends Iterable<Q>, Q> JobStatus forEachProc(P p, Function<Q, String> name, UnaryOperator<SubStatus<Q>> proc);
+//    <P extends Iterable<Q>, Q> JobStatus forEachProc(P p, Function<Q, String> name, UnaryOperator<SubStatus<Q>> proc);
 
     /**
      * Procedure launcher if the previous step did not complete successfully
@@ -187,7 +187,7 @@ public interface JobStatus
      * @param proc     procedure
      * @return instance of {@link JobStatus}
      */
-    JobStatus elseProc(String procName, UnaryOperator<ProcStatus> proc);
+//    JobStatus elseProc(String procName, UnaryOperator<ProcStatus> proc);
 
     /**
      * Pushes jobReturnCode onto the internal stack
@@ -210,5 +210,17 @@ public interface JobStatus
      */
     JobStatus peek();
 
-    ParallelStatus parallel(int nThreads);
+    Optional<Integer> returnCode(String stepName);
+
+    CondStatus<JobStatus> cond(int cc, Cond cond);
+
+    default CondStatus<JobStatus> when(int cc, Cond cond) {
+        return cond(cc, cond.not());
+    }
+
+    CondStatus<JobStatus> cond(int cc, Cond cond, String stepName);
+
+    default CondStatus<JobStatus> when(int cc, Cond cond, String stepName) {
+        return cond(cc, cond.not(), stepName);
+    }
 }

@@ -1,11 +1,11 @@
-package io.github.epi155.pm.batch.job;
+package io.github.epi155.pm.batch.trash;
 
 import java.util.Optional;
 
 /**
  * Procedure environment
  */
-public interface ProcStatus extends ExecPgmProc, NextPgmProc, ElsePgmProc {
+public interface ProcStatus extends ExecPgmProc, ElsePgmProc {
     /**
      * Petrieves the returnCode of the step with the indicated name
      * <p>

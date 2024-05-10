@@ -58,13 +58,13 @@ public class BatchException extends RuntimeException {
      */
     public static String placeOf(StackTraceElement[] stackTrace) {
         for (val ste : stackTrace) {
-            if (ste.isNativeMethod() || "java.base".equals(ste.getModuleName()))
-                continue;
-            String claz = ste.getClassName();
-            String meth = ste.getMethodName();
-            String file = ste.getFileName();
-            int line = ste.getLineNumber();
-            return String.format("%s->%s(%s:%d)", claz, meth, file, line);
+            if (!ste.isNativeMethod() && !"java.base".equals(ste.getModuleName())) {
+                String claz = ste.getClassName();
+                String meth = ste.getMethodName();
+                String file = ste.getFileName();
+                int line = ste.getLineNumber();
+                return String.format("%s->%s(%s:%d)", claz, meth, file, line);
+            }
         }
         return "N/A";
     }

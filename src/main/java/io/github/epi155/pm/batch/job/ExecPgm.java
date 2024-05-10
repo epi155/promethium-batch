@@ -5,7 +5,7 @@ import java.util.function.*;
 /**
  * interface for running a program unconditionally
  */
-public interface ExecPgmProc {
+public interface ExecPgm<S> {
     /**
      * Program launcher with user returnCode
      *
@@ -14,9 +14,9 @@ public interface ExecPgmProc {
      * @param pgm program (step) to execute
      * @param <P> class to provide job parameters
      * @param <C> class to manage program statistics
-     * @return instance of {@link ProcStatus}
+     * @return instance of {@link S}
      */
-    <P, C extends StatsCount> ProcStatus execPgm(P p, C c, BiFunction<P, C, Integer> pgm);
+    <P, C extends StatsCount> S execPgm(P p, C c, BiFunction<P, C, Integer> pgm);
 
     /**
      * Program launcher with user returnCode
@@ -25,9 +25,9 @@ public interface ExecPgmProc {
      * @param stepName step name
      * @param pgm      program (step) to execute
      * @param <P>      class to provide job parameters
-     * @return instance of {@link ProcStatus}
+     * @return instance of {@link S}
      */
-    <P> ProcStatus execPgm(P p, String stepName, ToIntFunction<P> pgm);
+    <P> S execPgm(P p, String stepName, ToIntFunction<P> pgm);
 
     /**
      * Program launcher with user returnCode
@@ -35,18 +35,18 @@ public interface ExecPgmProc {
      * @param c   program statistics
      * @param pgm program (step) to execute
      * @param <C> class to manage program statistics
-     * @return instance of {@link ProcStatus}
+     * @return instance of {@link S}
      */
-    <C extends StatsCount> ProcStatus execPgm(C c, ToIntFunction<C> pgm);
+    <C extends StatsCount> S execPgm(C c, ToIntFunction<C> pgm);
 
     /**
      * Program launcher with user returnCode
      *
      * @param stepName step name
      * @param pgm      program (step) to execute
-     * @return instance of {@link ProcStatus}
+     * @return instance of {@link S}
      */
-    ProcStatus execPgm(String stepName, IntSupplier pgm);
+    S execPgm(String stepName, IntSupplier pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -56,9 +56,9 @@ public interface ExecPgmProc {
      * @param pgm program (step) to execute
      * @param <P> class to provide job parameters
      * @param <C> class to manage program statistics
-     * @return instance of {@link ProcStatus}
+     * @return instance of {@link S}
      */
-    <P, C extends StatsCount> ProcStatus execPgm(P p, C c, BiConsumer<P, C> pgm);
+    <P, C extends StatsCount> S execPgm(P p, C c, BiConsumer<P, C> pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -67,9 +67,9 @@ public interface ExecPgmProc {
      * @param stepName step name
      * @param pgm      program (step) to execute
      * @param <P>      class to provide job parameters
-     * @return instance of {@link ProcStatus}
+     * @return instance of {@link S}
      */
-    <P> ProcStatus execPgm(P p, String stepName, Consumer<P> pgm);
+    <P> S execPgm(P p, String stepName, Consumer<P> pgm);
 
     /**
      * Program launcher with automatic returnCode
@@ -77,16 +77,16 @@ public interface ExecPgmProc {
      * @param c   program statistics
      * @param pgm program (step) to execute
      * @param <C> class to manage program statistics
-     * @return instance of {@link ProcStatus}
+     * @return instance of {@link S}
      */
-    <C extends StatsCount> ProcStatus execPgm(C c, Consumer<C> pgm);
+    <C extends StatsCount> S execPgm(C c, Consumer<C> pgm);
 
     /**
      * Program launcher with automatic returnCode
      *
      * @param stepName step name
      * @param pgm      program (step) to execute
-     * @return instance of {@link ProcStatus}
+     * @return instance of {@link S}
      */
-    ProcStatus execPgm(String stepName, Runnable pgm);
+    S execPgm(String stepName, Runnable pgm);
 }

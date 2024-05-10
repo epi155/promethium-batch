@@ -2,7 +2,6 @@ package io.github.epi155.pm.batch.job;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.val;
 
 import java.io.PrintWriter;
 import java.time.*;
@@ -11,7 +10,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-class JobCount extends StatsCount {
+class JobCount extends StatsCount implements JobTrace {
     private static final String L_STEP = "Step Name";
     private final ConcurrentLinkedQueue<StepInfo> stepInfos = new ConcurrentLinkedQueue<>();
 
@@ -28,30 +27,30 @@ class JobCount extends StatsCount {
         pw.print(" ".repeat(lpad));
         pw.print(L_STEP);
         pw.print(" ".repeat(rpad));
-        pw.printf("! rc !     Date-Time Start/Skip      !         Date-Time End         !       Lapse       %n");
+        pw.printf("!  rc  !     Date-Time Start/Skip      !         Date-Time End         !       Lapse       %n");
 
         pw.print("-".repeat(wid));
-        pw.printf("+----+-------------------------------+-------------------------------+-------------------%n");
+        pw.printf("+------+-------------------------------+-------------------------------+-------------------%n");
 
         stepInfos.stream().sorted(Comparator.comparing(a -> a.tmStart)).forEach(it -> it.info(pw, wid));
         pw.print("-".repeat(wid));
-        pw.printf("^----^-------------------------------^-------------------------------^-------------------%n");
+        pw.printf("^------^-------------------------------^-------------------------------^-------------------%n");
     }
 
-    void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
+    public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
         stepInfos.add(new StepDone(name, returnCode, tiStart, tiEnd));
     }
 
-    void add(String name, int returnCode) {
+    public void add(String name, int returnCode) {
         stepInfos.add(new StepCmnd(name, returnCode));
     }
 
-    void add(String name) {
+    public void add(String name) {
         stepInfos.add(new StepSkip(name));
     }
 
     Optional<Integer> getReturnCode(String stepName) {
-        for (val info : stepInfos) {
+        for (StepInfo info : stepInfos) {
             if (info.stepName.equals(stepName) && info instanceof StepDone) {
                 return Optional.of(((StepDone) info).returnCode);
             }
@@ -61,7 +60,7 @@ class JobCount extends StatsCount {
 
     @AllArgsConstructor
     @Getter
-    static abstract class StepInfo {
+    abstract static class StepInfo {
         protected final String stepName;
         protected final Instant tmStart;
 
@@ -83,11 +82,11 @@ class JobCount extends StatsCount {
             Duration lapse = Duration.between(tmStart, tmEnd);
             pw.print(stepName);
             pw.print(".".repeat(width - stepName.length()));
-            pw.printf("! %2d ! %-29s ! %-29s ! %s%n", returnCode,
+            pw.printf("! %4d ! %-29s ! %-29s ! %s%n", returnCode,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                            .format(LocalDateTime.ofInstant(tmStart, ZoneOffset.systemDefault())),
+                            .format(LocalDateTime.ofInstant(tmStart, ZoneId.systemDefault())),
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                            .format(LocalDateTime.ofInstant(tmEnd, ZoneOffset.systemDefault())),
+                            .format(LocalDateTime.ofInstant(tmEnd, ZoneId.systemDefault())),
                     DateTimeFormatter.ISO_LOCAL_TIME
                             .format(lapse.addTo(LocalTime.of(0, 0)))
             );
@@ -104,7 +103,7 @@ class JobCount extends StatsCount {
         protected void info(PrintWriter pw, int width) {
             pw.print(stepName);
             pw.print(".".repeat(width - stepName.length()));
-            pw.printf("!skip! %-29s !                               !%n",
+            pw.printf("! skip ! %-29s !                               !%n",
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                             .format(LocalDateTime.ofInstant(tmStart, ZoneOffset.systemDefault())));
         }
@@ -122,9 +121,9 @@ class JobCount extends StatsCount {
         protected void info(PrintWriter pw, int width) {
             pw.print(stepName);
             pw.print(".".repeat(width - stepName.length()));
-            pw.printf("! %2d ! %-29s !                               !%n", returnCode,
+            pw.printf("! %4d ! %-29s !                               !%n", returnCode,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                            .format(LocalDateTime.ofInstant(tmStart, ZoneOffset.systemDefault()))
+                            .format(LocalDateTime.ofInstant(tmStart, ZoneId.systemDefault()))
             );
         }
     }

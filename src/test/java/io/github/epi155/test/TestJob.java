@@ -1,12 +1,12 @@
 package io.github.epi155.test;
 
-import io.github.epi155.pm.batch.job.BatchIOException;
-import io.github.epi155.pm.batch.job.JCL;
-import io.github.epi155.pm.batch.job.StatsCount;
+import io.github.epi155.pm.batch.job.*;
 import io.github.epi155.pm.batch.step.Pgm;
 import io.github.epi155.pm.batch.step.SinkResource;
 import io.github.epi155.pm.batch.step.SourceResource;
 import io.github.epi155.pm.batch.step.Tuple2;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Test;
@@ -21,51 +21,84 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import static io.github.epi155.pm.batch.job.Cond.*;
+
 @Slf4j
 class TestJob {
 
     @Test
+    void job00() {
+        int x = JCL.getInstance().job("job01")
+                .execPgm("step01", this::step00)
+                .complete();
+        log.info("Job returnCode: {}", x);
+    }
+    @Test
     void job01() {
+        String STEP03 = "Step03";
         MyCount count1 = new MyCount("Step01");
         MyCount count2 = new MyCount("Step02");
-        MyCount count3 = new MyCount("Step03");
+        MyCount count3 = new MyCount(STEP03);
         MyCount count4 = new MyCount("Step04");
         MyCount count5 = new MyCount("Step05");
         int x = JCL.getInstance().job("Job01")
-                .forkExecPgm(count1, this::step01)
-                .forkExecPgm(count2, this::step01)
+                .when(0,NE).execPgm(count1, this::step01)
+//                .forkExecPgm(count1, this::step01)
+//                .forkExecPgm(count2, this::step01)
                 .execPgm(count3, this::step01)
-                .join()
-                .push() // save rc
-                .nextPgm(count4, this::step02) // execute if ok
-                .peek()
-                .elsePgm(count5, this::step01) // execute in ko
-                .pop()
+//                .join()
+                .when(4,LE).execPgm(count4, this::step02) // execute if ok
+                .when(4,GT,STEP03).execPgm(count5, this::step01) // execute in ko
                 .complete();
         log.info("Job returnCode: {}", x);
     }
 
+    @Data @AllArgsConstructor(staticName = "of")
+    private static class Param02 {
+        private int p1;
+        private int p2;
+        private int p3;
+    }
+
     @Test
     void job02() {
+        Param02 pa02 = Param02.of(1,2,3);
         MyCount count1 = new MyCount("Step01");
         MyCount count2 = new MyCount("Step02");
         MyCount count3 = new MyCount("Step03");
         MyCount count4 = new MyCount("Step04");
         MyCount count5 = new MyCount("Step05");
+
+        Proc<Param02> proc01 = Proc.create((p, s) -> s
+                .execPgm(p, count1, this::step21)
+                .when(0,EQ).execPgm(p, count2, this::step21)
+        );
+        Proc<Param02> proc02 = Proc.create((p, s) -> s
+                .execPgm(p, count1, this::step21)
+                .when(0,EQ).execProc(p, "proc1", proc01)
+        );
+        Proc<Void> proc03 = Proc.create(s -> s
+                .execPgm(count1, this::step01)
+                .when(0, EQ).execPgm(pa02, count1, this::step21)
+        );
+
         int rc = JCL.getInstance().job("Job01")
-                .forkExecProc("Proc01", it -> it
-                        .execPgm(count1, this::step01)
-                        .nextPgm(count2, this::step01)
-                )
                 .execPgm(count3, this::step01)
-                .join()
+                .cond(0,NE).execProc(pa02, "Proc02", proc02)
+                .cond(0,EQ,"Proc02.proc1.Step01").execPgm(count3, this::step01)
+                .execProc("Proc03", proc03)
+//                .join()
                 .push() // save rc
-                .nextPgm(count4, this::step02) // execute if ok
+//                .nextPgm(count4, this::step02) // execute if ok
                 .peek()
-                .elsePgm(count5, this::step01) // execute in ko
+//                .elsePgm(count5, this::step01) // execute in ko
                 .pop()
                 .complete();
         log.info("Job returnCode: {}", rc);
+    }
+
+    private int step21(Param02 p, MyCount c) {
+        return 0;
     }
 
     @Test
@@ -76,16 +109,16 @@ class TestJob {
         MyCount count4 = new MyCount("Step04");
         MyCount count5 = new MyCount("Step05");
         int rc = JCL.getInstance().job("Job01")
-                .execProc("Proc01", it -> it
-                        .execPgm(count1, this::step01)
-                        .nextPgm(count2, this::step01)
-                )
+//                .execProc("Proc01", it -> it
+//                        .execPgm(count1, this::step01)
+//                        .nextPgm(count2, this::step01)
+//                )
                 .execPgm(count3, this::step01)
-                .join()
+//                .join()
                 .push() // save rc
-                .nextPgm(count4, this::step02) // execute if ok
+//                .nextPgm(count4, this::step02) // execute if ok
                 .peek()
-                .elsePgm(count5, this::step01) // execute in ko
+//                .elsePgm(count5, this::step01) // execute in ko
                 .pop()
                 .complete();
         log.info("Job returnCode: {}", rc);
@@ -94,8 +127,8 @@ class TestJob {
     void job04() {
         int rc = JCL.getInstance().job("Job04")
                 .execPgm(new MyCount("Step03e"), this::step03e)
-                .nextPgm(new MyCount("Step03s"), this::step03s)
-                .nextPgm(new MyCount("Step03w"), this::step03w)
+//                .nextPgm(new MyCount("Step03s"), this::step03s)
+//                .nextPgm(new MyCount("Step03w"), this::step03w)
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
@@ -104,9 +137,9 @@ class TestJob {
         List<String> ls = new ArrayList<>();
         int rc = JCL.getInstance().job("JobPk")
                 .execPgm("lock", this::step00)
-                .nextPgm(ls, new MyCount("list"), this::step04)
+                .when(0,EQ).execPgm(ls, new MyCount("list"), this::step04)
 //                .nextLoopProc(ls, )
-                .forEachPgm(ls, MyCount::new, this::step05)
+                .when(0,NE).forEachPgm(ls, MyCount::new, this::step05)
                 .push()
                 .exec(s -> s.returnCode("lock")
                         .filter(rcLock -> (rcLock == 0))
@@ -122,12 +155,12 @@ class TestJob {
         MyCount count3 = new MyCount("Step03");
         int rc = JCL.getInstance().job("job06")
                 .execPgm(count1, this::step01)
-                .exec(s -> {
-                    if (s.isSuccess())
-                        s.execPgm(count2, this::step02);
-                    else
-                        s.execPgm(count3, this::step01);
-                })
+//                .exec(s -> {
+//                    if (s.isSuccess())
+//                        s.execPgm(count2, this::step02);
+//                    else
+//                        s.execPgm(count3, this::step01);
+//                })
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
@@ -136,10 +169,11 @@ class TestJob {
         List<String> ls = new ArrayList<>();
         int rc = JCL.getInstance().job("JobPk")
                 .execPgm("lock", this::step00)
-                .nextPgm(ls, new MyCount("list"), this::step04)
+                .when(4,LE).execPgm(ls, new MyCount("list"), this::step04)
 //                .nextLoopProc(ls, )
-                .parallel(2).forEachPgm(ls, MyCount::new, this::step05)
+//                .parallel(2).forEachPgm(ls, MyCount::new, this::step05)
                 .push()
+                .when(0,EQ,"lock").execPgm(new MyCount("unlock"), this::step01)
                 .exec(s -> s.returnCode("lock")
                         .filter(rcLock -> (rcLock == 0))
                         .ifPresent(rcLock -> s.execPgm(new MyCount("unlock"), this::step01)))
@@ -153,16 +187,16 @@ class TestJob {
         List<String> ls = new ArrayList<>();
         int rc = JCL.getInstance().job("JobPk")
                 .execPgm("lock", this::step00)
-                .nextPgm(ls, new MyCount("list"), this::step04)
+//                .nextPgm(ls, new MyCount("list"), this::step04)
 //                .execProc("Proc01", it -> it
 //                        .execPgm(count1, this::step01)
 //                        .nextPgm(count2, this::step01)
 //                )
-                .parallel(2)
-                .forEachProc(ls, q->q, it->it
-                        .execPgm(count1, this::step05)
-                        .nextPgm("Step02", this::step07)
-                )
+//                .parallel(2)
+//                .forEachProc(ls, q->q, it->it
+//                        .execPgm(count1, this::step05)
+//                        .nextPgm("Step02", this::step07)
+//                )
                 .push()
                 .exec(s -> s.returnCode("lock")
                         .filter(rcLock -> (rcLock == 0))
