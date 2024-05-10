@@ -1,6 +1,12 @@
 package io.github.epi155.pm.batch.job;
 
+/**
+ * Relation for condition code
+ */
 public enum Cond {
+    /**
+     * EQual
+     */
     EQ {
         @Override
         boolean test(Integer rc, int cc) {
@@ -12,6 +18,9 @@ public enum Cond {
             return NE;
         }
     },
+    /**
+     * Not Equal
+     */
     NE {
         @Override
         boolean test(Integer rc, int cc) {
@@ -23,6 +32,9 @@ public enum Cond {
             return EQ;
         }
     },
+    /**
+     * Less Than
+     */
     LT {
         @Override
         boolean test(Integer rc, int cc) {
@@ -34,6 +46,9 @@ public enum Cond {
             return GE;
         }
     },
+    /**
+     * Greater Than
+     */
     GT {
         @Override
         boolean test(Integer rc, int cc) {
@@ -45,6 +60,9 @@ public enum Cond {
             return LE;
         }
     },
+    /**
+     * Less Than
+     */
     LE {
         @Override
         boolean test(Integer rc, int cc) {
@@ -56,6 +74,9 @@ public enum Cond {
             return GT;
         }
     },
+    /**
+     * Greater Than
+     */
     GE {
         @Override
         boolean test(Integer rc, int cc) {

@@ -30,6 +30,7 @@ class TestJob {
     void job00() {
         int x = JCL.getInstance().job("job01")
                 .execPgm("step01", this::step00)
+                .cond(0,NE).execPgm("step02", this::step00)
                 .complete();
         log.info("Job returnCode: {}", x);
     }
@@ -69,6 +70,11 @@ class TestJob {
         MyCount count4 = new MyCount("Step04");
         MyCount count5 = new MyCount("Step05");
 
+        Proc<Param02> proc1 = Proc.create((p, s) -> s
+                .execPgm(p, "Step01", this::step31)
+                .cond(0,NE).execPgm(p, "Step02", this::step31)
+        );
+
         Proc<Param02> proc01 = Proc.create((p, s) -> s
                 .execPgm(p, count1, this::step21)
                 .when(0,EQ).execPgm(p, count2, this::step21)
@@ -95,6 +101,9 @@ class TestJob {
                 .pop()
                 .complete();
         log.info("Job returnCode: {}", rc);
+    }
+
+    private void step31(Param02 param02) {
     }
 
     private int step21(Param02 p, MyCount c) {

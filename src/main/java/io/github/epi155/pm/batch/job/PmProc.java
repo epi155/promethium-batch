@@ -7,11 +7,11 @@ class PmProc<P> extends Proc<P> {
 
     private final BiFunction<P, JobStatus, JobStatus> route;
 
-    public PmProc(BiFunction<P, JobStatus, JobStatus> route) {
+    PmProc(BiFunction<P, JobStatus, JobStatus> route) {
         this.route = route;
     }
 
-    public PmProc(UnaryOperator<JobStatus> route) {
+    PmProc(UnaryOperator<JobStatus> route) {
         this.route = (p, s) -> route.apply(s);
     }
 

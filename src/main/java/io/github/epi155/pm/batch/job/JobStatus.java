@@ -10,8 +10,6 @@ import java.util.function.Consumer;
  */
 public interface JobStatus
         extends ExecPgm<JobStatus>, LoopPgm<JobStatus>, ExecProc<JobStatus>, LoopProc<JobStatus>
-//        ProcStatus, ExecPgmJob,
-//        ForkExecPgm, ForkNextPgm, ForkElsePgm, NextLoopPgm
 {
     /**
      * Action on JobStatus
@@ -44,152 +42,6 @@ public interface JobStatus
     int complete();
 
     /**
-     * waits for the completion of the programs launched in the background
-     * and returns the state with the highest returnCode amongst the current state
-     * and the states of the finished programs running in the background
-     *
-     * @return status with the highest returnCode
-     */
-//    JobStatus join();
-
-    /**
-     * Procedure launcher in background unconditionally
-     *
-     * <p>example
-     * <pre>
-     * int rc = JCL.getInstance().job("Job01")
-     *     .forkExecProc("Proc01", it -> it
-     *             .execPgm(count1, this::step01)
-     *             .nextPgm(count2, this::step02)
-     *     )
-     *     .execPgm(count3, this::step03)
-     *     .join()
-     *     .complete();
-     * </pre>
-     *
-     * @param procName procedure name
-     * @param proc     procedure
-     * @return instance of {@link JobStatus}
-     */
-//    JobStatus forkExecProc(String procName, UnaryOperator<ProcStatus> proc);
-
-    /**
-     * Procedure launcher in background if the previous step complete successfully
-     *
-     * <p>example
-     * <pre>
-     * int rc = JCL.getInstance().job("Job01")
-     *     .execPgm(count1, this::step01)
-     *     .forkNextProc("Proc01", it -> it
-     *             .execPgm(count2, this::step02)
-     *             .nextPgm(count3, this::step03)
-     *     )
-     *     .elsePgm(count4, this::step04)
-     *     .join()
-     *     .complete();
-     * </pre>
-     *
-     * @param procName procedure name
-     * @param proc     procedure
-     * @return instance of {@link JobStatus}
-     */
-//    JobStatus forkNextProc(String procName, UnaryOperator<ProcStatus> proc);
-
-    /**
-     * Procedure launcher in background if the previous step did not complete successfully
-     *
-     * <p>example
-     * <pre>
-     * int rc = JCL.getInstance().job("Job01")
-     *     .execPgm(count1, this::step01)
-     *     .forkElseProc("Proc01", it -> it
-     *             .execPgm(count2, this::step02)
-     *             .nextPgm(count3, this::step03)
-     *     )
-     *     .nextPgm(count4, this::step04)
-     *     .join()
-     *     .complete();
-     * </pre>
-     *
-     * @param procName procedure name
-     * @param proc     procedure
-     * @return instance of {@link JobStatus}
-     */
-//    JobStatus forkElseProc(String procName, UnaryOperator<ProcStatus> proc);
-
-    /**
-     * Procedure launcher unconditionally
-     *
-     * <p>example
-     * <pre>
-     * int rc = JCL.getInstance().job("Job01")
-     *     .execProc("Proc01", it -> it
-     *             .execPgm(count1, this::step01)
-     *             .nextPgm(count2, this::step02)
-     *     )
-     *     .nextPgm(count3, this::step03)
-     *     .complete();
-     * </pre>
-     *
-     * @param procName procedure name
-     * @param proc     procedure
-     * @return instance of {@link JobStatus}
-     */
-//    JobStatus execProc(String procName, UnaryOperator<ProcStatus> proc);
-
-    /**
-     * Procedure launcher if the previous step complete successfully
-     *
-     * <p>example
-     * <pre>
-     * int rc = JCL.getInstance().job("Job01")
-     *     .execPgm(count1, this::step01)
-     *     .nextProc("Proc01", it -> it
-     *             .execPgm(count2, this::step02)
-     *             .nextPgm(count3, this::step03)
-     *     )
-     *     .complete();
-     * </pre>
-     *
-     * @param procName procedure name
-     * @param proc     procedure
-     * @return instance of {@link JobStatus}
-     */
-//    JobStatus nextProc(String procName, UnaryOperator<ProcStatus> proc);
-
-    /**
-     * Loop procedure launcher
-     *
-     * @param p    job parameters
-     * @param name function that maps the procedure name from the iterable element of the job parameters
-     * @param proc procedure
-     * @param <P>  class to provide job parameters
-     * @param <Q>  class on which to repeat the procedure execution
-     * @return instance of {@link JobStatus}
-     */
-//    <P extends Iterable<Q>, Q> JobStatus forEachProc(P p, Function<Q, String> name, UnaryOperator<SubStatus<Q>> proc);
-
-    /**
-     * Procedure launcher if the previous step did not complete successfully
-     *
-     * <p>example
-     * <pre>
-     * int rc = JCL.getInstance().job("Job01")
-     *     .execPgm(count1, this::step01)
-     *     .elseProc("Proc01", it -> it
-     *             .execPgm(count2, this::step02)
-     *             .nextPgm(count3, this::step03)
-     *     )
-     *     .complete();
-     * </pre>
-     *
-     * @param procName procedure name
-     * @param proc     procedure
-     * @return instance of {@link JobStatus}
-     */
-//    JobStatus elseProc(String procName, UnaryOperator<ProcStatus> proc);
-
-    /**
      * Pushes jobReturnCode onto the internal stack
      *
      * @return original jobStatus
@@ -210,16 +62,100 @@ public interface JobStatus
      */
     JobStatus peek();
 
+    /**
+     * Retrieves the returnCode of the step with the indicated name
+     * <p>
+     * if a step with the indicated name does not exist or has not been executed, an Optional.empty() is returned
+     *
+     * @param stepName step name
+     * @return optional step return code
+     */
     Optional<Integer> returnCode(String stepName);
 
+    /**
+     * condition for not performing the next operation
+     * <p>
+     * example
+     * <pre>
+     * JCL.getInstance().job("job01")
+     *     .execPgm("step01", this::step01)
+     *     <b>.cond(0,NE)</b>.execPgm("step02", this::step02)
+     *     .complete();
+     * </pre>
+     * if the previous program (step01) ends with a return code other than zero (NE),
+     * it does not execute the program that follows the condition (step02)
+     *
+     * @param cc value to test
+     * @param cond condition to be tested
+     * @return state to which to apply the operation
+     */
     CondStatus<JobStatus> cond(int cc, Cond cond);
 
+    /**
+     * condition for performing the next operation
+     * <p>
+     * example
+     * <pre>
+     * JCL.getInstance().job("job01")
+     *     .execPgm("step01", this::step01)
+     *     <b>.when(0,EQ)</b>.execPgm("step02", this::step02)
+     *     .complete();
+     * </pre>
+     * if the previous program (step01) ends with a return code equal (EQ) to zero,
+     * executes the program that follows the condition (step02)
+     *
+     * @param cc value to test
+     * @param cond condition to be tested
+     * @return state to which to apply the operation
+     */
     default CondStatus<JobStatus> when(int cc, Cond cond) {
         return cond(cc, cond.not());
     }
 
+    /**
+     * condition for not performing the next operation
+     * <p>
+     * if the given name does not exist or has not been executed, the next program is executed
+     * <p>
+     * example
+     * <pre>
+     * JCL.getInstance().job("job01")
+     *     .execPgm("step01", this::step01)
+     *     <b>.cond(0,NE,"step01")</b>
+     *         .execPgm("step02", this::step02)
+     *     .complete();
+     * </pre>
+     * if the indicated program (step01) ends with a non-zero return code (NE),
+     * it does not execute the program that follows the condition (step02)
+     *
+     * @param cc value to test
+     * @param cond condition to be tested
+     * @param stepName name of the step to test
+     * @return state to which to apply the operation
+     */
     CondStatus<JobStatus> cond(int cc, Cond cond, String stepName);
 
+    /**
+     * condition for performing the next operation
+     * <p>
+     * if the given name does not exist or has not been executed, the next program is executed
+     * <p>
+     * example
+     * <pre>
+     * JCL.getInstance().job("job01")
+     *     .execPgm("step01", this::step01)
+     *     <b>.when(0,EQ,"step01")</b>
+     *         .execPgm("step02", this::step02)
+     *     .complete();
+     * </pre>
+     * if the indicated program (step01) ends with a return code equal (EQ) to zero,
+     * executes the program that follows the condition (step02)
+     *
+     * @param cc value to test
+     * @param cond condition to be tested
+     * @param stepName name of the step to test
+     * @return state to which to apply the operation
+     */
     default CondStatus<JobStatus> when(int cc, Cond cond, String stepName) {
         return cond(cc, cond.not(), stepName);
     }
