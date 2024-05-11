@@ -44,10 +44,10 @@ class TestJob {
         MyCount count5 = new MyCount("Step05");
         int x = JCL.getInstance().job("Job01")
                 .when(0,NE).execPgm(count1, this::step01)
-//                .forkExecPgm(count1, this::step01)
-//                .forkExecPgm(count2, this::step01)
+                .forkPgm(count1, this::step01)
+                .forkPgm(count2, this::step01)
                 .execPgm(count3, this::step01)
-//                .join()
+                .join()
                 .when(4,LE).execPgm(count4, this::step02) // execute if ok
                 .when(4,GT,STEP03).execPgm(count5, this::step01) // execute in ko
                 .complete();
@@ -81,7 +81,10 @@ class TestJob {
         );
         Proc<Param02> proc02 = Proc.create((p, s) -> s
                 .execPgm(p, count1, this::step21)
+                .push()
                 .when(0,EQ).execProc(p, "proc1", proc01)
+                .pop()
+                .join()
         );
         Proc<Void> proc03 = Proc.create(s -> s
                 .execPgm(count1, this::step01)

@@ -30,4 +30,12 @@ public interface JobTrace {
      * @param name step name
      */
     void add(String name);
+
+    /**
+     * complete stepName with all parent procedures
+     *
+     * @param name step name
+     * @return full step name
+     */
+    String fullName(String name);
 }

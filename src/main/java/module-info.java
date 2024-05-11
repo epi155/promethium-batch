@@ -7,7 +7,6 @@ module promethium.batch {
     uses ValueProvider;
     exports io.github.epi155.pm.batch.step;
     exports io.github.epi155.pm.batch.job;
-    exports io.github.epi155.pm.batch.trash;
 
     requires org.jetbrains.annotations;
     requires static lombok;

@@ -21,8 +21,8 @@ public abstract class Proc<P> {
      * </pre>
      *
      * @param route sequence of programs to call (internal job)
+     * @param <Q>   parameter type
      * @return instance of {@link Proc} (the procedure)
-     * @param <Q> parameter type
      */
     public static <Q> Proc<Q> create(BiFunction<Q, JobStatus, JobStatus> route) {
         return new PmProc<>(route);

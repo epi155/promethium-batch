@@ -5,5 +5,7 @@ package io.github.epi155.pm.batch.job;
  *
  * @param <T> class to operate on
  */
-public interface CondStatus<T> extends ExecPgm<T>, LoopPgm<T>, ExecProc<T> {
+public interface CondStatus<T>
+        extends ExecPgm<T>, ForkPgm<T>, LoopPgm<T>,
+        ExecProc<T>, ForkProc<T>, LoopProc<T> {
 }

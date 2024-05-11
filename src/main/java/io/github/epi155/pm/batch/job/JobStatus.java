@@ -9,8 +9,8 @@ import java.util.function.Consumer;
  * Job environment
  */
 public interface JobStatus
-        extends ExecPgm<JobStatus>, LoopPgm<JobStatus>, ExecProc<JobStatus>, LoopProc<JobStatus>
-{
+        extends ExecPgm<JobStatus>, ForkPgm<JobStatus>, LoopPgm<JobStatus>,
+        ExecProc<JobStatus>, ForkProc<JobStatus>, LoopProc<JobStatus> {
     /**
      * Action on JobStatus
      * <p>used for conditional step
@@ -63,6 +63,14 @@ public interface JobStatus
     JobStatus peek();
 
     /**
+     * waits for the completion of the programs launched in the background.
+     * {@code lastcc} will be the maximum returnCode returned by programs running in the background
+     *
+     * @return instance of {@link JobStatus}
+     */
+    JobStatus join();
+
+    /**
      * Retrieves the returnCode of the step with the indicated name
      * <p>
      * if a step with the indicated name does not exist or has not been executed, an Optional.empty() is returned
@@ -85,7 +93,7 @@ public interface JobStatus
      * if the previous program (step01) ends with a return code other than zero (NE),
      * it does not execute the program that follows the condition (step02)
      *
-     * @param cc value to test
+     * @param cc   value to test
      * @param cond condition to be tested
      * @return state to which to apply the operation
      */
@@ -104,7 +112,7 @@ public interface JobStatus
      * if the previous program (step01) ends with a return code equal (EQ) to zero,
      * executes the program that follows the condition (step02)
      *
-     * @param cc value to test
+     * @param cc   value to test
      * @param cond condition to be tested
      * @return state to which to apply the operation
      */
@@ -128,8 +136,8 @@ public interface JobStatus
      * if the indicated program (step01) ends with a non-zero return code (NE),
      * it does not execute the program that follows the condition (step02)
      *
-     * @param cc value to test
-     * @param cond condition to be tested
+     * @param cc       value to test
+     * @param cond     condition to be tested
      * @param stepName name of the step to test
      * @return state to which to apply the operation
      */
@@ -151,8 +159,8 @@ public interface JobStatus
      * if the indicated program (step01) ends with a return code equal (EQ) to zero,
      * executes the program that follows the condition (step02)
      *
-     * @param cc value to test
-     * @param cond condition to be tested
+     * @param cc       value to test
+     * @param cond     condition to be tested
      * @param stepName name of the step to test
      * @return state to which to apply the operation
      */

@@ -18,7 +18,7 @@ class PmJCL implements JCL {
     }
 
     public JobStatus job(String name) {
-        return PmJobStatus.of(rcOk(), this, name);
+        return PmJob.of(rcOk(), this, name);
     }
 
     @Override

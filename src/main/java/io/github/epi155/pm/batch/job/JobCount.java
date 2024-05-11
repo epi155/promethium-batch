@@ -49,6 +49,11 @@ class JobCount extends StatsCount implements JobTrace {
         stepInfos.add(new StepSkip(name));
     }
 
+    @Override
+    public String fullName(String name) {
+        return name;
+    }
+
     Optional<Integer> getReturnCode(String stepName) {
         for (StepInfo info : stepInfos) {
             if (info.stepName.equals(stepName) && info instanceof StepDone) {
