@@ -32,7 +32,13 @@ public interface JobStatus
      *
      * @return max step return code
      */
-    int maximumConditionCode();
+    int maxcc();
+    /**
+     * Last step return code
+     *
+     * @return last step return code
+     */
+    Integer lastcc();
 
     /**
      * Complete job, and get job return code

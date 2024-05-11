@@ -236,8 +236,13 @@ class PmJob implements JobStatus {
     }
 
     @Override
-    public int maximumConditionCode() {
+    public int maxcc() {
         return maxcc;
+    }
+
+    @Override
+    public Integer lastcc() {
+        return lastcc;
     }
 
     @Override
