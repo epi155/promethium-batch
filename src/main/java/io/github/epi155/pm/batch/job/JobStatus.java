@@ -9,8 +9,7 @@ import java.util.function.Consumer;
  * Job environment
  */
 public interface JobStatus
-        extends ExecPgm<JobStatus>, ForkPgm<JobStatus>, LoopPgm<JobStatus>,
-        ExecProc<JobStatus>, ForkProc<JobStatus>, LoopProc<JobStatus> {
+        extends JobAction<JobStatus> {
     /**
      * Action on JobStatus
      * <p>used for conditional step
@@ -103,7 +102,7 @@ public interface JobStatus
      * @param cond condition to be tested
      * @return state to which to apply the operation
      */
-    CondStatus<JobStatus> cond(int cc, Cond cond);
+    JobAction<JobStatus> cond(int cc, Cond cond);
 
     /**
      * condition for performing the next operation
@@ -122,7 +121,7 @@ public interface JobStatus
      * @param cond condition to be tested
      * @return state to which to apply the operation
      */
-    default CondStatus<JobStatus> when(int cc, Cond cond) {
+    default JobAction<JobStatus> when(int cc, Cond cond) {
         return cond(cc, cond.not());
     }
 
@@ -147,7 +146,7 @@ public interface JobStatus
      * @param stepName name of the step to test
      * @return state to which to apply the operation
      */
-    CondStatus<JobStatus> cond(int cc, Cond cond, String stepName);
+    JobAction<JobStatus> cond(int cc, Cond cond, String stepName);
 
     /**
      * condition for performing the next operation
@@ -170,7 +169,7 @@ public interface JobStatus
      * @param stepName name of the step to test
      * @return state to which to apply the operation
      */
-    default CondStatus<JobStatus> when(int cc, Cond cond, String stepName) {
+    default JobAction<JobStatus> when(int cc, Cond cond, String stepName) {
         return cond(cc, cond.not(), stepName);
     }
 }

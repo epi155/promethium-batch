@@ -1,0 +1,109 @@
+\usepackage[italian]{babel}     % sillabazione italiana
+\usepackage[body={17.8cm,24.7cm}]{geometry}
+
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{pifont}
+\usepackage{array,multirow}
+
+\usepackage{makeidx}
+\usepackage{tocloft}
+\usepackage{fbox}
+
+\usepackage{eflowchart}	% custom style
+
+\usepackage{xcolor,colortbl}
+%\usepackage[outputdir={/tmp}]{minted}
+\usepackage{minted}
+\definecolor{bg}{rgb}{0.95,0.95,0.92}
+\usepackage{caption}
+\newenvironment{elisting}[1][H]
+%  {\captionsetup{aboveskip=-0.1\normalbaselineskip}\begin{listing}[#1]}
+{\captionsetup{aboveskip=0pt}\begin{listing}[#1]}
+{\end{listing}%
+}
+\newminted{java}{
+    frame=single,
+    framesep=2mm,
+    bgcolor=bg,
+    fontsize=\footnotesize,
+    escapeinside=||,
+    tabsize=4,
+%    fontfamily=courier,
+    autogobble,
+%    xleftmargin=5pt,
+%    xrightmargin=5pt,
+%    frame=lines,
+}
+\newminted{yaml}{
+    frame=single,
+    framesep=2mm,
+    bgcolor=bg,
+    fontsize=\footnotesize,
+    tabsize=4,
+%    fontfamily=courier,
+    autogobble,
+%    xleftmargin=5pt,
+%    xrightmargin=5pt,
+%    frame=lines,
+}
+
+\newminted{xml}{
+    frame=single,
+    framesep=2mm,
+    bgcolor=bg,fontsize=\footnotesize,
+    tabsize=4,
+    autogobble,
+}
+
+%\usepackage[pdftex]{graphicx}
+
+\usepackage[pdftex,
+    pdftitle={Guida Utente RECFM},
+    pdfauthor={Enrico Pistolesi},
+    pdfsubject={Generazione di codice per gestire file posizionali},
+%pdfkeywords={LaTeX, graphics, color},
+    pdfpagemode=UseOutlines,
+    bookmarks,bookmarksopen,
+    pdfstartview=FitH,
+    colorlinks,linkcolor=blue,citecolor=blue,
+    urlcolor=teal,
+]
+{hyperref}
+\usepackage[nolink]{qrcode}
+
+\renewcommand{\arraystretch}{1.2}
+
+\usepackage{tikz}
+%\usetikzlibrary{shapes,arrows}
+%\usetikzlibrary{arrows,shapes,snakes,automata,backgrounds,petri}
+\usetikzlibrary{arrows,shapes,decorations,automata,backgrounds,petri}
+
+%\usepackage{bera}
+%\usepackage{beraserif}
+%\usepackage{berasans}
+%\usepackage[scaled=0.9]{beramono}
+\usepackage{newcent}
+\usepackage[scaled=0.9]{beramono}
+%\usepackage{bookman}
+%\usepackage{dejavu}
+%\usepackage{roboto}
+
+\title{promethium batch}
+%\author{E.~Pistolesi}
+%\author{\qrcode{Enrico Pistolesi}}
+
+\makeindex
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}	% default is 2
+
+\cftsetindents{section}{0.5in}{0.5in}
+\cftsetindents{subsection}{0.5in}{0.6in}
+\cftsetindents{subsubsection}{0.5in}{0.7in}
+%\cftsetindents{paragraph}{0.5in}{0.5in}
+\cftsetindents{table}{0.25in}{0.5in}
+
+\renewcommand{\listingscaption}{Listato}
+\renewcommand{\listoflistingscaption}{Elenco dei listati}
+%\captionsetup[listing]{aboveskip=-50pt,belowskip=-20pt}
+

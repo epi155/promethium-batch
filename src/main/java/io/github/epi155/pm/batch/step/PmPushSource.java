@@ -1701,30 +1701,6 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
         }
     }
 
-    private Future<?> start(ExecutorService taskService, Semaphore sm, Runnable runnable) {
-        try {
-            log.trace("··· task ready to be submitted");
-            sm.acquire();
-            log.trace("··· task going to be submitted");
-            String jobName = MDC.get(JOB_NAME);
-            String stepName = MDC.get(STEP_NAME);
-            return taskService.submit(() -> {
-                MDC.put(JOB_NAME, jobName);
-                MDC.put(STEP_NAME, stepName);
-                try {
-                    log.trace("··· task entry.");
-                    runnable.run();
-                } finally {
-                    sm.release();
-                    log.trace("··· task exit.");
-                    MDC.clear();
-                }
-            });
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return null;
-        }
-    }
 
     /**
      * monitors list of future's writer listener (invoked from task scheduler)
@@ -1857,12 +1833,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                             }
                             if (beforeAction != null) beforeAction.run();
                             sm.acquire();
-                            Future<? extends R> promise = transformer.apply(i);
-                            try {
-                                queue.put(promise);
-                            } catch (InterruptedException e) {
-                                Thread.currentThread().interrupt();
-                            }
+                            addToQueue(transformer.apply(i));
                         }
                         if (Thread.currentThread().isInterrupted()) {
                             log.warn("s.>>> Loop interrupted ...");
@@ -1888,18 +1859,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     //noinspection InfiniteLoopStatement
                     while (true) {
                         Future<? extends R> fo = queue.take();
-                        try {
-                            R oo = fo.get();
-                            action.accept(oo);
-                        } catch (ExecutionException e) {
-                            Throwable cause = e.getCause();
-                            String place = placeOf(cause.getStackTrace());
-                            log.warn("s.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
-                            future.cancel(true);
-                            throw new BatchException(cause);
-                        } finally {
-                            sm.release();
-                        }
+                        doWrite(action, fo, future);
                     }
                 } catch (InterruptedException e) {
                     log.info("s.--- write listener interrupted");
@@ -1917,6 +1877,29 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 }
             } finally {
                 service1.shutdown();
+            }
+        }
+
+        private void doWrite(Consumer<R> action, Future<? extends R> fo, Future<?> future) throws InterruptedException {
+            try {
+                R oo = fo.get();
+                action.accept(oo);
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                String place = placeOf(cause.getStackTrace());
+                log.warn("s.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
+                future.cancel(true);
+                throw new BatchException(cause);
+            } finally {
+                sm.release();
+            }
+        }
+
+        private void addToQueue(Future<? extends R> promise) {
+            try {
+                queue.put(promise);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -1992,11 +1975,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                                         MDC.clear();
                                     }
                                 });
-                                try {
-                                    queue.put(promise);
-                                } catch (InterruptedException e) {
-                                    Thread.currentThread().interrupt();
-                                }
+                                addToQueue(promise);
                             } catch (InterruptedException e) {
                                 Thread.currentThread().interrupt();
                                 break;
@@ -2025,16 +2004,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     //noinspection InfiniteLoopStatement
                     while (true) {
                         Future<? extends R> fo = queue.take();
-                        try {
-                            R oo = fo.get();
-                            action.accept(oo);
-                        } catch (ExecutionException e) {
-                            Throwable cause = e.getCause();
-                            String place = placeOf(cause.getStackTrace());
-                            log.warn("S.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
-                            future.cancel(true);
-                            throw new BatchException(cause);
-                        }
+                        doWrite(action, fo, future);
                     }
                 } catch (InterruptedException e) {
                     log.info("S.--- write listener interrupted");
@@ -2052,6 +2022,27 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 }
             } finally {
                 service1.shutdown();
+            }
+        }
+
+        private void doWrite(Consumer<R> action, Future<? extends R> fo, Future<?> future) throws InterruptedException {
+            try {
+                R oo = fo.get();
+                action.accept(oo);
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                String place = placeOf(cause.getStackTrace());
+                log.warn("S.### Error detected in task execution: {} [{}]", cause.getMessage(), place);
+                future.cancel(true);
+                throw new BatchException(cause);
+            }
+        }
+
+        private void addToQueue(Future<? extends R> promise) {
+            try {
+                queue.put(promise);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -2080,14 +2071,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
 
         public void start() {
             try {
-                try {
-                    openResources();
-                    log.info("W.=== completed successfully.");
-                } catch (InterruptedException e) {
-                    log.info("W.>>> thread interrupted");
-                } finally {
-                    log.info("W.--- resources closed.");
-                }
+                doOpen();
             } catch (BatchException e) {
                 log.error("W.### abnormal program end.", e);
                 throw e;
@@ -2096,6 +2080,17 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 throw new BatchException(e);
             } finally {
                 writerService.shutdown();
+            }
+        }
+
+        private void doOpen() throws Exception {
+            try {
+                openResources();
+                log.info("W.=== completed successfully.");
+            } catch (InterruptedException e) {
+                log.info("W.>>> thread interrupted");
+            } finally {
+                log.info("W.--- resources closed.");
             }
         }
 
@@ -2121,7 +2116,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                             break;
                         }
                         if (beforeAction != null) beforeAction.run();
-                        Future<?> status = PmPushSource.this.start(taskService, sm, () -> task.accept(i));
+                        Future<?> status = start(taskService, sm, () -> task.accept(i));
                         if (status == null) break;
                         statuses.add(status);
                         probeStatuses(statuses, true);
@@ -2148,6 +2143,30 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
 
         protected abstract void openResources() throws Exception;
 
+        private Future<?> start(ExecutorService taskService, Semaphore sm, Runnable runnable) {
+            try {
+                log.trace("··· task ready to be submitted");
+                sm.acquire();
+                log.trace("··· task going to be submitted");
+                String jobName = MDC.get(JOB_NAME);
+                String stepName = MDC.get(STEP_NAME);
+                return taskService.submit(() -> {
+                    MDC.put(JOB_NAME, jobName);
+                    MDC.put(STEP_NAME, stepName);
+                    try {
+                        log.trace("··· task entry.");
+                        runnable.run();
+                    } finally {
+                        sm.release();
+                        log.trace("··· task exit.");
+                        MDC.clear();
+                    }
+                });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return null;
+            }
+        }
     }
 
     private abstract class DoParallelRaw<R> {
@@ -2397,14 +2416,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
 
         public void start() {
             try {
-                try {
-                    openResources();
-                    log.info("w.=== completed successfully.");
-                } catch (InterruptedException e) {
-                    log.info("w.>>> thread interrupted");
-                } finally {
-                    log.info("w.--- resources closed.");
-                }
+                doOpen();
             } catch (BatchException e) {
                 log.error("w.### abnormal program end.", e);
                 throw e;
@@ -2413,6 +2425,17 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 throw new BatchException(e);
             } finally {
                 writerService.shutdown();
+            }
+        }
+
+        private void doOpen() throws Exception {
+            try {
+                openResources();
+                log.info("w.=== completed successfully.");
+            } catch (InterruptedException e) {
+                log.info("w.>>> thread interrupted");
+            } finally {
+                log.info("w.--- resources closed.");
             }
         }
 
@@ -2436,16 +2459,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         break;
                     }
                     if (beforeAction != null) beforeAction.run();
-                    try {
-                        while (!sm.tryAcquire(5, TimeUnit.MILLISECONDS)) {
-                            probeStatuses(statuses, sm, true);
-                        }
-                        Future<?> status = task.apply(i);
-                        statuses.add(status);
-                        probeStatuses(statuses, sm, true);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
+                    runTask(task, i, sm, statuses);
                 }
                 if (Thread.currentThread().isInterrupted()) {
                     log.warn("w.>>> Loop interrupted, shutdown taskExecutor ...");
@@ -2461,6 +2475,18 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
             } finally {
                 log.debug("w.--- the listener's monitor will be shut down ...");
                 schedule.shutdown();
+            }
+        }
+
+        private void runTask(Function<I, Future<?>> task, I i, Semaphore sm, List<Future<?>> statuses) {
+            try {
+                while (!sm.tryAcquire(5, TimeUnit.MILLISECONDS)) {
+                    probeStatuses(statuses, sm, true);
+                }
+                statuses.add(task.apply(i));
+                probeStatuses(statuses, sm, true);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
 

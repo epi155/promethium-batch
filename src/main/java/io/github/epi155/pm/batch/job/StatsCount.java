@@ -49,12 +49,7 @@ public abstract class StatsCount {
         return name;
     }
 
-    /**
-     * set error for step report
-     *
-     * @param error step error
-     */
-    public void error(Throwable error) {
+    void error(Throwable error) {
         this.error = error;
     }
 }

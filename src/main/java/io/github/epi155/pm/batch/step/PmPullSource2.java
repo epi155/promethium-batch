@@ -42,7 +42,7 @@ class PmPullSource2<
         ) {
             Supplier<I1> si1 = source1.supplier(s1);
             Supplier<I2> si2 = source2.supplier(s2);
-            Consumer<O> ct = (d) -> sink.accept(t, d);
+            Consumer<O> ct = d -> sink.accept(t, d);
             return worker -> worker.proceed(si1, si2, ct);
         } catch (Exception e) {
             throw new BatchException(e);
@@ -62,8 +62,8 @@ class PmPullSource2<
         ) {
             Supplier<I1> si1 = source1.supplier(s1);
             Supplier<I2> si2 = source2.supplier(s2);
-            Consumer<O1> ct1 = (d) -> sink1.accept(t1, d);
-            Consumer<O2> ct2 = (d) -> sink2.accept(t2, d);
+            Consumer<O1> ct1 = d -> sink1.accept(t1, d);
+            Consumer<O2> ct2 = d -> sink2.accept(t2, d);
             return worker -> worker.proceed(si1, si2, ct1, ct2);
         } catch (Exception e) {
             throw new BatchException(e);

@@ -110,7 +110,7 @@ class JobCount extends StatsCount implements JobTrace {
             pw.print(".".repeat(width - stepName.length()));
             pw.printf("! skip ! %-29s !                               !%n",
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
-                            .format(LocalDateTime.ofInstant(tmStart, ZoneOffset.systemDefault())));
+                            .format(LocalDateTime.ofInstant(tmStart, ZoneId.systemDefault())));
         }
     }
 

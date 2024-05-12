@@ -1,0 +1,105 @@
+\chapter{Step}
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+In una elaborazione di uno step in generale abbiamo una (o più) origine dati
+(tipicamente un file, ma non solo), una (o più) destinazione dati (tipicamente
+un file, ma non solo) e un processo elaborativo che prende i dati dalla origine,
+li trasforma in modo da poterli scrivere nella destinazione.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Nel caso che ci siano più origini dati, è il processo elaborativo che deve
+decidere da quale origine leggere, e non è possibile parallelizzare il processo
+elaborativo.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Nel caso di una singola origine dati il processo elaborativo non richiede una
+logica di lettura; la lettura dalla origine dati può essere fatta dalla
+infrastruttura, e il processo elaborativo può essere parallelizzato.
+In questo caso, nelle destinazioni dati può essere mantenuta o meno la
+sequenzialità della origine dati (dipende dalla implementazione della
+parallelizzazione).
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Per gestire in modo generico le origini e destinazione dati vengono usate le
+classi
+\begin{itemize}
+\item \texttt{SourceResource} origine dati
+\item \texttt{SinkResource} destinazione dati
+\end{itemize}
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Nel caso che sia presente una sola origine dati la parte elaborativa può
+produrre una tupla e sarà la infrastruttura a inviare i dati alle destinazioni,
+in questo caso il formato elaborativo è:
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+    Pgm.from(src).into(snk1,snk2).forEach(it -> { ... });
+\end{javacode}
+\caption{elaborazione $1\mapsto N$}
+\label{lst:processTuple}
+\end{elisting}
+
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+in alternativa alla parte elaborativa oltre al valore di input vengono forniti i
+\texttt{Consumer} per scrivere direttamente in dati sulle corrispondenti
+destinazioni, il questo caso il formato elaborativo è:
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+    Pgm.from(src).into(snk1,snk2).forEach((it,wr1,wr2) -> { ... });
+\end{javacode}
+\caption{elaborazione writer}
+\label{lst:processWriter}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+entrambi i formati possono essere parallelizzati, ma solo il primo permette una
+implementazione che mantiene l'\,ordine dei dati originale.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Nel caso che siano presenti più di una origine dati, alla parte elaborativa
+vengono forniti i \texttt{Supplier} per leggere i dati dalle origini, e i
+\texttt{Consumer} per scrivere i dati, in questo caso il formato elaborativo è:
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+    Pgm.from(src1, src2).into(snk1, snk2).proceed((rd1, rd2, wr1, wr2) -> { ... });
+\end{javacode}
+\caption{elaborazione reader-writer}
+\label{lst:pullProcess}
+\end{elisting}
+
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Possono essere utilizzata da 1 a 3 sorgenti e da 0 a 8 destinazioni.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Nel caso di elaborazione sequenziale la separazione della elaborazione in una
+parte dedicata alla lettura dei dati, una dedicata alla scrittura dei dati e una
+specifica per la elaborazione dei dati, non offre particolari vantaggi.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Questa separazione è propedeutica alla elaborazione parallela.
+Una elaborazione sequenziale nella forma~\ref{lst:pushSeq}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+    Pgm.from(src).into(...).forEach(...);
+\end{javacode}
+\caption{elaborazione sequenziale}
+\label{lst:pushSeq}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+può essere trasformata nella forma parallela~\ref{lst:pushMt}, sostituendo il
+\texttt{forEach} in \texttt{forEachParallel}:
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+    Pgm.from(src).into(...).forEachParallel(numTask, ...);
+\end{javacode}
+\caption{elaborazione multitask}
+\label{lst:pushMt}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+senza nessuna altra modifica.

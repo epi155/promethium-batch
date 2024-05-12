@@ -11,7 +11,7 @@ class PmCloseableConsumer<O> implements AutoCloseable {
 
     @Override
     public void close() {
-
+        // noop
     }
 
     public void writer(O o) {

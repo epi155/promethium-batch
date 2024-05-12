@@ -13,7 +13,7 @@ class PmCloseableIterable<I> implements AutoCloseable, Iterable<I> {
 
     @Override
     public void close() {
-
+        // noop
     }
 
     @NotNull

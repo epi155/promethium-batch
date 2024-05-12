@@ -42,6 +42,11 @@ class PmJCL implements JCL {
     }
 
     @Override
+    public int rcMax(int a, int b) {
+        return factory.rcMax(a,b);
+    }
+
+    @Override
     public String jobName() {
         return factory.jobName();
     }

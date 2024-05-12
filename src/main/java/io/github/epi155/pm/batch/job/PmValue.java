@@ -35,6 +35,11 @@ class PmValue implements ValueProvider {
             }
 
             @Override
+            public int rcMax(int a, int b) {
+                return Math.max(b, a);
+            }
+
+            @Override
             public String jobName() {
                 return "jobName";
             }

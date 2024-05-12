@@ -47,6 +47,15 @@ public interface ValueFactory {
     int rcErrorJob();
 
     /**
+     * Max returnCode operator
+     *
+     * @param a 1st return code
+     * @param b 2nd return code
+     * @return maximum return code
+     */
+    int rcMax(int a, int b);
+
+    /**
      * MDC key for jobName
      *
      * @return MDC key for jobName

@@ -1,0 +1,142 @@
+\chapter{Job}
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+L'\,esempio mostrato nell'\,introduzione è eccessivamente semplice, in generale
+lo step viene lanciato con una classe aggiuntiva che fornisce i parametri usati
+dallo step per pilotare l'\,esecuzione del codice.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Al posto del nome dello step, può essere passata una classe \textsl{statistica}
+che fornisce il nome dello step, mette a disposizione dello step dei contatori,
+e produce al completamento dello step un report utente di dettaglio.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Inoltre il metodo che esegue lo step può restituire un \textsl{returnCode} o
+non restituire nulla, in questo caso è sottinteso che viene restituito il codice
+di successo se non ci sono eccezioni, e un codice di errore in caso di
+eccezioni.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Considerando tutte le combinazioni sono possibili 8 metodi per lanciare uno
+step, vedi lis~\ref{lst:execPgm}, dove \texttt{P} è la generica classe di
+parametri, e \texttt{C} è la classe statistica.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+public interface ExecPgm<S> {
+    <P, C extends StatsCount> S execPgm(P p, C c, BiFunction<P, C, Integer> pgm);
+    <P> S execPgm(P p, String stepName, ToIntFunction<P> pgm);
+    <C extends StatsCount> S execPgm(C c, ToIntFunction<C> pgm);
+    S execPgm(String stepName, IntSupplier pgm);
+    <P, C extends StatsCount> S execPgm(P p, C c, BiConsumer<P, C> pgm);
+    <P> S execPgm(P p, String stepName, Consumer<P> pgm);
+    <C extends StatsCount> S execPgm(C c, Consumer<C> pgm);
+    S execPgm(String stepName, Runnable pgm);
+}
+\end{javacode}
+\caption{Interfaccia con i metodi di esecuzione di un programma (step)}
+\label{lst:execPgm}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+In generale un \textit{Job} è composto da più \textit{Step}, e gli step
+successivi al primo sono eseguiti in modo condizionale.
+Se il primo step è terminato in errore, potrebbe non avere alcun senso
+l'\,esecuzione del secondo step.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Seguendo l\,impostazione dei batch mainframe/COBOL, un programma che termina con
+successo restituisce il valore $0$, un programma che termina con una
+segnalazione (\textit{warning}) restituisce il valore $4$, un programma che
+termina in errore con valore maggiore di $4$.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+public Integer call() {
+    return JCL.getInstance().job("job01")
+        .execPgm("step01", step01::run)
+        .cond(0,NE).execPgm("step02", step02::run)
+        .cond(0,NE).execPgm("step03", step03::run)
+        .complete();
+}
+\end{javacode}
+\caption{Esempio di job con step condizionali}
+\label{lst:demoStepCond}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Un esempio di job con esecuzione condizionata è mostrato nel
+lis.~\ref{lst:demoStepCond}, l'\,operatore \texttt{cond} permette di indicare
+le condizione per le quali il programma successivo non deve essere eseguito in
+funzione del codice restituito (\textit{returnCode}) dell'\,ultimo programma
+eseguito.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Lo step \texttt{step01} viene eseguito in modo incondizionato, se lo step
+\texttt{step01} termina con un \textit{returnCode} diverso da zero allora lo
+step \texttt{step02} non viene eseguito; analogamente se lo step \texttt{step02}
+termina con un \textit{returnCode} diverso da zero, lo step \texttt{step03} non
+viene eseguito.
+Se lo step \texttt{step01} termina in errore e lo step \texttt{step02} non viene
+eseguito, la condizione di esecuzione per lo step \texttt{step03} viene
+applicata sul \textit{returnCoce} dell'\,ultimo programma eseguito, lo step
+\texttt{step01}, che è terminato in errore, di conseguenza lo step
+\texttt{step03} non viene eseguito.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+\begin{elisting}[!htb]
+\begin{javacode}
+    Proc<Prm1> proc1 = Proc.create((p, s) -> s
+        .execPgm(p, "Step11", step11::run)
+        .cond(0,NE).execPgm(p, "Step12", step12::run)
+    );
+\end{javacode}
+\caption{Esempio di definizione di una procedura con una classe parametro}
+\label{lst:demoDefProc}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+È possibile raggruppare l'\,esecuzione di una sequenza di programmi definendo
+una procedura, come mostrato nel lis.~\ref{lst:demoDefProc}, la procedura così
+definita può essere eseguita in modo simile a un programma nel \textit{job}
+principale, vedi lis.~\ref{lst:demoUseProc}, o all'\,interno di un'\,altra
+procedura.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+public Integer call() {
+    Proc<Prm1> proc1 = ...
+    return JCL.getInstance().job("job01")
+        .execPgm("step01", step01::run)
+        .cond(0,NE).execPgm("step02", step02::run)
+        .cond(0,EQ,"step01").execProc(prm1, "proc01", proc1)
+        .complete();
+}
+\end{javacode}
+\caption{Esempio uso di una procedura nel job}
+\label{lst:demoUseProc}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+
+
+\section{Classe statistica --- \texttt{StatsCount}}\label{sec:statCount}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+La classe statistica utente deve estendere la classe statistica base
+(\texttt{StatsCount}), mostrata nel lis.~\ref{lst:statCount}.
+L'\,utente deve indicare l'\,etichetta da associare la programma in esecuzione
+(nome dello step) nel costruttore della classe, e definire un metodo che
+fornisca informazioni sulla elaborazione eseguita dal programma.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+public abstract class StatsCount {
+    protected StatsCount(String name) { ... }
+    protected abstract void recap(PrintWriter pw);
+}
+\end{javacode}
+\caption{Costruttore e metodo astratto della classe statistica}
+\label{lst:statCount}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
