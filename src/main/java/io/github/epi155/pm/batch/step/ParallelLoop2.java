@@ -14,7 +14,7 @@ import java.util.function.Function;
 public interface ParallelLoop2<I, O1, O2> {
     /**
      * performs repeated action from input to output in parallel
-     * <pre>Batch.from(src).into(snk1,snk2).forEachParallel(n,(i,wr1,wr2) -> { ... });</pre>
+     * <pre>Pgm.from(src).into(snk1,snk2).forEachParallel(n,(i,wr1,wr2) -> { ... });</pre>
      *
      * @param maxThread maximum number of parallel processing
      * @param worker    worker who takes the input value and writes the outputs using the consumers
@@ -24,7 +24,7 @@ public interface ParallelLoop2<I, O1, O2> {
     /**
      * performs repeated transformation from input to outputs in parallel
      * <p>first starts first writes
-     * <pre>Batch.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
+     * <pre>Pgm.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into {@link Tuple2} outputs
@@ -34,7 +34,7 @@ public interface ParallelLoop2<I, O1, O2> {
     /**
      * performs repeated transformation from input to outputs in parallel
      * <p>first ends first writes
-     * <pre>Batch.from(src).into(snk).forEachParallel(n,i -> { ... });</pre>
+     * <pre>Pgm.from(src).into(snk).forEachParallel(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into {@link Tuple2} outputs

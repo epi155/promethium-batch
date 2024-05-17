@@ -1,7 +1,13 @@
 package io.github.epi155.pm.batch.step;
 
+import io.github.epi155.pm.batch.job.BatchIOException;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -86,6 +92,234 @@ public interface SourceResource<U extends AutoCloseable, I> {
      */
     static <U extends AutoCloseable & Supplier<I>, I> @NotNull SourceResource<U, I> fromSupplier(@NotNull Supplier<U> ctor) {
         return new PmSourceResourceSupplier<>(ctor, u -> u);
+    }
+
+    /**
+     * static constructor of {@code SourceResource<BufferedReader, String>}
+     *
+     * @param file file
+     * @param cs   charset
+     * @param inc  action after read (usually counter++)
+     * @return instance of {@link SourceResource}
+     */
+    static @NotNull SourceResource<BufferedReader, String> bufferedReader(File file, Charset cs, Runnable inc) {
+        return SourceResource.fromSupplier(
+                () -> {
+                    try {
+                        return Files.newBufferedReader(file.toPath(), cs);
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                },
+                b -> () -> {
+                    try {
+                        String s = b.readLine();
+                        if (s != null) inc.run();
+                        return s;
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                }
+        );
+    }
+
+    /**
+     * static constructor of {@code SourceResource<BufferedReader, String>} with default charset
+     *
+     * @param file file
+     * @param inc  action after read (usually counter++)
+     * @return instance of {@link SourceResource}
+     */
+    static @NotNull SourceResource<BufferedReader, String> bufferedReader(File file, Runnable inc) {
+        return SourceResource.fromSupplier(
+                () -> {
+                    try {
+                        return Files.newBufferedReader(file.toPath());
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                },
+                b -> () -> {
+                    try {
+                        String s = b.readLine();
+                        if (s != null) inc.run();
+                        return s;
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                }
+        );
+    }
+
+    /**
+     * static constructor of {@code SourceResource<BufferedReader, String>}
+     *
+     * @param file file
+     * @param cs   charset
+     * @return instance of {@link SourceResource}
+     */
+    static @NotNull SourceResource<BufferedReader, String> bufferedReader(File file, Charset cs) {
+        return SourceResource.fromSupplier(
+                () -> {
+                    try {
+                        return Files.newBufferedReader(file.toPath(), cs);
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                },
+                b -> () -> {
+                    try {
+                        return b.readLine();
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                }
+        );
+    }
+
+    /**
+     * static constructor of {@code SourceResource<BufferedReader, String>} with default charset
+     *
+     * @param file file
+     * @return instance of {@link SourceResource}
+     */
+    static @NotNull SourceResource<BufferedReader, String> bufferedReader(File file) {
+        return SourceResource.fromSupplier(
+                () -> {
+                    try {
+                        return Files.newBufferedReader(file.toPath());
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                },
+                b -> () -> {
+                    try {
+                        return b.readLine();
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                }
+        );
+    }
+
+    /**
+     * static constructor of {@code SourceResource<BufferedReader, I>} with decoder String to I
+     *
+     * @param file file
+     * @param dec  decoder function
+     * @param cs   charset
+     * @param inc  action after read (usually counter++)
+     * @param <I>  type read
+     * @return instance of {@link SourceResource}
+     */
+    static <I> @NotNull SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec, Charset cs, Runnable inc) {
+        return SourceResource.fromSupplier(
+                () -> {
+                    try {
+                        return Files.newBufferedReader(file.toPath(), cs);
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                },
+                b -> () -> {
+                    try {
+                        String s = b.readLine();
+                        if (s != null) inc.run();
+                        return dec.apply(s);
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                }
+        );
+    }
+
+    /**
+     * static constructor of {@code SourceResource<BufferedReader, I>} with decoder String to I
+     *
+     * @param file file
+     * @param dec  decoder function
+     * @param cs   charset
+     * @param <I>  type read
+     * @return instance of {@link SourceResource}
+     */
+    static <I> @NotNull SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec, Charset cs) {
+        return SourceResource.fromSupplier(
+                () -> {
+                    try {
+                        return Files.newBufferedReader(file.toPath(), cs);
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                },
+                b -> () -> {
+                    try {
+                        String s = b.readLine();
+                        return dec.apply(s);
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                }
+        );
+    }
+
+    /**
+     * static constructor of {@code SourceResource<BufferedReader, I>}
+     * with decoder String to I (default charset)
+     *
+     * @param file file
+     * @param dec  decoder function
+     * @param inc  action after read (usually counter++)
+     * @param <I>  type read
+     * @return instance of {@link SourceResource}
+     */
+    static <I> @NotNull SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec, Runnable inc) {
+        return SourceResource.fromSupplier(
+                () -> {
+                    try {
+                        return Files.newBufferedReader(file.toPath());
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                },
+                b -> () -> {
+                    try {
+                        String s = b.readLine();
+                        if (s != null) inc.run();
+                        return dec.apply(s);
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                }
+        );
+    }
+
+    /**
+     * static constructor of {@code SourceResource<BufferedReader, I>}
+     * with decoder String to I (default charset)
+     *
+     * @param file file
+     * @param dec  decoder function
+     * @param <I>  type read
+     * @return instance of {@link SourceResource}
+     */
+    static <I> @NotNull SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec) {
+        return SourceResource.fromSupplier(
+                () -> {
+                    try {
+                        return Files.newBufferedReader(file.toPath());
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                },
+                b -> () -> {
+                    try {
+                        String s = b.readLine();
+                        return dec.apply(s);
+                    } catch (IOException e) {
+                        throw new BatchIOException(e);
+                    }
+                }
+        );
     }
 
     /**

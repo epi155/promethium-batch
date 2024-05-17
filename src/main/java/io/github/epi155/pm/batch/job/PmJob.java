@@ -245,7 +245,8 @@ class PmJob implements JobStatus {
 
     @Override
     public int complete() {
-        jobCount.recap(maxcc);
+        jobCount.maxcc(maxcc);
+        jobCount.recap();
         if (jobTrace == null)
             MDC.remove(JOB_NAME);
         stack.clear();
@@ -270,7 +271,7 @@ class PmJob implements JobStatus {
     }
 
     private void sendMessage(int j, int r) {
-        if ((j & 0x1ff) != 0) {
+        if ((j & 0x3ff) != 0) {
             int n = 0;
             while (j != 0) {
                 if ((j & 0x01) == 1) n++;
@@ -284,7 +285,7 @@ class PmJob implements JobStatus {
     protected int runStep(StatsCount c, IntSupplier step) {
         String name = c.name();
         MDC.put(STEP_NAME, fullName(name));
-        log.info("Step {} start", name);
+        log.info("\\\\\\ Step {} start", name);
         Instant tiStart = Instant.now();
         int returnCode = Integer.MAX_VALUE;
         try {
@@ -302,7 +303,7 @@ class PmJob implements JobStatus {
             c.recap(returnCode);  // log returnCode and custom statistics
             Instant tiEnd = Instant.now();
             Duration lapse = Duration.between(tiStart, tiEnd);
-            log.info("Step {} end: {}", name, DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
+            log.info("/// Step {} end: {}", name, DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
             MDC.remove(STEP_NAME);
             add(Boolean.TRUE.equals(isBackgorund.get()) ? name + BG : name, returnCode, tiStart, tiEnd);
         }
@@ -320,6 +321,7 @@ class PmJob implements JobStatus {
 
     @Override
     public JobStatus join() {
+        Instant tiStart = Instant.now();
         Integer maxRc = null;
         for (int k = 1; !futures.isEmpty(); k++) {
             val it = futures.iterator();
@@ -330,8 +332,9 @@ class PmJob implements JobStatus {
         if (maxRc == null) {
             add("join()");
         } else {
+            Instant tiEnd = Instant.now();
             maxcc(maxRc);
-            add("join()", maxRc);
+            add("join()", maxRc, tiStart, tiEnd);
         }
         return this;
     }
@@ -352,7 +355,7 @@ class PmJob implements JobStatus {
             }
             if (nmAlive > 0) {
                 sendMessage(k, nmAlive);
-                TimeUnit.MILLISECONDS.sleep(100);
+                TimeUnit.MILLISECONDS.sleep(50);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

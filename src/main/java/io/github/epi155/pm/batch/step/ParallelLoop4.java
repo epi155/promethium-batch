@@ -16,7 +16,7 @@ import java.util.function.Function;
 public interface ParallelLoop4<I, O1, O2, O3, O4> {
     /**
      * performs repeated action from input to output in parallel
-     * <pre>Batch.from(src)
+     * <pre>Pgm.from(src)
      *      .into(snk1,snk2,snk3,snk4)
      *      .forEachParallel(n,(i,wr1,wr2,wr3,wr4) -> { ... });</pre>
      *
@@ -32,7 +32,7 @@ public interface ParallelLoop4<I, O1, O2, O3, O4> {
     /**
      * performs repeated transformation from input to outputs in parallel
      * <p>first starts first writes
-     * <pre>Batch.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
+     * <pre>Pgm.from(src).into(snk).forEachParallelFair(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into {@link Tuple4} outputs
@@ -46,7 +46,7 @@ public interface ParallelLoop4<I, O1, O2, O3, O4> {
     /**
      * performs repeated transformation from input to outputs in parallel
      * <p>first ends first writes
-     * <pre>Batch.from(src).into(snk).forEachParallelRaw(n,i -> { ... });</pre>
+     * <pre>Pgm.from(src).into(snk).forEachParallelRaw(n,i -> { ... });</pre>
      *
      * @param maxThread   maximum number of parallel processing
      * @param transformer function that transforms input into {@link Tuple4} outputs

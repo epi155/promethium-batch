@@ -1,75 +1,57 @@
 # promethium-batch
 
-In a batch processing we have one (or more) data source (typically a file, but not only), one (or more) data
-destination (typically a file, but not only) and a processing process, which takes the data from the source, transforms
-them so you can write them to the destination.
+In the mainframe world, a batch process is normally divided into several parts (step), and these are coordinated by a control script (JCL).
 
-If there are multiple data sources, it is the processing that must decide which source to read from, and it is not
-possible to parallelize the processing.
+This library provides classes to facilitate development of the processing of the individual steps and to coordinate the execution of the steps.
 
-In the case of a single data source, the processing process can receive as input the data read from the data source, it
-does not require reading logic. Reading from the data source can be done by the batch infrastructure, and the processing
-process can be parallelized. In this case, the sequence of the data source may or may not be maintained in the data
-destinations (depending on the implementation of parallelization).
-
-The following classes are used to generically manage data sources and destinations
-
-* [`SourceResource`](./doc/source.md) data sources
-* [`SinkResource`](./doc/sink.md) data destinations
-
-If there is only one data source, the processing part can produce a tuple and the infrastructure will send the data to
-the destinations, in this case the processing format is:
+A minimal example of a single step batch job is:
 
 ~~~java
-Pgm.from(src).into(snk1,snk2).forEach(it -> { ... });
+public Integer call() {
+    return JCL.getInstance().job("job01")
+        .execPgm("step01", step01::run)
+        .complete();
+}
 ~~~
 
-as an alternative to the processing part, in addition to the input value, the `Consumers` are provided to write data
-directly to the corresponding destinations, in this case the processing format is:
+where `job01` is the name of the job, `step01` is the name of the step and `step01::run` is the reference to the method that executes the step.
+
+The execution of the job produces a final report in the log of the type:
+
+~~~
+  Name   !  rc  !     Date-Time Start/Skip      !         Date-Time End         !       Lapse
+---------+------+-------------------------------+-------------------------------+-------------------
+step01...!    0 ! 2024-05-17T14:59:12.03243396  ! 2024-05-17T14:59:12.590157083 ! 00:00:00.557723123
+---------+------+-------------------------------+-------------------------------+-------------------
+job01....!    0 ! 2024-05-17T14:59:12.028019213 ! 2024-05-17T14:59:12.590998545 ! 00:00:00.562979332
+~~~
+
+A minimal example of a step implementation is
 
 ~~~java
-Pgm.from(src).into(snk1,snk2).forEach((it,wr1,wr2) -> { ... });
+    public void run() {
+        val src = SourceResource.bufferedReader(inFile);
+        val snk = SinkResource.bufferedWriter(outFile);
+        Pgm.from(src).into(snk).forEach(it -> it);
+    }
 ~~~
 
-[loop examples](./doc/ex-loop1to2.md)
+where `src` is the data source constructed from the input file, `snk` is the data destination constructed from the output file, and the `forEach` method argument provides the rule for transforming the input into the output.
 
-Both formats can be parallelized, but only the former allows an implementation that maintains the original data order.
+Naturally a step can be written not using the proposed classes, it is sufficient that the method that implements the step returns a `void` or an `int`, in the latter case the returned value indicates whether the step ended correctly, with a warning or with an error.
 
-When the destination is a resource external to the program (for example a call to a REST service), the processing loop
-can be written in the form
+These examples are just a starting point, the javadoc documentation provides explanations of all the methods, To be able to develop complex jobs and complex steps.
+
 
 ~~~java
-Pgm.from(src).forEach(it -> { ... });
+public Integer call() {
+    return JCL.getInstance().job("job02")
+        .forkPgm("sort1", this::sort1)
+        .forkPgm("sort2", this::sort2)
+        .join()
+        .cond(0,NE).execPgm("balance", this::balance)
+        .execPgm("clean", this::clean)
+        .complete();
+}
 ~~~
 
-this form can also be parallelized (destination must be thread safe),
-
-If there is more than one data source, the processing part must be provided with `Suppliers` to read the data from the
-sources, and `Consumers` to write the data, in this case the processing format is:
-
-~~~java
-Pgm.from(src1, src2).into(snk1, snk2)
-        .proceed((rd1, rd2, wr1, wr2) -> { ... });
-~~~
-
-[example of balancing](./doc/ex-balance.md)
-
-It can be used from 1 to 3 sources and from 0 to 8 destinations.
-
-In the case of sequential processing, the separation of the processing into a part dedicated to reading data, one
-dedicated to writing data and a specific part for data processing does not offer particular advantages. This separation
-is preparatory to parallel processing.
-
-A sequential elaboration in form
-
-~~~java
-Pgm.from(src).into(...).forEach(...);
-~~~
-
-can be parallel transformed by replacing `forEach` in [`forEachParallel`](./doc/parallel.md):
-
-~~~java
-Pgm.from(src).into(...).forEachParallel(maxThread, ...);
-~~~
-
-without any other modifications.

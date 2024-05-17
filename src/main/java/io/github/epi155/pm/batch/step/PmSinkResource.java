@@ -1,7 +1,6 @@
 package io.github.epi155.pm.batch.step;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 class PmSinkResource<U extends AutoCloseable, O> implements SinkResource<U, O> {
@@ -23,8 +22,8 @@ class PmSinkResource<U extends AutoCloseable, O> implements SinkResource<U, O> {
         consumer.accept(u, o);
     }
 
-    @Override
-    public Consumer<? super O> consumer(U u) {
-        return o -> accept(u, o);
-    }
+//    @Override
+//    public Consumer<? super O> consumer(U u) {
+//        return o -> accept(u, o);
+//    }
 }

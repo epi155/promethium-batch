@@ -35,6 +35,10 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
         this.source = source;
     }
 
+    private <O, T extends AutoCloseable> Consumer<? super O> consumerOf(SinkResource<T, O> sink, T t) {
+        return o -> sink.accept(t, o);
+    }
+
     @Override
     public LoopSourceLayer<I> terminate(Predicate<? super I> test) {
         this.terminateTest = test;
@@ -134,7 +138,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
             public void forEach(Worker<? super I, Consumer<? super O>> worker) {
                 try (T t = sink.get();
                      S s = source.get()) {
-                    Consumer<? super O> wr = sink.consumer(t);
+                    Consumer<? super O> wr = consumerOf(sink, t);
                     Iterator<I> iterator = source.iterator(s);
                     while (iterator.hasNext()) {
                         I i = iterator.next();
@@ -269,8 +273,8 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 try (T1 t1 = sink1.get();
                      T2 t2 = sink2.get();
                      S s = source.get()) {
-                    Consumer<? super O1> w1 = sink1.consumer(t1);
-                    Consumer<? super O2> w2 = sink2.consumer(t2);
+                    Consumer<? super O1> w1 = consumerOf(sink1, t1);
+                    Consumer<? super O2> w2 = consumerOf(sink2, t2);
                     Iterator<I> iterator = source.iterator(s);
                     while (iterator.hasNext()) {
                         I i = iterator.next();
@@ -433,9 +437,9 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                      T2 t2 = sink2.get();
                      T3 t3 = sink3.get();
                      S s = source.get()) {
-                    Consumer<? super O1> w1 = sink1.consumer(t1);
-                    Consumer<? super O2> w2 = sink2.consumer(t2);
-                    Consumer<? super O3> w3 = sink3.consumer(t3);
+                    Consumer<? super O1> w1 = consumerOf(sink1, t1);
+                    Consumer<? super O2> w2 = consumerOf(sink2, t2);
+                    Consumer<? super O3> w3 = consumerOf(sink3, t3);
                     Iterator<I> iterator = source.iterator(s);
                     while (iterator.hasNext()) {
                         I i = iterator.next();
@@ -605,10 +609,10 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                      T3 t3 = sink3.get();
                      T4 t4 = sink4.get();
                      S s = source.get()) {
-                    Consumer<? super O1> w1 = sink1.consumer(t1);
-                    Consumer<? super O2> w2 = sink2.consumer(t2);
-                    Consumer<? super O3> w3 = sink3.consumer(t3);
-                    Consumer<? super O4> w4 = sink4.consumer(t4);
+                    Consumer<? super O1> w1 = consumerOf(sink1, t1);
+                    Consumer<? super O2> w2 = consumerOf(sink2, t2);
+                    Consumer<? super O3> w3 = consumerOf(sink3, t3);
+                    Consumer<? super O4> w4 = consumerOf(sink4, t4);
                     Iterator<I> iterator = source.iterator(s);
                     while (iterator.hasNext()) {
                         I i = iterator.next();
@@ -819,11 +823,11 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                      T4 t4 = sink4.get();
                      T5 t5 = sink5.get();
                      S s = source.get()) {
-                    Consumer<? super O1> w1 = sink1.consumer(t1);
-                    Consumer<? super O2> w2 = sink2.consumer(t2);
-                    Consumer<? super O3> w3 = sink3.consumer(t3);
-                    Consumer<? super O4> w4 = sink4.consumer(t4);
-                    Consumer<? super O5> w5 = sink5.consumer(t5);
+                    Consumer<? super O1> w1 = consumerOf(sink1, t1);
+                    Consumer<? super O2> w2 = consumerOf(sink2, t2);
+                    Consumer<? super O3> w3 = consumerOf(sink3, t3);
+                    Consumer<? super O4> w4 = consumerOf(sink4, t4);
+                    Consumer<? super O5> w5 = consumerOf(sink5, t5);
                     Iterator<I> iterator = source.iterator(s);
                     while (iterator.hasNext()) {
                         I i = iterator.next();
@@ -1055,12 +1059,12 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                      T5 t5 = sink5.get();
                      T6 t6 = sink6.get();
                      S s = source.get()) {
-                    Consumer<? super O1> w1 = sink1.consumer(t1);
-                    Consumer<? super O2> w2 = sink2.consumer(t2);
-                    Consumer<? super O3> w3 = sink3.consumer(t3);
-                    Consumer<? super O4> w4 = sink4.consumer(t4);
-                    Consumer<? super O5> w5 = sink5.consumer(t5);
-                    Consumer<? super O6> w6 = sink6.consumer(t6);
+                    Consumer<? super O1> w1 = consumerOf(sink1, t1);
+                    Consumer<? super O2> w2 = consumerOf(sink2, t2);
+                    Consumer<? super O3> w3 = consumerOf(sink3, t3);
+                    Consumer<? super O4> w4 = consumerOf(sink4, t4);
+                    Consumer<? super O5> w5 = consumerOf(sink5, t5);
+                    Consumer<? super O6> w6 = consumerOf(sink6, t6);
                     Iterator<I> iterator = source.iterator(s);
                     while (iterator.hasNext()) {
                         I i = iterator.next();
@@ -1300,13 +1304,13 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                      T6 t6 = sink6.get();
                      T7 t7 = sink7.get();
                      S s = source.get()) {
-                    Consumer<? super O1> w1 = sink1.consumer(t1);
-                    Consumer<? super O2> w2 = sink2.consumer(t2);
-                    Consumer<? super O3> w3 = sink3.consumer(t3);
-                    Consumer<? super O4> w4 = sink4.consumer(t4);
-                    Consumer<? super O5> w5 = sink5.consumer(t5);
-                    Consumer<? super O6> w6 = sink6.consumer(t6);
-                    Consumer<? super O7> w7 = sink7.consumer(t7);
+                    Consumer<? super O1> w1 = consumerOf(sink1, t1);
+                    Consumer<? super O2> w2 = consumerOf(sink2, t2);
+                    Consumer<? super O3> w3 = consumerOf(sink3, t3);
+                    Consumer<? super O4> w4 = consumerOf(sink4, t4);
+                    Consumer<? super O5> w5 = consumerOf(sink5, t5);
+                    Consumer<? super O6> w6 = consumerOf(sink6, t6);
+                    Consumer<? super O7> w7 = consumerOf(sink7, t7);
                     Iterator<I> iterator = source.iterator(s);
                     while (iterator.hasNext()) {
                         I i = iterator.next();
@@ -1572,14 +1576,14 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                      T7 t7 = sink7.get();
                      T8 t8 = sink8.get();
                      S s = source.get()) {
-                    Consumer<? super O1> w1 = sink1.consumer(t1);
-                    Consumer<? super O2> w2 = sink2.consumer(t2);
-                    Consumer<? super O3> w3 = sink3.consumer(t3);
-                    Consumer<? super O4> w4 = sink4.consumer(t4);
-                    Consumer<? super O5> w5 = sink5.consumer(t5);
-                    Consumer<? super O6> w6 = sink6.consumer(t6);
-                    Consumer<? super O7> w7 = sink7.consumer(t7);
-                    Consumer<? super O8> w8 = sink8.consumer(t8);
+                    Consumer<? super O1> w1 = consumerOf(sink1, t1);
+                    Consumer<? super O2> w2 = consumerOf(sink2, t2);
+                    Consumer<? super O3> w3 = consumerOf(sink3, t3);
+                    Consumer<? super O4> w4 = consumerOf(sink4, t4);
+                    Consumer<? super O5> w5 = consumerOf(sink5, t5);
+                    Consumer<? super O6> w6 = consumerOf(sink6, t6);
+                    Consumer<? super O7> w7 = consumerOf(sink7, t7);
+                    Consumer<? super O8> w8 = consumerOf(sink8, t8);
                     Iterator<I> iterator = source.iterator(s);
                     while (iterator.hasNext()) {
                         I i = iterator.next();

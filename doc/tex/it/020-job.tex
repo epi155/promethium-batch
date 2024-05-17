@@ -17,12 +17,12 @@ eccezioni.
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
 Considerando tutte le combinazioni sono possibili 8 metodi per lanciare uno
-step, vedi lis~\ref{lst:execPgm}, dove \texttt{P} è la generica classe di
+step, vedi lis.~\ref{lst:execPgm}, dove \texttt{P} è la generica classe di
 parametri, e \texttt{C} è la classe statistica.
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-public interface ExecPgm<S> {
+    \begin{javacode}
+        public interface ExecPgm<S> {
     <P, C extends StatsCount> S execPgm(P p, C c, BiFunction<P, C, Integer> pgm);
     <P> S execPgm(P p, String stepName, ToIntFunction<P> pgm);
     <C extends StatsCount> S execPgm(C c, ToIntFunction<C> pgm);
@@ -32,9 +32,9 @@ public interface ExecPgm<S> {
     <C extends StatsCount> S execPgm(C c, Consumer<C> pgm);
     S execPgm(String stepName, Runnable pgm);
 }
-\end{javacode}
-\caption{Interfaccia con i metodi di esecuzione di un programma (step)}
-\label{lst:execPgm}
+    \end{javacode}
+    \caption{Interfaccia con i metodi di esecuzione di un programma (step)}
+    \label{lst:execPgm}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8
 
@@ -44,8 +44,8 @@ successivi al primo sono eseguiti in modo condizionale.
 Se il primo step è terminato in errore, potrebbe non avere alcun senso
 l'\,esecuzione del secondo step.
 %--------1---------2---------3---------4---------5---------6---------7---------8
-Seguendo l\,impostazione dei batch mainframe/COBOL, un programma che termina con
-successo restituisce il valore $0$, un programma che termina con una
+Seguendo l'\,impostazione dei batch mainframe/COBOL, un programma che termina
+con successo restituisce il valore $0$, un programma che termina con una
 segnalazione (\textit{warning}) restituisce il valore $4$, un programma che
 termina in errore con valore maggiore di $4$.
 %--------1---------2---------3---------4---------5---------6---------7---------8
@@ -53,17 +53,17 @@ termina in errore con valore maggiore di $4$.
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-public Integer call() {
+    \begin{javacode}
+        public Integer call() {
     return JCL.getInstance().job("job01")
         .execPgm("step01", step01::run)
         .cond(0,NE).execPgm("step02", step02::run)
         .cond(0,NE).execPgm("step03", step03::run)
         .complete();
 }
-\end{javacode}
-\caption{Esempio di job con step condizionali}
-\label{lst:demoStepCond}
+    \end{javacode}
+    \caption{Esempio di job con step condizionali}
+    \label{lst:demoStepCond}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8
 Un esempio di job con esecuzione condizionata è mostrato nel
@@ -85,14 +85,14 @@ applicata sul \textit{returnCoce} dell'\,ultimo programma eseguito, lo step
 %--------1---------2---------3---------4---------5---------6---------7---------8
 
 \begin{elisting}[!htb]
-\begin{javacode}
-    Proc<Prm1> proc1 = Proc.create((p, s) -> s
+    \begin{javacode}
+        Proc<Prm1> proc1 = Proc.create((p, s) -> s
         .execPgm(p, "Step11", step11::run)
         .cond(0,NE).execPgm(p, "Step12", step12::run)
     );
-\end{javacode}
-\caption{Esempio di definizione di una procedura con una classe parametro}
-\label{lst:demoDefProc}
+    \end{javacode}
+    \caption{Esempio di definizione di una procedura con una classe parametro}
+    \label{lst:demoDefProc}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8
 È possibile raggruppare l'\,esecuzione di una sequenza di programmi definendo
@@ -102,8 +102,8 @@ principale, vedi lis.~\ref{lst:demoUseProc}, o all'\,interno di un'\,altra
 procedura.
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-public Integer call() {
+    \begin{javacode}
+        public Integer call() {
     Proc<Prm1> proc1 = ...
     return JCL.getInstance().job("job01")
         .execPgm("step01", step01::run)
@@ -111,13 +111,99 @@ public Integer call() {
         .cond(0,EQ,"step01").execProc(prm1, "proc01", proc1)
         .complete();
 }
-\end{javacode}
-\caption{Esempio uso di una procedura nel job}
-\label{lst:demoUseProc}
+    \end{javacode}
+    \caption{Esempio uso di una procedura nel job}
+    \label{lst:demoUseProc}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8
 
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Finora abbiamo replicato le funzionalità presenti nei \texttt{JCL} mainframe.
+In queste librerie è presente anche qualche funzionalità aggiuntiva.
+%--------1---------2---------3---------4---------5---------6---------7---------8
 
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public Integer call() {
+    return JCL.getInstance().job("job01")
+        .forkPgm("sort1", this::sort1)
+        .forkPgm("sort2", this::sort2)
+        .join()
+        .cond(0,NE).execPgm("balance", this::balance)
+        .complete();
+}
+    \end{javacode}
+    \caption{Esempio uso di una procedura nel job}
+    \label{lst:demoFork}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+È possibile lanciare un programma o una procedura in background in modo da
+eseguire più step in parallelo, nel lis.~\ref{lst:demoFork} vengono lanciati due
+step in background (\texttt{sort1} e \texttt{sort2}), si attende che tutti i
+programmi in background siano finiti, e se non ci sono stati errori, viene
+eseguito il terzo step (\texttt{balance}).
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{Verbatim}[fontsize=\small,frame=single]
+   Name   !  rc  !     Date-Time Start/Skip      !         Date-Time End         !       Lapse
+----------+------+-------------------------------+-------------------------------+-------------------
+sort1&....!    0 ! 2024-05-17T15:00:58.951504    ! 2024-05-17T15:01:00.799122    ! 00:00:01.847618
+join()....!    0 ! 2024-05-17T15:00:58.951838    ! 2024-05-17T15:01:00.810442    ! 00:00:01.858604
+sort2&....!    0 ! 2024-05-17T15:00:58.952275    ! 2024-05-17T15:00:59.265962    ! 00:00:00.313687
+balance...!    0 ! 2024-05-17T15:01:00.811173    ! 2024-05-17T15:01:01.065912    ! 00:00:00.254739
+----------+------+-------------------------------+-------------------------------+-------------------
+job01.....!    0 ! 2024-05-17T15:00:58.950293    ! 2024-05-17T15:01:01.066175    ! 00:00:02.115882
+    \end{Verbatim}
+    \caption{Esempio report fine esecuzione job con step paralleli}
+    \label{lst:logFork}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Come si vede dal log prodotto, lis.~\ref{lst:logFork}, i primi due step sono
+stati eseguiti in background, \texttt{join} ha atteso che tutti i programmi in
+background terminassero e ha restituito come \textit{returnCode} il massimo tra
+tutti quelli restituiti dai programmi in background terminati, non essendoci
+errori è stato eseguito il terzo step.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Nel mondo mainframe i parametri del job (degli step) sono scalari, nella classe
+parametro possono essere presenti anche strutture più complesse, inoltre la
+classe parametro non è necessariamente solo una classe che fornisce valori di
+input per gli step, ma può essere usata dagli step come contesto in cui passare
+valori agli step successivi.
+In particolare se la classe parametro \texttt{<P extends Iterable<Q>, Q>} è
+possibile iterare uno step (o una procedura) usando la classe \verb!Q! come
+parametro dello step (o della procedura).
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public Integer call() {
+    List<String> ls = new ArrayList<>();
+    return JCL.getInstance().job("job01")
+        .execPgm(ls, "list", step01::run)
+        .cond(0,NE).forEachPgm(ls, s->s, step02::run)
+        .complete();
+}
+    \end{javacode}
+    \caption{Esempio uso di loop di un programma}
+    \label{lst:demoLoop}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Nel lis.~\ref{lst:demoLog} è mostrato un esempio di loop su un programma; come
+classe parametro viene usata una lista vuota, il primo programma alimenta la
+lista, e per ogni valore della lista viene eseguito il secondo programma.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Dopo questa veloce panoramica sulle funzioni disponibili per coordinare
+l'\,esecuzione degli step, vediamo i le funzioni in dettaglio una per una.
+%--------1---------2---------3---------4---------5---------6---------7---------8
 
 
 \section{Classe statistica --- \texttt{StatsCount}}\label{sec:statCount}
@@ -130,13 +216,183 @@ fornisca informazioni sulla elaborazione eseguita dal programma.
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-public abstract class StatsCount {
+    \begin{javacode}
+        public abstract class StatsCount {
     protected StatsCount(String name) { ... }
     protected abstract void recap(PrintWriter pw);
 }
-\end{javacode}
-\caption{Costruttore e metodo astratto della classe statistica}
-\label{lst:statCount}
+    \end{javacode}
+    \caption{Costruttore e metodo astratto della classe statistica}
+    \label{lst:statCount}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+\section{Operatori condizionali} \label{sec:opCond}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Ogni step termina con un returnCode, gli operatori condizionali permettono
+di indicare se un programma o una procedura devono essere lanciati in relazione
+al returnCode dell'\,ultimo step eseguito, o uno degli step precedenti eseguito.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface CondAction<T> {
+    JobAction<T> cond(int cc, Cond cond);
+    JobAction<T> cond(int cc, Cond cond, String stepName);
+    JobAction<T> when(int cc, Cond cond);
+    JobAction<T> when(int cc, Cond cond, String stepName);
+}
+    \end{javacode}
+    \caption{Interfaccia con gli operatori condizionali}
+    \label{lst:condActionDef}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+I metodi condizionali accettano 2 o 3 argomenti, se sono presenti solo 2
+argomenti il confronto è fatto con l'\,ultimo programma eseguito, se sono
+presenti 3 argomenti, il confronto è fatto con il programma indicato nel terzo
+argomento.
+Il primo argomento è il valore che vogliamo confrontare,
+il secondo argomento è la relazione, vedi lis.~\ref{lst:condDef}, tra il valore
+fornito e il codice restituito dal programma eseguito.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public enum Cond {
+    EQ, NE, LT, GT, LE, GE
+}
+    \end{javacode}
+    \caption{Enum con le relazioni degli operatori condizionali}
+    \label{lst:condDef}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Il metodo condizionale \texttt{cond} (copiato dagli script JCL mainframe)
+permette di definire la condizione per \textbf{non eseguire} il programma
+successivo in base al codice ritornato dal programma precedentemente eseguito.
+Il metodo condizionale \texttt{when}, è l'\,opposto di \texttt{cond}, permette
+di definire la condizione per \textbf{eseguire} il programma successivo in base
+al codice ritornato dal programma precedentemente eseguito.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+\section{Procedure} \label{sec:proc}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Una procedura permette di raggruppare un insieme di programmi e la relativa
+logica condizionale di esecuzione.
+Sono disponibili 2 costruttori statici di una procedura, lis.~\ref{lst:newProc}.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public abstract class Proc<P> {
+    public static <Q> Proc<Q> create(BiFunction<Q, JobStatus, JobStatus> route);
+    public static Proc<Void> create(UnaryOperator<JobStatus> route);
+}
+    \end{javacode}
+    \caption{Comandi per creare una procedura}
+    \label{lst:newProc}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+La procedura può essere creata prima del job con il suo flusso di esecuzione, o
+in linea nel flusso di esecuzione.
+Nel flusso di esecuzione di una procedura sono disponibili tutti i comandi del
+flusso di esecuzione del job, anche l'\,esecuzione di un'\,altra procedura.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface ExecProc<S> {
+    <P> S execProc(P p, String procName, Proc<P> proc);
+    S execProc(String procName, Proc<Void> proc);
+}
+    \end{javacode}
+    \caption{Comandi per lanciare una procedura}
+    \label{lst:runProc}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Per eseguire una procedura il comando è \texttt{execProc}, vedi
+lis.~\ref{lst:runProc}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+\section{Esecuzione in \textit{background}} \label{sec:fork}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface ForkPgm<S> {
+    <P, C extends StatsCount> S forkPgm(P p, C c, BiFunction<P, C, Integer> pgm);
+    <P> S forkPgm(P p, String stepName, ToIntFunction<P> pgm);
+    <C extends StatsCount> S forkPgm(C c, ToIntFunction<C> pgm);
+    S forkPgm(String stepName, IntSupplier pgm);
+    <P, C extends StatsCount> S forkPgm(P p, C c, BiConsumer<P, C> pgm);
+    <P> S forkPgm(P p, String stepName, Consumer<P> pgm);
+    <C extends StatsCount> S forkPgm(C c, Consumer<C> pgm);
+    S forkPgm(String stepName, Runnable pgm);
+}
+    \end{javacode}
+    \caption{Interfaccia con i metodi di esecuzione di un programma (step) in \textit{background}}
+    \label{lst:forkPgm}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface ForkProc<S> {
+    <P> S forkProc(P p, String procName, Proc<P> proc);
+    S forkProc(String procName, Proc<Void> proc);
+}
+    \end{javacode}
+    \caption{Interfaccia con i metodi di esecuzione di una procedura in \textit{background}}
+    \label{lst:forkProc}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+\section{Loop} \label{sec:loop}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface LoopPgm<S> {
+    <P extends Iterable<Q>, Q, C extends StatsCount> S forEachPgm(P p, Function<Q, C> c,
+                                                                  BiFunction<Q, C, Integer> pgm);
+    <P extends Iterable<Q>, Q> S forEachPgm(P p, Function<Q, String> name, ToIntFunction<Q> pgm);
+    <P extends Iterable<Q>, Q, C extends StatsCount> S forEachPgm(P p, Function<Q, C> c, BiConsumer<Q, C> pgm);
+    <P extends Iterable<Q>, Q> S forEachPgm(P p, Function<Q, String> name, Consumer<Q> pgm);
+}
+    \end{javacode}
+    \caption{Interfaccia elaborazione ripetuta di un programma}
+    \label{lst:loopPgm}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface LoopProc<S> {
+    <P extends Iterable<Q>, Q> S forEachProc(P p, Function<Q, String> name, Proc<Q> proc);
+}
+    \end{javacode}
+    \caption{Interfaccia elaborazione ripetuta di una procedura}
+    \label{lst:loopProc}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8

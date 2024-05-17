@@ -11,15 +11,15 @@ delle elaborazioni dei singoli step e di coordinale l'\,esecuzione degli step.
 Un esempio minimale di batch con un singolo step è:
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-public Integer call() {
+    \begin{javacode}
+        public Integer call() {
     return JCL.getInstance().job("job01")
         .execPgm("step01", step01::run)
         .complete();
 }
-\end{javacode}
-\caption{esempio minimale job}
-\label{lst:demoJob}
+    \end{javacode}
+    \caption{esempio minimale job}
+    \label{lst:demoJob}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8
 dove \texttt{job01} è il nome del job, \texttt{step01} è il come dello step e
@@ -30,14 +30,13 @@ dove \texttt{job01} è il nome del job, \texttt{step01} è il come dello step e
 L'\,esecuzione del job produce nel log un report finale del tipo:
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{Verbatim}[fontsize=\small,frame=single]
-Report job01:
-Step Name! rc !     Date-Time Start/Skip      !         Date-Time End         !       Lapse
----------+----+-------------------------------+-------------------------------+-------------------
-step01...!  0 ! 2024-05-09T10:22:01.318572606 ! 2024-05-09T10:22:01.327667015 ! 00:00:00.009094409
----------^----^-------------------------------^-------------------------------^-------------------
-ReturnCode: 0
-\end{Verbatim}
-\caption{esempio report fine esecuzione job}
-\label{lst:demoLog}
+    \begin{Verbatim}[fontsize=\small,frame=single]
+   Name   !  rc  !     Date-Time Start/Skip      !         Date-Time End         !       Lapse
+---------+------+-------------------------------+-------------------------------+-------------------
+step01...!    0 ! 2024-05-17T14:59:12.03243396  ! 2024-05-17T14:59:12.590157083 ! 00:00:00.557723123
+---------+------+-------------------------------+-------------------------------+-------------------
+job01....!    0 ! 2024-05-17T14:59:12.028019213 ! 2024-05-17T14:59:12.590998545 ! 00:00:00.562979332
+    \end{Verbatim}
+    \caption{esempio report fine esecuzione job}
+    \label{lst:demoLog}
 \end{elisting}

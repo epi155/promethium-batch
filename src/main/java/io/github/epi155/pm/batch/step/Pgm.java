@@ -9,7 +9,7 @@ public interface Pgm {
     /**
      * Sets a source resource<br>
      * <pre>
-     * Batch<b>.from(source)</b>.into(sink).forEach(src -&gt; ...)
+     * Pgm<b>.from(source)</b>.into(sink).forEach(src -&gt; ...)
      * </pre>
      *
      * @param source the source resource
@@ -24,7 +24,7 @@ public interface Pgm {
     /**
      * Sets a source resource pair<br>
      * <pre>
-     * Batch.from(source1, source2).into(sink).proceed((it1, it2, wr) -&gt; ...)
+     * Pgm.from(source1, source2).into(sink).proceed((it1, it2, wr) -&gt; ...)
      * </pre>
      *
      * @param source1 the 1st source resource
@@ -46,7 +46,7 @@ public interface Pgm {
     /**
      * Set three source resources<br>
      * <pre>
-     * Batch.from(src1, src2, src3).into(sink).proceed((it1, it2, it3, wr) -&gt; ...)
+     * Pgm.from(src1, src2, src3).into(sink).proceed((it1, it2, it3, wr) -&gt; ...)
      * </pre>
      *
      * @param source1 the 1st source resource

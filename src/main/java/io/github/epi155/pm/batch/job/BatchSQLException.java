@@ -21,11 +21,12 @@ public class BatchSQLException extends BatchException {
     public BatchSQLException(SQLException e) {
         super(PmJCL.getInstance().rcErrorSQL(), e, "* SQL Error> code:{}, state:{}\n{}", e.getErrorCode(), e.getSQLState(), e.getMessage());
     }
+
     /**
      * batch exception constructor
      *
-     * @param format     error message pattern
-     * @param objects    error message parameters
+     * @param format  error message pattern
+     * @param objects error message parameters
      */
     public BatchSQLException(String format, Object... objects) {
         super(PmJCL.getInstance().rcErrorSQL(), MessageFormatter.arrayFormat(format, objects).getMessage());

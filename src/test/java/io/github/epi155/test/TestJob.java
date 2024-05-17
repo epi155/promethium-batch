@@ -1,6 +1,9 @@
 package io.github.epi155.test;
 
-import io.github.epi155.pm.batch.job.*;
+import io.github.epi155.pm.batch.job.BatchIOException;
+import io.github.epi155.pm.batch.job.JCL;
+import io.github.epi155.pm.batch.job.Proc;
+import io.github.epi155.pm.batch.job.StatsCount;
 import io.github.epi155.pm.batch.step.Pgm;
 import io.github.epi155.pm.batch.step.SinkResource;
 import io.github.epi155.pm.batch.step.SourceResource;
@@ -30,10 +33,11 @@ class TestJob {
     void job00() {
         int x = JCL.getInstance().job("job01")
                 .execPgm("step01", this::step00)
-                .cond(0,NE).execPgm("step02", this::step00)
+                .cond(0, NE).execPgm("step02", this::step00)
                 .complete();
         log.info("Job returnCode: {}", x);
     }
+
     @Test
     void job01() {
         String STEP03 = "Step03";
@@ -43,27 +47,20 @@ class TestJob {
         MyCount count4 = new MyCount("Step04");
         MyCount count5 = new MyCount("Step05");
         int x = JCL.getInstance().job("Job01")
-                .when(0,NE).execPgm(count1, this::step01)
+                .when(0, NE).execPgm(count1, this::step01)
                 .forkPgm(count1, this::step01)
                 .forkPgm(count2, this::step01)
                 .execPgm(count3, this::step01)
                 .join()
-                .when(4,LE).execPgm(count4, this::step02) // execute if ok
-                .when(4,GT,STEP03).execPgm(count5, this::step01) // execute in ko
+                .when(4, LE).execPgm(count4, this::step02) // execute if ok
+                .when(4, GT, STEP03).execPgm(count5, this::step01) // execute in ko
                 .complete();
         log.info("Job returnCode: {}", x);
     }
 
-    @Data @AllArgsConstructor(staticName = "of")
-    private static class Param02 {
-        private int p1;
-        private int p2;
-        private int p3;
-    }
-
     @Test
     void job02() {
-        Param02 pa02 = Param02.of(1,2,3);
+        Param02 pa02 = Param02.of(1, 2, 3);
         MyCount count1 = new MyCount("Step01");
         MyCount count2 = new MyCount("Step02");
         MyCount count3 = new MyCount("Step03");
@@ -72,17 +69,17 @@ class TestJob {
 
         Proc<Param02> proc1 = Proc.create((p, s) -> s
                 .execPgm(p, "Step01", this::step31)
-                .cond(0,NE).execPgm(p, "Step02", this::step31)
+                .cond(0, NE).execPgm(p, "Step02", this::step31)
         );
 
         Proc<Param02> proc01 = Proc.create((p, s) -> s
                 .execPgm(p, count1, this::step21)
-                .when(0,EQ).execPgm(p, count2, this::step21)
+                .when(0, EQ).execPgm(p, count2, this::step21)
         );
         Proc<Param02> proc02 = Proc.create((p, s) -> s
                 .execPgm(p, count1, this::step21)
                 .push()
-                .when(0,EQ).execProc(p, "proc1", proc01)
+                .when(0, EQ).execProc(p, "proc1", proc01)
                 .pop()
                 .join()
         );
@@ -93,8 +90,8 @@ class TestJob {
 
         int rc = JCL.getInstance().job("Job01")
                 .execPgm(count3, this::step01)
-                .cond(0,NE).execProc(pa02, "Proc02", proc02)
-                .cond(0,EQ,"Proc02.proc1.Step01").execPgm(count3, this::step01)
+                .cond(0, NE).execProc(pa02, "Proc02", proc02)
+                .cond(0, EQ, "Proc02.proc1.Step01").execPgm(count3, this::step01)
                 .execProc("Proc03", proc03)
 //                .join()
                 .push() // save rc
@@ -135,31 +132,40 @@ class TestJob {
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
+
     @Test
     void job04() {
         int rc = JCL.getInstance().job("Job04")
-                .execPgm(new MyCount("Step03e"), this::step03e)
+                .execPgm(new MyCount("Step01"), this::step03e)
 //                .nextPgm(new MyCount("Step03s"), this::step03s)
 //                .nextPgm(new MyCount("Step03w"), this::step03w)
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
+
     @Test
     void job05() {
         List<String> ls = new ArrayList<>();
         int rc = JCL.getInstance().job("JobPk")
-                .execPgm("lock", this::step00)
-                .when(0,EQ).execPgm(ls, new MyCount("list"), this::step04)
-//                .nextLoopProc(ls, )
-                .when(0,NE).forEachPgm(ls, MyCount::new, this::step05)
-                .push()
-                .exec(s -> s.returnCode("lock")
-                        .filter(rcLock -> (rcLock == 0))
-                        .ifPresent(rcLock -> s.execPgm(new MyCount("unlock"), this::step01)))
-                .pop()
+                .execPgm(ls, "list", this::step41)
+                .cond(0, NE).forEachPgm(ls, s -> s, this::step42)
+//                .push()
+//                .exec(s -> s.returnCode("lock")
+//                        .filter(rcLock -> (rcLock == 0))
+//                        .ifPresent(rcLock -> s.execPgm(new MyCount("unlock"), this::step01)))
+//                .pop()
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
+
+    private void step42(String s) {
+        log.info(s);
+    }
+
+    private void step41(List<String> ls) {
+        ls.addAll(List.of("eins", "zwei", "drei", "vier", "funf"));
+    }
+
     @Test
     void job06() {
         MyCount count1 = new MyCount("Step01");
@@ -176,16 +182,17 @@ class TestJob {
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
+
     @Test
     void job07() {
         List<String> ls = new ArrayList<>();
         int rc = JCL.getInstance().job("JobPk")
                 .execPgm("lock", this::step00)
-                .when(4,LE).execPgm(ls, new MyCount("list"), this::step04)
+                .when(4, LE).execPgm(ls, new MyCount("list"), this::step04)
 //                .nextLoopProc(ls, )
 //                .parallel(2).forEachPgm(ls, MyCount::new, this::step05)
                 .push()
-                .when(0,EQ,"lock").execPgm(new MyCount("unlock"), this::step01)
+                .when(0, EQ, "lock").execPgm(new MyCount("unlock"), this::step01)
                 .exec(s -> s.returnCode("lock")
                         .filter(rcLock -> (rcLock == 0))
                         .ifPresent(rcLock -> s.execPgm(new MyCount("unlock"), this::step01)))
@@ -193,6 +200,7 @@ class TestJob {
                 .complete();
         log.info("Job returnCode: {}", rc);
     }
+
     @Test
     void job08() {
         MyCount count1 = new MyCount("Step01");
@@ -224,6 +232,7 @@ class TestJob {
     private void step04(List<String> cs, MyCount cnt) {
         cs.addAll(List.of("eins", "zwei", "drei"));
     }
+
     private void step05(String s, MyCount cnt) {
         Random rndm = new Random();
         try {
@@ -232,6 +241,7 @@ class TestJob {
             Thread.currentThread().interrupt();
         }
     }
+
     private void step07(String q) {
         Random rndm = new Random();
         try {
@@ -240,6 +250,7 @@ class TestJob {
             Thread.currentThread().interrupt();
         }
     }
+
     private void step06(MyCount cnt) {
         Random rndm = new Random();
         try {
@@ -269,6 +280,7 @@ class TestJob {
                     }
                 });
     }
+
     private void step03w(MyCount c) {
         val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
         val snk1 = SinkResource.of(it -> log.info("{} is even", it), c::incEven);
@@ -290,6 +302,7 @@ class TestJob {
                     }
                 });
     }
+
     private void step03s(MyCount c) {
         val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
         val snk1 = SinkResource.of(it -> log.info("{} is even", it), c::incEven);
@@ -306,12 +319,13 @@ class TestJob {
                     }
                     if (rndm.nextInt(5) == 0) throw new NullPointerException("Oops");
                     if (it % 2 == 0) {
-                        return Tuple2.of(it,null);
+                        return Tuple2.of(it, null);
                     } else {
-                        return Tuple2.of(null,it);
+                        return Tuple2.of(null, it);
                     }
                 });
     }
+
     private void step03e(MyCount c) {
         val src = SourceResource.fromStream(IntStream.range(1, 20).boxed());
         val snk1 = SinkResource.of(it -> log.info("{} is even", it), c::incEven);
@@ -327,9 +341,9 @@ class TestJob {
                         Thread.currentThread().interrupt();
                     }
                     if (it % 2 == 0) {
-                        return Tuple2.of(it,null);
+                        return Tuple2.of(it, null);
                     } else {
-                        return Tuple2.of(null,it);
+                        return Tuple2.of(null, it);
                     }
                 });
     }
@@ -340,6 +354,14 @@ class TestJob {
         } catch (IOException e) {
             throw new BatchIOException(e);
         }
+    }
+
+    @Data
+    @AllArgsConstructor(staticName = "of")
+    private static class Param02 {
+        private int p1;
+        private int p2;
+        private int p3;
     }
 
     private static class MyCount extends StatsCount {

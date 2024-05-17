@@ -5,21 +5,19 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.helpers.MessageFormatter;
 
-import java.io.IOException;
-
 /**
  * batch wrapper IO exception
  */
 @Getter
 @Slf4j
-public class BatchIOException extends BatchException {
+public class BatchStepException extends BatchException {
     /**
      * batch exception constructor
      *
      * @param e exception wrapped
      */
-    public BatchIOException(IOException e) {
-        super(PmJCL.getInstance().rcErrorIO(), e, "* IO Error> {}", e.getMessage());
+    public BatchStepException(Exception e) {
+        super(PmJCL.getInstance().rcErrorStep(), e, "* Pgm Error> {}", e.getMessage());
     }
 
     /**
@@ -28,7 +26,7 @@ public class BatchIOException extends BatchException {
      * @param format  error message pattern
      * @param objects error message parameters
      */
-    public BatchIOException(String format, Object... objects) {
-        super(PmJCL.getInstance().rcErrorIO(), MessageFormatter.arrayFormat(format, objects).getMessage());
+    public BatchStepException(String format, Object... objects) {
+        super(PmJCL.getInstance().rcErrorStep(), MessageFormatter.arrayFormat(format, objects).getMessage());
     }
 }

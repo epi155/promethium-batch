@@ -9,18 +9,26 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.IntStream;
 
 class JobCount extends StatsCount implements JobTrace {
-    private static final String L_STEP = "Step Name";
+    private static final String L_STEP = "Name";
     private final ConcurrentLinkedQueue<StepInfo> stepInfos = new ConcurrentLinkedQueue<>();
+    private final Instant tiStart;
+    private int maxcc;
 
     public JobCount(String jobName) {
         super(jobName);
+        this.tiStart = Instant.now();
     }
 
     @Override
     protected void recap(PrintWriter pw) {
-        int wid = Math.max(L_STEP.length(), 3 + stepInfos.stream().map(StepInfo::getStepName).map(String::length).max(Integer::compareTo).orElse(0));
+        Instant tiStop = Instant.now();
+        Duration lapse = Duration.between(tiStart, tiStop);
+        int lenStep = stepInfos.stream().map(StepInfo::getStepName).map(String::length).max(Integer::compareTo).orElse(0);
+
+        int wid = IntStream.of(L_STEP.length(), 3 + lenStep, 3 + name().length()).max().orElse(0);
         int lpad = (wid - L_STEP.length()) / 2;
         int rpad = wid - L_STEP.length() - lpad;
 
@@ -34,7 +42,17 @@ class JobCount extends StatsCount implements JobTrace {
 
         stepInfos.stream().sorted(Comparator.comparing(a -> a.tmStart)).forEach(it -> it.info(pw, wid));
         pw.print("-".repeat(wid));
-        pw.printf("^------^-------------------------------^-------------------------------^-------------------%n");
+        pw.printf("+------+-------------------------------+-------------------------------+-------------------%n");
+        pw.print(name());
+        pw.print(".".repeat(wid - name().length()));
+        pw.printf("! %4d ! %-29s ! %-29s ! %s", maxcc,
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                        .format(LocalDateTime.ofInstant(tiStart, ZoneId.systemDefault())),
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                        .format(LocalDateTime.ofInstant(tiStop, ZoneId.systemDefault())),
+                DateTimeFormatter.ISO_LOCAL_TIME
+                        .format(lapse.addTo(LocalTime.of(0, 0)))
+        );
     }
 
     public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
@@ -61,6 +79,10 @@ class JobCount extends StatsCount implements JobTrace {
             }
         }
         return Optional.empty();
+    }
+
+    public void maxcc(int maxcc) {
+        this.maxcc = maxcc;
     }
 
     @AllArgsConstructor

@@ -20,24 +20,24 @@ sequenzialità della origine dati (dipende dalla implementazione della
 parallelizzazione).
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
-Per gestire in modo generico le origini e destinazione dati vengono usate le
+Per gestire in modo generico le sorgenti e destinazioni dati vengono usate le
 classi
 \begin{itemize}
-\item \texttt{SourceResource} origine dati
-\item \texttt{SinkResource} destinazione dati
+    \item \hyperref[sec:srcRes]{\texttt{SourceResource}} sorgente dati
+    \item \hyperref[sec:snkRes]{\texttt{SinkResource}} destinazione dati
 \end{itemize}
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
-Nel caso che sia presente una sola origine dati la parte elaborativa può
+Nel caso che sia presente una sola sorgente dati la parte elaborativa può
 produrre una tupla e sarà la infrastruttura a inviare i dati alle destinazioni,
 in questo caso il formato elaborativo è:
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-    Pgm.from(src).into(snk1,snk2).forEach(it -> { ... });
-\end{javacode}
-\caption{elaborazione $1\mapsto N$}
-\label{lst:processTuple}
+    \begin{javacode}
+        Pgm.from(src).into(snk1,snk2).forEach(it -> { ... });
+    \end{javacode}
+    \caption{elaborazione $1\mapsto N$}
+    \label{lst:processTuple}
 \end{elisting}
 
 
@@ -47,27 +47,27 @@ in alternativa alla parte elaborativa oltre al valore di input vengono forniti i
 destinazioni, il questo caso il formato elaborativo è:
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-    Pgm.from(src).into(snk1,snk2).forEach((it,wr1,wr2) -> { ... });
-\end{javacode}
-\caption{elaborazione writer}
-\label{lst:processWriter}
+    \begin{javacode}
+        Pgm.from(src).into(snk1,snk2).forEach((it,wr1,wr2) -> { ... });
+    \end{javacode}
+    \caption{elaborazione writer}
+    \label{lst:processWriter}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8
 entrambi i formati possono essere parallelizzati, ma solo il primo permette una
 implementazione che mantiene l'\,ordine dei dati originale.
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
-Nel caso che siano presenti più di una origine dati, alla parte elaborativa
+Nel caso che siano presenti più di una sorgente dati, alla parte elaborativa
 vengono forniti i \texttt{Supplier} per leggere i dati dalle origini, e i
 \texttt{Consumer} per scrivere i dati, in questo caso il formato elaborativo è:
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-    Pgm.from(src1, src2).into(snk1, snk2).proceed((rd1, rd2, wr1, wr2) -> { ... });
-\end{javacode}
-\caption{elaborazione reader-writer}
-\label{lst:pullProcess}
+    \begin{javacode}
+        Pgm.from(src1, src2).into(snk1, snk2).proceed((rd1, rd2, wr1, wr2) -> { ... });
+    \end{javacode}
+    \caption{elaborazione reader-writer}
+    \label{lst:pullProcess}
 \end{elisting}
 
 
@@ -84,22 +84,260 @@ Questa separazione è propedeutica alla elaborazione parallela.
 Una elaborazione sequenziale nella forma~\ref{lst:pushSeq}
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-    Pgm.from(src).into(...).forEach(...);
-\end{javacode}
-\caption{elaborazione sequenziale}
-\label{lst:pushSeq}
+    \begin{javacode}
+        Pgm.from(src).into(...).forEach(...);
+    \end{javacode}
+    \caption{elaborazione sequenziale}
+    \label{lst:pushSeq}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8
 può essere trasformata nella forma parallela~\ref{lst:pushMt}, sostituendo il
 \texttt{forEach} in \texttt{forEachParallel}:
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
-\begin{javacode}
-    Pgm.from(src).into(...).forEachParallel(numTask, ...);
-\end{javacode}
-\caption{elaborazione multitask}
-\label{lst:pushMt}
+    \begin{javacode}
+        Pgm.from(src).into(...).forEachParallel(numTask, ...);
+    \end{javacode}
+    \caption{elaborazione multitask}
+    \label{lst:pushMt}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8
 senza nessuna altra modifica.
+
+\VerbatimFootnotes
+
+
+\section{Sorgente dati --- \texttt{SourceResource}} \label{sec:srcRes}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Una generica sorgente dati è una classe che implementa l'\,interfaccia
+\texttt{SourceResource}, vedi lis.~\ref{lst:srcRef}, dove il metodo \texttt{get}
+fornisce la risorsa \texttt{U} che può essere usata in un
+\texttt{try-with-resources}, e i metodi \texttt{iterator} e \texttt{supplier}
+permettono di \textsl{leggere} gli elementi mediante un loop\footnote{%
+    uso di una \texttt{SourceResource} con un \texttt{Iterator}:
+    \begin{javacode}
+        try (U u = source.get()) {
+        Iterator<I> iterator = source.iterator(u);
+        while (iterator.hasNext()) {
+            I i = iterator.next();
+            // TODO
+        }
+    }
+    \end{javacode}
+} o dei supplier\footnote{%
+    uso di una \texttt{SourceResource} con un \texttt{Supplier}:
+    \begin{javacode}
+        try (U u = source.get()) {
+        Supplier<I> supplier = source.supplier(u);
+        I i = supplier.get();
+        while (i != null) {
+            // TODO
+            i = supplier.get();
+        }
+    }
+    \end{javacode}
+}.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface SourceResource<U extends AutoCloseable, I> {
+    U get();
+    Iterator<I> iterator(U u);
+    Supplier<I> supplier(U u);
+}
+    \end{javacode}
+    \caption{Metodi per aprire la risorsa e leggere i dati}
+    \label{lst:srcRef}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+L'\,interfaccia oltre a indicare i metodi di istanza offre dei costruttori
+statici facilitare l'\,implementazione della interfaccia.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface SourceResource<U extends AutoCloseable, I> {
+    static SourceResource<BufferedReader, String> bufferedReader(File file, Charset cs, Runnable inc);
+    static SourceResource<BufferedReader, String> bufferedReader(File file, Runnable inc);
+    static SourceResource<BufferedReader, String> bufferedReader(File file, Charset cs);
+    static SourceResource<BufferedReader, String> bufferedReader(File file);
+}
+    \end{javacode}
+    \caption{Metodi creare una risorsa \texttt{SourceResource<BufferedReader, String>}}
+    \label{lst:srcRefBr}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Se leggiamo un file, una riga per volta, possiamo usare il metodo statico
+\texttt{bufferedReader}, sono disponibili 4 varianti, lis.~\ref{lst:srcRefBr}.
+L'\,argomento \texttt{file} è obbligatorio, è possibile indicare un charset per
+la lettura del file, ed è possibile indicare un'\,azione da eseguire dopo aver
+letto una riga dal file (normalmente un contatore per le statistiche di
+esecuzione).
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface SourceResource<U extends AutoCloseable, I> {
+    static <I> SourceResource<BufferedReader, I> bufferedReader(File file, Function<String,I> dec,
+                                                                Charset cs, Runnable inc);
+    static <I> SourceResource<BufferedReader, I> bufferedReader(File file, Function<String,I> dec, Charset cs);
+    static <I> SourceResource<BufferedReader, I> bufferedReader(File file, Function<String,I> dec, Runnable inc);
+    static <I> SourceResource<BufferedReader, I> bufferedReader(File file, Function<String,I> dec);
+}
+    \end{javacode}
+    \caption[Metodi creare una risorsa \texttt{SourceResource<BufferedReader,I>}
+    con funzione di decodifica]{Metodi creare una risorsa \texttt{SourceResource<BufferedReader,I>}
+    con funzione di decodifica \texttt{String}~$\mapsto$~\texttt{I}}
+    \label{lst:srcRefBrDec}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Se il file viene letto una riga per volta, e la riga viene deserializzata nella
+classe dati, può essere usato un costruttore nella forma
+lis.~\ref{lst:srcRefBrDec}, che sono analoghi alla forma precedente, ma hanno
+la funzione di decodifica in modo che l'\,iterator o il supplier forniscano
+direttamente la classe dati.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface SourceResource<U extends AutoCloseable, I> {
+    static <U extends AutoCloseable, I> SourceResource<U, I> fromIterator(Supplier<U> ctor,
+                                                                          Function<U, Iterator<I>> reader);
+    static <U extends AutoCloseable & Iterable<I>, I> SourceResource<U, I> fromIterator(Supplier<U> ctor);
+    static <I> SourceResource<?, I> fromIterator(Iterable<I> iterable);
+}
+    \end{javacode}
+    \caption{Metodi per creare una origine dati da un iterator}
+    \label{lst:srcRefIter}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Infine esistono i costruttori statici generici mediante \texttt{Iterator},
+lis.~\ref{lst:srcRefIter}, e \texttt{Supplier}, lis.~\ref{lst:srcRefSupp}.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface SourceResource<U extends AutoCloseable, I> {
+    static <U extends AutoCloseable, I> SourceResource<U, I> fromSupplier(
+        Supplier<U> ctor, Function<U, Supplier<I>> reader);
+    static <U extends AutoCloseable & Supplier<I>, I> SourceResource<U, I> fromSupplier(Supplier<U> ctor);
+}
+    \end{javacode}
+    \caption{Metodi per creare una origine dati da un supplier}
+    \label{lst:srcRefSupp}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+\section{Destinazione dati --- \texttt{SinkResource}} \label{sec:snkRes}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Una generica destinazione dati è una classe che implementa l'\,interfaccia
+\texttt{SinkResource}, vedi lis.~\ref{lst:snkRef}, dove il metodo \texttt{get}
+fornisce la risorsa \texttt{U} che può essere usata con un
+\texttt{try-with-resources} ed il metodo \texttt{accept} scrive\footnote{%
+    uso di una \texttt{SinkResource}:
+    \begin{javacode}
+        try (T t = sink.get()) {    // open resource
+        O o = // TODO
+        sink.accept(t, o);      // write data
+    }
+    \end{javacode}
+} il dato.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+L'\,interfaccia oltre a indicare i metodi di istanza offre dei costruttori
+statici per facilitare l'\,implementazione dell'\,interfaccia.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface SinkResource<U extends AutoCloseable, O> {
+    U get();
+    void accept(U u, O o);
+}
+    \end{javacode}
+    \caption{Metodi per aprire la risorsa e scrivere i dati}
+    \label{lst:snkRef}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Se la risorsa è un file e viene scritta una riga per volta possono essere usato
+il metodo statico \texttt{bufferedWriter}, sono disponibili 4 varianti,
+lis.~\ref{lst:snkRefBw}. L'\,argomento \texttt{file} è obbligatorio, è possibile
+indicare il charset per la scrittura del file, e una azione da eseguire dopo
+aver scritto la riga del file (normalmente un contatore per le statistiche di
+esecuzione).
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface SinkResource<U extends AutoCloseable, O> {
+    static SinkResource<BufferedWriter, String> bufferedWriter(File file, Charset cs, Runnable inc);
+    static SinkResource<BufferedWriter, String> bufferedWriter(File file, Runnable inc);
+    static SinkResource<BufferedWriter, String> bufferedWriter(File file, Charset cs);
+    static SinkResource<BufferedWriter, String> bufferedWriter(File file);
+}
+    \end{javacode}
+    \caption{Metodi per creare una risorsa \texttt{SinkResource<BufferedWriter, String>}}
+    \label{lst:snkRefBw}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Se la riga sul file rappresenta la serializzazione di un oggetto, possono essere
+usati i costruttori statici nella forma lis.~\ref{lst:snkRefBwEnc}, che sono
+analoghi alla forma precedente, ma hanno la funzione di codifica della classe
+in stringa, in modo che il \textit{writer} possa scrivere direttamente la classe
+dati.
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface SinkResource<U extends AutoCloseable, O> {
+    static <O> SinkResource<BufferedWriter, O> bufferedWriter(File file, Function<O,String> enc, Charset cs,
+                                                              Runnable inc);
+    static <O> SinkResource<BufferedWriter, O> bufferedWriter(File file, Function<O,String> enc, Charset cs);
+    static <O> SinkResource<BufferedWriter, O> bufferedWriter(File file, Function<O,String> enc, Runnable inc);
+    static <O> SinkResource<BufferedWriter, O> bufferedWriter(File file, Function<O,String> enc);
+}
+    \end{javacode}
+    \caption[Metodi per creare una risorsa \texttt{SinkResource<BufferedWriter,O>}
+    con funzione di codifica]{Metodi per creare una risorsa \texttt{SinkResource<BufferedWriter,O>}
+    con funzione di codifica \textit{O}~$\mapsto$~\texttt{String}}
+    \label{lst:snkRefBwEnc}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Infine esistono i costruttori statici generici, lis.~\ref{lst:snkRefGen}.
+Il parametro \texttt{action} indica una azione che viene eseguita dopo la
+scrittura del dato (normalmente un contatore per le statistiche di esecuzione).
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+    \begin{javacode}
+        public interface SinkResource<U extends AutoCloseable, O> {
+    static <U extends AutoCloseable, O> SinkResource<U, O> of(Supplier<U> ctor, BiConsumer<U, O> writer);
+    static <U extends AutoCloseable, O> SinkResource<U, O> of(Supplier<U> ctor, BiConsumer<U, O> writer,
+                                                              Runnable action);
+    static <O> SinkResource<?, O> of(Consumer<O> writer);
+    static <O> SinkResource<?, O> of(Consumer<O> writer, Runnable action);
+}
+    \end{javacode}
+    \caption{Metodi per creare una risorsa \texttt{SinkResource} generica}
+    \label{lst:snkRefGen}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
