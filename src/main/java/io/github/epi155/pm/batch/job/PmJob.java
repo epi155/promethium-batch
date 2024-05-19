@@ -1,6 +1,7 @@
 package io.github.epi155.pm.batch.job;
 
 import io.github.epi155.pm.batch.step.BatchException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +52,7 @@ class PmJob implements JobStatus {
         this.maxcc = 0;
         this.jcl = JCL.getInstance();
         this.jobName = name;
-        this.jobCount = new JobCount(jobName);
+        this.jobCount = new JobCount(jobTrace.getPrefix());
         this.jobTrace = jobTrace;
     }
 
@@ -363,7 +364,7 @@ class PmJob implements JobStatus {
         return maxRc;
     }
 
-    public void add(String name, int rc, Instant tiStart, Instant tiEnd) {
+    private void add(String name, int rc, Instant tiStart, Instant tiEnd) {
         jobCount.add(name, rc, tiStart, tiEnd);
         if (jobTrace != null) jobTrace.add(name, rc, tiStart, tiEnd);
     }
@@ -573,6 +574,7 @@ class PmJob implements JobStatus {
     }
 
     private class PmJobTrace implements JobTrace {
+        @Getter
         private final String prefix;
         private final JobTrace trace;
 
@@ -604,17 +606,15 @@ class PmJob implements JobStatus {
 
     private class JobCondStatus implements JobAction<JobStatus> {
         private final boolean skip;
-        private final JobTrace trace;
 
         private JobCondStatus(boolean skip) {
             this.skip = skip;
-            this.trace = jobTrace == null ? jobCount : jobTrace;
         }
 
         @Override
         public <P, C extends StatsCount> JobStatus execPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
             if (skip) {
-                trace.add(c.name());
+                add(c.name());
                 return PmJob.this;
             } else {
                 return PmJob.this.execPgm(p, c, pgm);
@@ -624,7 +624,7 @@ class PmJob implements JobStatus {
         @Override
         public <P> JobStatus execPgm(P p, String stepName, ToIntFunction<P> pgm) {
             if (skip) {
-                trace.add(stepName);
+                add(stepName);
                 return PmJob.this;
             } else {
                 return PmJob.this.execPgm(p, stepName, pgm);
@@ -634,7 +634,7 @@ class PmJob implements JobStatus {
         @Override
         public <C extends StatsCount> JobStatus execPgm(C c, ToIntFunction<C> pgm) {
             if (skip) {
-                trace.add(c.name());
+                add(c.name());
                 return PmJob.this;
             } else {
                 return PmJob.this.execPgm(c, pgm);
@@ -644,7 +644,7 @@ class PmJob implements JobStatus {
         @Override
         public JobStatus execPgm(String stepName, IntSupplier pgm) {
             if (skip) {
-                trace.add(stepName);
+                add(stepName);
                 return PmJob.this;
             } else {
                 return PmJob.this.execPgm(stepName, pgm);
@@ -654,7 +654,7 @@ class PmJob implements JobStatus {
         @Override
         public <P, C extends StatsCount> JobStatus execPgm(P p, C c, BiConsumer<P, C> pgm) {
             if (skip) {
-                trace.add(c.name());
+                add(c.name());
                 return PmJob.this;
             } else {
                 return PmJob.this.execPgm(p, c, pgm);
@@ -664,7 +664,7 @@ class PmJob implements JobStatus {
         @Override
         public <P> JobStatus execPgm(P p, String stepName, Consumer<P> pgm) {
             if (skip) {
-                trace.add(stepName);
+                add(stepName);
                 return PmJob.this;
             } else {
                 return PmJob.this.execPgm(p, stepName, pgm);
@@ -674,7 +674,7 @@ class PmJob implements JobStatus {
         @Override
         public <C extends StatsCount> JobStatus execPgm(C c, Consumer<C> pgm) {
             if (skip) {
-                trace.add(c.name());
+                add(c.name());
                 return PmJob.this;
             } else {
                 return PmJob.this.execPgm(c, pgm);
@@ -684,7 +684,7 @@ class PmJob implements JobStatus {
         @Override
         public JobStatus execPgm(String stepName, Runnable pgm) {
             if (skip) {
-                trace.add(stepName);
+                add(stepName);
                 return PmJob.this;
             } else {
                 return PmJob.this.execPgm(stepName, pgm);
@@ -694,7 +694,7 @@ class PmJob implements JobStatus {
         @Override
         public <P> JobStatus execProc(P p, String procName, Proc<P> proc) {
             if (skip) {
-                trace.add(procName);
+                add(procName);
                 return PmJob.this;
             } else {
                 return PmJob.this.execProc(p, procName, proc);
@@ -704,7 +704,7 @@ class PmJob implements JobStatus {
         @Override
         public JobStatus execProc(String procName, Proc<Void> proc) {
             if (skip) {
-                trace.add(procName);
+                add(procName);
                 return PmJob.this;
             } else {
                 return PmJob.this.execProc(procName, proc);
@@ -715,7 +715,7 @@ class PmJob implements JobStatus {
         public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus forEachPgm(P qs, Function<Q, C> c, BiFunction<Q, C, Integer> pgm) {
             if (skip) {
                 for (Q q : qs) {
-                    trace.add(c.apply(q).name());
+                    add(c.apply(q).name());
                 }
                 return PmJob.this;
             } else {
@@ -727,7 +727,7 @@ class PmJob implements JobStatus {
         public <P extends Iterable<Q>, Q> JobStatus forEachPgm(P qs, Function<Q, String> name, ToIntFunction<Q> pgm) {
             if (skip) {
                 for (Q q : qs) {
-                    trace.add(name.apply(q));
+                    add(name.apply(q));
                 }
                 return PmJob.this;
             } else {
@@ -739,7 +739,7 @@ class PmJob implements JobStatus {
         public <P extends Iterable<Q>, Q, C extends StatsCount> JobStatus forEachPgm(P qs, Function<Q, C> c, BiConsumer<Q, C> pgm) {
             if (skip) {
                 for (Q q : qs) {
-                    trace.add(c.apply(q).name());
+                    add(c.apply(q).name());
                 }
                 return PmJob.this;
             } else {
@@ -751,7 +751,7 @@ class PmJob implements JobStatus {
         public <P extends Iterable<Q>, Q> JobStatus forEachPgm(P qs, Function<Q, String> name, Consumer<Q> pgm) {
             if (skip) {
                 for (Q q : qs) {
-                    trace.add(name.apply(q));
+                    add(name.apply(q));
                 }
                 return PmJob.this;
             } else {
@@ -762,7 +762,7 @@ class PmJob implements JobStatus {
         @Override
         public <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
             if (skip) {
-                trace.add(c.name());
+                add(c.name());
                 return PmJob.this;
             } else {
                 return PmJob.this.forkPgm(p, c, pgm);
@@ -772,7 +772,7 @@ class PmJob implements JobStatus {
         @Override
         public <P> JobStatus forkPgm(P p, String stepName, ToIntFunction<P> pgm) {
             if (skip) {
-                trace.add(stepName);
+                add(stepName);
                 return PmJob.this;
             } else {
                 return PmJob.this.forkPgm(p, stepName, pgm);
@@ -782,7 +782,7 @@ class PmJob implements JobStatus {
         @Override
         public <C extends StatsCount> JobStatus forkPgm(C c, ToIntFunction<C> pgm) {
             if (skip) {
-                trace.add(c.name());
+                add(c.name());
                 return PmJob.this;
             } else {
                 return PmJob.this.forkPgm(c, pgm);
@@ -792,7 +792,7 @@ class PmJob implements JobStatus {
         @Override
         public JobStatus forkPgm(String stepName, IntSupplier pgm) {
             if (skip) {
-                trace.add(stepName);
+                add(stepName);
                 return PmJob.this;
             } else {
                 return PmJob.this.forkPgm(stepName, pgm);
@@ -802,7 +802,7 @@ class PmJob implements JobStatus {
         @Override
         public <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiConsumer<P, C> pgm) {
             if (skip) {
-                trace.add(c.name());
+                add(c.name());
                 return PmJob.this;
             } else {
                 return PmJob.this.forkPgm(p, c, pgm);
@@ -812,7 +812,7 @@ class PmJob implements JobStatus {
         @Override
         public <P> JobStatus forkPgm(P p, String stepName, Consumer<P> pgm) {
             if (skip) {
-                trace.add(stepName);
+                add(stepName);
                 return PmJob.this;
             } else {
                 return PmJob.this.forkPgm(p, stepName, pgm);
@@ -822,7 +822,7 @@ class PmJob implements JobStatus {
         @Override
         public <C extends StatsCount> JobStatus forkPgm(C c, Consumer<C> pgm) {
             if (skip) {
-                trace.add(c.name());
+                add(c.name());
                 return PmJob.this;
             } else {
                 return PmJob.this.forkPgm(c, pgm);
@@ -832,7 +832,7 @@ class PmJob implements JobStatus {
         @Override
         public JobStatus forkPgm(String stepName, Runnable pgm) {
             if (skip) {
-                trace.add(stepName);
+                add(stepName);
                 return PmJob.this;
             } else {
                 return PmJob.this.forkPgm(stepName, pgm);
@@ -843,7 +843,7 @@ class PmJob implements JobStatus {
         public <P extends Iterable<Q>, Q> JobStatus forEachProc(P qs, Function<Q, String> name, Proc<Q> proc) {
             if (skip) {
                 for (Q q : qs) {
-                    trace.add(name.apply(q));
+                    add(name.apply(q));
                 }
                 return PmJob.this;
             } else {
@@ -854,7 +854,7 @@ class PmJob implements JobStatus {
         @Override
         public <P> JobStatus forkProc(P p, String procName, Proc<P> proc) {
             if (skip) {
-                trace.add(procName);
+                add(procName);
                 return PmJob.this;
             } else {
                 return PmJob.this.forkProc(p, procName, proc);

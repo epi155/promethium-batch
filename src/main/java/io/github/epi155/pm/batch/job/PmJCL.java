@@ -1,10 +1,7 @@
 package io.github.epi155.pm.batch.job;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.ServiceLoader;
 
-@Slf4j
 class PmJCL implements JCL {
     private final ValueFactory factory;
 

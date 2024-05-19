@@ -2,16 +2,16 @@ package io.github.epi155.pm.batch.job;
 
 import io.github.epi155.pm.batch.step.BatchException;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.helpers.MessageFormatter;
 
 /**
  * batch wrapper IO exception
  */
 @Getter
-@Slf4j
 public class BatchStepException extends BatchException {
-    /**
+    private static final long serialVersionUID = -2689268030962162405L;
+
+	/**
      * batch exception constructor
      *
      * @param e exception wrapped

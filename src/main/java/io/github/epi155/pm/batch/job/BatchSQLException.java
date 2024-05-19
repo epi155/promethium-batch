@@ -2,7 +2,6 @@ package io.github.epi155.pm.batch.job;
 
 import io.github.epi155.pm.batch.step.BatchException;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.slf4j.helpers.MessageFormatter;
 
 import java.sql.SQLException;
@@ -11,9 +10,10 @@ import java.sql.SQLException;
  * batch wrapper SQL exception
  */
 @Getter
-@Slf4j
 public class BatchSQLException extends BatchException {
-    /**
+    private static final long serialVersionUID = 4030873104809313217L;
+
+	/**
      * batch exception constructor
      *
      * @param e exception wrapped

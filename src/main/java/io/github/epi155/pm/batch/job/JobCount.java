@@ -2,6 +2,7 @@ package io.github.epi155.pm.batch.job;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.io.PrintWriter;
 import java.time.*;
@@ -72,6 +73,11 @@ class JobCount extends StatsCount implements JobTrace {
         return name;
     }
 
+    @Override
+    public String getPrefix() {
+        return "";
+    }
+
     Optional<Integer> getReturnCode(String stepName) {
         for (StepInfo info : stepInfos) {
             if (info.stepName.equals(stepName) && info instanceof StepDone) {
@@ -90,10 +96,11 @@ class JobCount extends StatsCount implements JobTrace {
     abstract static class StepInfo {
         protected final String stepName;
         protected final Instant tmStart;
+        protected abstract Instant tmSort();
 
         protected abstract void info(PrintWriter pw, int width);
     }
-
+    @ToString
     static class StepDone extends StepInfo {
         private final int returnCode;
         private final Instant tmEnd;
@@ -102,6 +109,11 @@ class JobCount extends StatsCount implements JobTrace {
             super(stepName, tmStart);
             this.returnCode = rc;
             this.tmEnd = tmEnd;
+        }
+
+        @Override
+        protected Instant tmSort() {
+            return tmStart; // or tmEnd ?
         }
 
         @Override
@@ -120,10 +132,16 @@ class JobCount extends StatsCount implements JobTrace {
         }
     }
 
+    @ToString
     static class StepSkip extends StepInfo {
 
         public StepSkip(String stepName) {
             super(stepName, Instant.now());
+        }
+
+        @Override
+        protected Instant tmSort() {
+            return tmStart;
         }
 
         @Override
@@ -136,12 +154,18 @@ class JobCount extends StatsCount implements JobTrace {
         }
     }
 
+    @ToString
     static class StepCmnd extends StepInfo {
         private final int returnCode;
 
         public StepCmnd(String stepName, int rc) {
             super(stepName, Instant.now());
             this.returnCode = rc;
+        }
+
+        @Override
+        protected Instant tmSort() {
+            return tmStart;
         }
 
         @Override

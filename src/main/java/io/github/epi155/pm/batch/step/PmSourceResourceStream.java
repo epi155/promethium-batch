@@ -15,9 +15,9 @@ class PmSourceResourceStream<U extends Stream<I>, I> implements SourceResource<U
         this.iterator = stream.iterator();
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public U get() {
-        //noinspection unchecked
         return (U) stream;
     }
 

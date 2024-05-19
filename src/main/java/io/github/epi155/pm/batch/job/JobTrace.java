@@ -38,4 +38,11 @@ public interface JobTrace {
      * @return full step name
      */
     String fullName(String name);
+
+    /**
+     * Step prefix (nested proc)
+     *
+     * @return step prefix
+     */
+    String getPrefix();
 }

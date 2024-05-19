@@ -16,8 +16,8 @@ class Tuple1<O1> {
     private static final Tuple1<?> EMPTY = new Tuple1<>(null);
     private final O1 t1;
 
-    protected static <T> Tuple1<T> empty() {
-        //noinspection unchecked
+    @SuppressWarnings("unchecked")
+	protected static <T> Tuple1<T> empty() {
         return (Tuple1<T>) EMPTY;
     }
 

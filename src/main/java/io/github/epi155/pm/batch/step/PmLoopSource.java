@@ -1,12 +1,9 @@
 package io.github.epi155.pm.batch.step;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-@Slf4j
 class PmLoopSource<S extends AutoCloseable, I> extends PmPushSource<S, I> {
 
     PmLoopSource(SourceResource<S, I> source) {

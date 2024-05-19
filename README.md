@@ -40,7 +40,7 @@ where `src` is the data source constructed from the input file, `snk` is the dat
 
 Naturally a step can be written not using the proposed classes, it is sufficient that the method that implements the step returns a `void` or an `int`, in the latter case the returned value indicates whether the step ended correctly, with a warning or with an error.
 
-These examples are just a starting point, the javadoc documentation provides explanations of all the methods, To be able to develop complex jobs and complex steps.
+These examples are just a starting point, the javadoc documentation provides explanations of all the methods, to be able to develop complex jobs and complex steps.
 
 
 ~~~java

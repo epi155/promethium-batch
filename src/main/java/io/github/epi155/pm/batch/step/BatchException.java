@@ -10,7 +10,8 @@ import org.slf4j.helpers.MessageFormatter;
  */
 @Getter
 public class BatchException extends RuntimeException {
-    /**
+    private static final long serialVersionUID = -3072557291564118358L;
+	/**
      * Error code associated with the exception
      */
     private final int returnCode;
