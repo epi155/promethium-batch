@@ -1,16 +1,16 @@
 package io.github.epi155.pm.batch.step;
 
+import io.github.epi155.pm.batch.job.BatchException;
 import io.github.epi155.pm.batch.job.JCL;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import java.io.Closeable;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-import static io.github.epi155.pm.batch.step.BatchException.placeOf;
+import static io.github.epi155.pm.batch.job.BatchException.placeOf;
 
 @Slf4j
 class PmQueueWriter<T> implements Closeable {
@@ -59,7 +59,7 @@ class PmQueueWriter<T> implements Closeable {
         return new PmQueueWriter<>(queue, promise);
     }
 
-    public void write(@NotNull T t) {
+    public void write(T t) {
         put(Tuple1.of(Objects.requireNonNull(t)));
     }
 

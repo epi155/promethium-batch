@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch.job;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Marker;
 
@@ -7,7 +8,7 @@ import java.io.CharArrayWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static io.github.epi155.pm.batch.step.BatchException.placeOf;
+import static io.github.epi155.pm.batch.job.BatchException.placeOf;
 
 /**
  * super class to manage the execution statistics
@@ -16,6 +17,7 @@ import static io.github.epi155.pm.batch.step.BatchException.placeOf;
 public abstract class StatsCount {
     private static final Marker RECAP_MARKER = org.slf4j.MarkerFactory.getMarker("REPORT");
     private final String name;
+    @Getter
     private Throwable error;
 
     /**

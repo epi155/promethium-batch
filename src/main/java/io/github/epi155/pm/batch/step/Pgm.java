@@ -1,7 +1,5 @@
 package io.github.epi155.pm.batch.step;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * root interface for the batch process
  */
@@ -17,7 +15,7 @@ public interface Pgm {
      * @param <I>    source element type
      * @return instance of {@link LoopSource}
      */
-    static <S extends AutoCloseable, I> @NotNull LoopSource<I> from(@NotNull SourceResource<S, I> source) {
+    static <S extends AutoCloseable, I> LoopSource<I> from(SourceResource<S, I> source) {
         return new PmLoopSource<>(source);
     }
 
@@ -37,9 +35,9 @@ public interface Pgm {
      */
     static <S1 extends AutoCloseable, I1,
             S2 extends AutoCloseable, I2>
-    @NotNull PullSource2<I1, I2>
-    from(@NotNull SourceResource<S1, I1> source1,
-         @NotNull SourceResource<S2, I2> source2) {
+    PullSource2<I1, I2>
+    from(SourceResource<S1, I1> source1,
+         SourceResource<S2, I2> source2) {
         return new PmPullSource2<>(source1, source2);
     }
 
@@ -63,10 +61,10 @@ public interface Pgm {
     static <S1 extends AutoCloseable, I1,
             S2 extends AutoCloseable, I2,
             S3 extends AutoCloseable, I3>
-    @NotNull PullSource3<I1, I2, I3>
-    from(@NotNull SourceResource<S1, I1> source1,
-         @NotNull SourceResource<S2, I2> source2,
-         @NotNull SourceResource<S3, I3> source3) {
+    PullSource3<I1, I2, I3>
+    from(SourceResource<S1, I1> source1,
+         SourceResource<S2, I2> source2,
+         SourceResource<S3, I3> source3) {
         return new PmPullSource3<>(source1, source2, source3);
     }
 }

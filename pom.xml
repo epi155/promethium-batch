@@ -21,7 +21,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <name>Language extension</name>
+    <name>Batch Utilities</name>
     <description>utilities for batch processing</description>
     <url>https://github.com/epi155/promethium-batch</url>
 
@@ -159,7 +159,38 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+        <profile>
+            <id>generate-markdown</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.4.1</version>
+                        <configuration>
+                            <doclet>io.github.atlascommunity.marklet.Marklet</doclet>
+                            <docletArtifact>
+                                <groupId>io.github.atlascommunity</groupId>
+                                <artifactId>marklet</artifactId>
+                                <version>2.0.0</version>
+                            </docletArtifact>
+                            <reportOutputDirectory>./</reportOutputDirectory>
+                            <destDir>./</destDir>
+                            <useStandardDocletOptions>false</useStandardDocletOptions>
+<!--                            <additionalOptions>-->
+<!--                                <additionalOption>-e markdown</additionalOption>-->
+<!--                            </additionalOptions>-->
+                            <show>private</show>
+                            <subpackages>io.github.epi155.pm.batch</subpackages>
+                            <sourcepath>src/main/java/</sourcepath>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>    </profiles>
 
     <dependencies>
         <dependency>
@@ -198,12 +229,6 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.10.2</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>24.1.0</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

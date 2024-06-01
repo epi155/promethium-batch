@@ -1,7 +1,5 @@
 package io.github.epi155.pm.batch.step;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
@@ -11,7 +9,7 @@ class PmSourceResourceSupplier<U extends AutoCloseable, I> implements SourceReso
     private final Supplier<U> ctor;
     private final Function<U, Supplier<I>> reader;
 
-    public PmSourceResourceSupplier(@NotNull Supplier<U> ctor, Function<U, Supplier<I>> reader) {
+    public PmSourceResourceSupplier(Supplier<U> ctor, Function<U, Supplier<I>> reader) {
         this.ctor = ctor;
         this.reader = reader;
     }

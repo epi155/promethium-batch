@@ -1,6 +1,6 @@
 package io.github.epi155.pm.batch.step;
 
-import org.jetbrains.annotations.NotNull;
+import io.github.epi155.pm.batch.job.BatchException;
 
 import java.util.function.Consumer;
 
@@ -17,7 +17,7 @@ class PmPullSource2<
     private final SourceResource<S1, I1> source1;
     private final SourceResource<S2, I2> source2;
 
-    public PmPullSource2(@NotNull SourceResource<S1, I1> source1, @NotNull SourceResource<S2, I2> source2) {
+    public PmPullSource2(SourceResource<S1, I1> source1, SourceResource<S2, I2> source2) {
         this.source1 = source1;
         this.source2 = source2;
     }

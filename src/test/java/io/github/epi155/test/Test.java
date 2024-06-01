@@ -1,6 +1,6 @@
 package io.github.epi155.test;
 
-import io.github.epi155.pm.batch.step.BatchException;
+import io.github.epi155.pm.batch.job.BatchException;
 import io.github.epi155.pm.batch.step.Pgm;
 import io.github.epi155.pm.batch.step.SinkResource;
 import io.github.epi155.pm.batch.step.SourceResource;
@@ -19,7 +19,7 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 @Slf4j
-public class Test {
+class Test {
     @org.junit.jupiter.api.Test
     void test01() {
         List<Integer> list = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);

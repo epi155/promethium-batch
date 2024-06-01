@@ -1,6 +1,10 @@
 package io.github.epi155.test;
 
-import io.github.epi155.pm.batch.step.*;
+import io.github.epi155.pm.batch.job.BatchException;
+import io.github.epi155.pm.batch.step.Pgm;
+import io.github.epi155.pm.batch.step.SinkResource;
+import io.github.epi155.pm.batch.step.SourceResource;
+import io.github.epi155.pm.batch.step.Tuple2;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Assertions;

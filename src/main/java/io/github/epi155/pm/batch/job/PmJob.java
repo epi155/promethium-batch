@@ -1,10 +1,10 @@
 package io.github.epi155.pm.batch.job;
 
-import io.github.epi155.pm.batch.step.BatchException;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import java.time.Duration;
@@ -20,8 +20,9 @@ class PmJob implements JobStatus {
     private static final String JOB_NAME;
     private static final String STEP_NAME;
     private static final String BG = "&";
-    private static final ThreadLocal<Boolean> isBackgorund = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> isBackground = new ThreadLocal<>();
     private static final String UNHANDLED_ERROR = "Unhandled Error";
+    private static final String JOIN_CMD = "join()";
 
     static {
         JOB_NAME = JCL.getInstance().jobName();
@@ -34,7 +35,7 @@ class PmJob implements JobStatus {
     private final JobCount jobCount;
     private final JobTrace jobTrace;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
-    private final List<Future<Integer>> futures = new LinkedList<>();
+    private final Map<String,Future<Integer>> futures = new LinkedHashMap<>();
     private int maxcc;
     private Integer lastcc;
 
@@ -45,7 +46,7 @@ class PmJob implements JobStatus {
         this.jobCount = new JobCount(jobName);
         this.jobTrace = null;
         MDC.put(JOB_NAME, jobName);
-        isBackgorund.set(false);
+        isBackground.set(false);
     }
 
     protected PmJob(String name, JobTrace jobTrace) {
@@ -229,7 +230,7 @@ class PmJob implements JobStatus {
         return new JobCondStatus(skip);
     }
 
-    public JobStatus exec(@NotNull Consumer<JobStatus> action) {
+    public JobStatus exec(Consumer<JobStatus> action) {
         action.accept(this);
         return this;
     }
@@ -251,7 +252,16 @@ class PmJob implements JobStatus {
         if (jobTrace == null)
             MDC.remove(JOB_NAME);
         stack.clear();
+        JobContext.matcher.remove();
         return maxcc;
+    }
+
+    @Override
+    public JobInfo done() {
+        complete();
+
+        List<StepError> errors = jobCount.stepErrors();
+        return new PmJobInfo(jobName, maxcc, errors);
     }
 
     private int joinResult(Future<Integer> ele) throws InterruptedException {
@@ -306,7 +316,12 @@ class PmJob implements JobStatus {
             Duration lapse = Duration.between(tiStart, tiEnd);
             log.info("/// Step {} end: {}", name, DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
             MDC.remove(STEP_NAME);
-            add(Boolean.TRUE.equals(isBackgorund.get()) ? name + BG : name, returnCode, tiStart, tiEnd);
+            Throwable e = c.getError();
+            if (e==null) {
+                add(Boolean.TRUE.equals(isBackground.get()) ? name + BG : name, returnCode, tiStart, tiEnd);
+            } else {
+                add(Boolean.TRUE.equals(isBackground.get()) ? name + BG : name, returnCode, tiStart, tiEnd, e);
+            }
         }
         return returnCode;
     }
@@ -325,27 +340,74 @@ class PmJob implements JobStatus {
         Instant tiStart = Instant.now();
         Integer maxRc = null;
         for (int k = 1; !futures.isEmpty(); k++) {
-            val it = futures.iterator();
+            val it = futures.entrySet().iterator();
             Integer rc = loopOnFutures(it, k);
             if (rc != null)
                 maxRc = rc;
         }
         if (maxRc == null) {
-            add("join()");
+            add(JOIN_CMD);
         } else {
             Instant tiEnd = Instant.now();
             maxcc(maxRc);
-            add("join()", maxRc, tiStart, tiEnd);
+            add(JOIN_CMD, maxRc, tiStart, tiEnd);
         }
         return this;
     }
 
-    private Integer loopOnFutures(Iterator<Future<Integer>> it, int k) {
+    @Override
+    public JobStatus join(String name) {
+        String cmd = "join(" + name + ")";
+        Future<Integer> future = futures.get(name);
+        if (future==null) {
+            Instant now = Instant.now();
+            int rc = jcl.rcErrorJob();
+            maxcc(rc);
+            add(cmd, rc, now, now, new BatchJobException("Unknown step/proc name: {}", name));
+        } else {
+            try {
+                Instant tiStart = Instant.now();
+                int rc = joinResult(future);
+                Instant tiEnd = Instant.now();
+                maxcc(rc);
+                add(cmd, rc, tiStart, tiEnd);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                futures.remove(name);
+            }
+
+        }
+        return this;
+    }
+
+    @Override
+    public JobStatus quit(String name) {
+        String cmd = "quit(" + name + ")";
+        Future<Integer> future = futures.get(name);
+        if (future==null) {
+            Instant now = Instant.now();
+            int rc = jcl.rcErrorJob();
+            maxcc(rc);
+            add(cmd, rc, now, now, new BatchJobException("Unknown step/proc name: {}", name));
+        } else {
+            try {
+                future.cancel(true);
+                add(cmd, lastcc());
+            } finally {
+                futures.remove(name);
+            }
+
+        }
+        return this;
+    }
+
+    private Integer loopOnFutures(Iterator<Map.Entry<String, Future<Integer>>> it, int k) {
         Integer maxRc = null;
         int nmAlive = 0;
         try {
             while (it.hasNext()) {
-                val ele = it.next();
+                val ele = it.next().getValue();
                 if (ele.isDone()) {
                     int rc = joinResult(ele);
                     if (maxRc == null || rc > maxRc) maxRc = rc;
@@ -362,6 +424,11 @@ class PmJob implements JobStatus {
             Thread.currentThread().interrupt();
         }
         return maxRc;
+    }
+
+    private void add(String name, int rc, Instant tiStart, Instant tiEnd, Throwable error) {
+        jobCount.add(name, rc, tiStart, tiEnd, error);
+        if (jobTrace != null) jobTrace.add(name, rc, tiStart, tiEnd, error);
     }
 
     private void add(String name, int rc, Instant tiStart, Instant tiEnd) {
@@ -442,23 +509,34 @@ class PmJob implements JobStatus {
         });
     }
 
-    private JobStatus submit(Callable<Integer> step) {
-        futures.add(executorService.submit(() -> {
-            try {
-                MDC.put(JOB_NAME, jobName);
-                isBackgorund.set(true);
-                return step.call();
-            } finally {
-                MDC.remove(JOB_NAME);
-                isBackgorund.remove();
-            }
-        }));
+    private JobStatus submit(String stepName, Callable<Integer> step) {
+        if (futures.containsKey(stepName)) {
+            Instant now = Instant.now();
+            int rc = jcl.rcErrorJob();
+            maxcc(rc);
+            jobCount.add(stepName, rc, now, now, new BatchJobException("Duplicate step name: {}", stepName));
+            //throw new BatchException(jcl.rcErrorJob(), "Duplicate step name {}", stepName); // TODO
+        } else {
+            val jobLib = JobContext.matcher.get();
+            futures.put(stepName, executorService.submit(() -> {
+                try {
+                    MDC.put(JOB_NAME, jobName);
+                    JobContext.matcher.set(jobLib);
+                    isBackground.set(true);
+                    return step.call();
+                } finally {
+                    MDC.remove(JOB_NAME);
+                    JobContext.matcher.remove();
+                    isBackground.remove();
+                }
+            } ));
+        }
         return this;
     }
 
     @Override
     public <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
-        return submit(() -> runStep(c, () -> pgm.apply(p, c)));
+        return submit(c.name(), () -> runStep(c, () -> pgm.apply(p, c)));
     }
 
     @Override
@@ -470,7 +548,7 @@ class PmJob implements JobStatus {
 
     @Override
     public <C extends StatsCount> JobStatus forkPgm(C c, ToIntFunction<C> pgm) {
-        return submit(() -> runStep(c, () -> pgm.applyAsInt(c)));
+        return submit(c.name(), () -> runStep(c, () -> pgm.applyAsInt(c)));
     }
 
     @Override
@@ -482,7 +560,7 @@ class PmJob implements JobStatus {
 
     @Override
     public <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiConsumer<P, C> pgm) {
-        return submit(() -> runStep(c, () -> {
+        return submit(c.name(), () -> runStep(c, () -> {
             pgm.accept(p, c);
             return jcl.rcOk();
         }));
@@ -497,7 +575,7 @@ class PmJob implements JobStatus {
 
     @Override
     public <C extends StatsCount> JobStatus forkPgm(C c, Consumer<C> pgm) {
-        return submit(() -> runStep(c, () -> {
+        return submit(c.name(), () -> runStep(c, () -> {
             pgm.accept(c);
             return jcl.rcOk();
         }));
@@ -544,7 +622,7 @@ class PmJob implements JobStatus {
 
     @Override
     public <P> JobStatus forkProc(P p, String procName, Proc<P> proc) {
-        return submit(() -> runProc(procName, s -> proc.call(p, s)));
+        return submit(procName, () -> runProc(procName, s -> proc.call(p, s)));
     }
 
     private Integer runProc(String procName, ToIntFunction<JobStatus> fcn) {
@@ -563,7 +641,7 @@ class PmJob implements JobStatus {
             Duration lapse = Duration.between(tiStart, tiEnd);
             log.info("Proc {} end: {}", procName, DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
             MDC.remove(STEP_NAME);
-            add(Boolean.TRUE.equals(isBackgorund.get()) ? procName + BG : procName, returnCode, tiStart, tiEnd);
+            add(Boolean.TRUE.equals(isBackground.get()) ? procName + BG : procName, returnCode, tiStart, tiEnd);
         }
         return returnCode;
     }
@@ -583,6 +661,10 @@ class PmJob implements JobStatus {
             this.trace = jobTrace == null ? jobCount : jobTrace;
         }
 
+        @Override
+        public void add(String name, int returnCode, Instant tiStart, Instant tiEnd, Throwable error) {
+            trace.add(fullName(name), returnCode, tiStart, tiEnd, error);
+        }
         @Override
         public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
             trace.add(fullName(name), returnCode, tiStart, tiEnd);
@@ -863,7 +945,46 @@ class PmJob implements JobStatus {
 
         @Override
         public JobStatus forkProc(String procName, Proc<Void> proc) {
-            return forkProc(null, procName, proc);
+            return forkProc(null, procName, proc);  // forward
         }
+
+        @Override
+        public JobStatus join() {
+            if (skip) {
+                add(JOIN_CMD);
+                return PmJob.this;
+            } else {
+                return PmJob.this.join();
+            }
+        }
+
+        @Override
+        public JobStatus join(String name) {
+            if (skip) {
+                add("join("+name+")");
+                return PmJob.this;
+            } else {
+                return PmJob.this.join(name);
+            }
+        }
+
+        @Override
+        public JobStatus quit(String name) {
+            if (skip) {
+                add("quit("+name+")");
+                return PmJob.this;
+            } else {
+                return PmJob.this.quit(name);
+            }
+        }
+    }
+
+    @AllArgsConstructor
+    @Getter
+    @ToString
+    private static class PmJobInfo implements JobInfo {
+        private final String name;
+        private final int exitCode;
+        private final List<StepError> errors;
     }
 }

@@ -13,6 +13,16 @@ public interface JobTrace {
      * @param returnCode step return code
      * @param tiStart    step start timestamp
      * @param tiEnd      step end timestamp
+     * @param error      step exception
+     */
+    void add(String name, int returnCode, Instant tiStart, Instant tiEnd, Throwable error);
+    /**
+     * provides information on program execution
+     *
+     * @param name       step name
+     * @param returnCode step return code
+     * @param tiStart    step start timestamp
+     * @param tiEnd      step end timestamp
      */
     void add(String name, int returnCode, Instant tiStart, Instant tiEnd);
 

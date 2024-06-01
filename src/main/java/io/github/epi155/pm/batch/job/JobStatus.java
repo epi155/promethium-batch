@@ -1,7 +1,5 @@
 package io.github.epi155.pm.batch.job;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -24,7 +22,7 @@ public interface JobStatus
      * @param action action ontatus
      * @return instance of {@link JobStatus}
      */
-    JobStatus exec(@NotNull Consumer<JobStatus> action);
+    JobStatus exec(Consumer<JobStatus> action);
 
     /**
      * Max step return code
@@ -48,6 +46,13 @@ public interface JobStatus
     int complete();
 
     /**
+     * Completes the job and returns information about its execution
+     *
+     * @return information about the execution of the job
+     */
+    JobInfo done();
+
+    /**
      * Pushes jobReturnCode onto the internal stack
      *
      * @return original jobStatus
@@ -67,14 +72,6 @@ public interface JobStatus
      * @return jobStatus with restored jobReturnCode
      */
     JobStatus peek();
-
-    /**
-     * waits for the completion of the programs launched in the background.
-     * {@code lastcc} will be the maximum returnCode returned by programs running in the background
-     *
-     * @return instance of {@link JobStatus}
-     */
-    JobStatus join();
 
     /**
      * Retrieves the returnCode of the step with the indicated name

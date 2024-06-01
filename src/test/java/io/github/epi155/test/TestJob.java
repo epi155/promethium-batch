@@ -1,9 +1,6 @@
 package io.github.epi155.test;
 
-import io.github.epi155.pm.batch.job.BatchIOException;
-import io.github.epi155.pm.batch.job.JCL;
-import io.github.epi155.pm.batch.job.Proc;
-import io.github.epi155.pm.batch.job.StatsCount;
+import io.github.epi155.pm.batch.job.*;
 import io.github.epi155.pm.batch.step.Pgm;
 import io.github.epi155.pm.batch.step.SinkResource;
 import io.github.epi155.pm.batch.step.SourceResource;
@@ -171,16 +168,16 @@ class TestJob {
         MyCount count1 = new MyCount("Step01");
         MyCount count2 = new MyCount("Step02");
         MyCount count3 = new MyCount("Step03");
-        int rc = JCL.getInstance().job("job06")
-                .execPgm(count1, this::step01)
+        JobInfo xc = JCL.getInstance().job("job06")
+                .execPgm(count1, this::step03s)
 //                .exec(s -> {
 //                    if (s.isSuccess())
 //                        s.execPgm(count2, this::step02);
 //                    else
 //                        s.execPgm(count3, this::step01);
 //                })
-                .complete();
-        log.info("Job returnCode: {}", rc);
+                .done();
+        log.info("Job returnCode: {}", xc.getExitCode());
     }
 
     @Test

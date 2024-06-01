@@ -58,9 +58,20 @@ class TestJob2 {
 
     @Test
     void job03() {
-        int x = JCL.getInstance().job("job02")
+        int x = JCL.getInstance().job("job03")
                 .forkPgm("sort1", this::sort1)
-                .forkPgm("sort2", this::sort2)
+                .execPgm("sort2", this::sort2)
+                .cond(0,EQ).quit("sort1")
+                .cond(0,NE).join("sort1")
+                .cond(0, NE).execPgm("balance", this::balance)
+                .complete();
+        log.info("Job returnCode: {}", x);
+    }
+    @Test
+    void job13() {
+        int x = JCL.getInstance().job("job13")
+                .forkPgm("sort1", this::sort1)
+                .forkPgm("sort1", this::sort2)
                 .join()
                 .cond(0, NE).execPgm("balance", this::balance)
                 .complete();
@@ -80,7 +91,7 @@ class TestJob2 {
 
     private int sort1() {
         try {
-            Thread.sleep(rndm.nextInt(5000));
+            Thread.sleep(rndm.nextInt(15000));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -90,6 +101,7 @@ class TestJob2 {
     private void sort2() {
         try {
             Thread.sleep(rndm.nextInt(5000));
+//            throw new RuntimeException();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

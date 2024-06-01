@@ -1,6 +1,5 @@
 package io.github.epi155.pm.batch.job;
 
-import io.github.epi155.pm.batch.step.BatchException;
 import lombok.Getter;
 import org.slf4j.helpers.MessageFormatter;
 

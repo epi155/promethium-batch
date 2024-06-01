@@ -1,7 +1,5 @@
 package io.github.epi155.pm.batch.step;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Iterator;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -10,7 +8,7 @@ class PmSourceResourceStream<U extends Stream<I>, I> implements SourceResource<U
     private final Stream<I> stream;
     private final Iterator<I> iterator;
 
-    public PmSourceResourceStream(@NotNull Stream<I> stream) {
+    public PmSourceResourceStream(Stream<I> stream) {
         this.stream = stream;
         this.iterator = stream.iterator();
     }

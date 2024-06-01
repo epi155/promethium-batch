@@ -3,16 +3,20 @@ package io.github.epi155.pm.batch.job;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.val;
 
 import java.io.PrintWriter;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 class JobCount extends StatsCount implements JobTrace {
+    private static final String JAVA_BASE = "java.base";
     private static final String L_STEP = "Name";
     private final ConcurrentLinkedQueue<StepInfo> stepInfos = new ConcurrentLinkedQueue<>();
     private final Instant tiStart;
@@ -54,8 +58,53 @@ class JobCount extends StatsCount implements JobTrace {
                 DateTimeFormatter.ISO_LOCAL_TIME
                         .format(lapse.addTo(LocalTime.of(0, 0)))
         );
+        List<StepFail> errors = stepInfos.stream().filter(StepFail.class::isInstance).map(it -> (StepFail) it).collect(Collectors.toList());
+        if (! errors.isEmpty()) {
+            pw.println();
+            pw.print("=".repeat(wid));
+            pw.printf("+======^===============================^===============================^===================%n");
+            errors.forEach(it -> {
+                pw.print(it.stepName);
+                pw.print(".".repeat(wid - it.stepName.length()));
+                pw.printf("! %s", cause(it));
+            });
+            pw.println();
+            pw.print("=".repeat(wid));
+            pw.print("^==========================================================================================");
+        } else {
+            pw.println();
+            pw.print("-".repeat(wid));
+            pw.print("^------^-------------------------------^-------------------------------^-------------------");
+        }
     }
 
+    private String cause(StepFail fail) {
+        Throwable fault = fail.error;
+        for(;;) {
+            Throwable cause = fault.getCause();
+            if (cause==null)
+                break;
+            fault = cause;
+        }
+        val stes = fault.getStackTrace();
+        val matcher = JobContext.matcher.get();
+        for (StackTraceElement ste : stes) {
+            String module = ste.getModuleName();
+            if (!JAVA_BASE.equals(module) && !ste.isNativeMethod() &&
+                    (matcher==null || matcher.match(ste.getClassName()))) {
+                String claz = ste.getClassName();
+                String meth = ste.getMethodName();
+                String file = ste.getFileName();
+                int line = ste.getLineNumber();
+                return String.format("%s @%s->%s(%s:%d) [%s]", fault, claz, meth, file, line, JobContext.MatchByLib.libOf(claz));
+            }
+        }
+        return fault.toString();
+    }
+
+    public void add(String name, int returnCode, Instant tiStart, Instant tiEnd, Throwable error) {
+        stepInfos.add(new StepFail(name, returnCode, tiStart, tiEnd, error));
+    }
     public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
         stepInfos.add(new StepDone(name, returnCode, tiStart, tiEnd));
     }
@@ -91,6 +140,14 @@ class JobCount extends StatsCount implements JobTrace {
         this.maxcc = maxcc;
     }
 
+    protected List<StepError> stepErrors() {
+        return stepInfos.stream()
+                .filter(StepFail.class::isInstance)
+                .map(it -> (StepFail) it)
+                .map(PmStepError::new)
+                .collect(Collectors.toList());
+    }
+
     @AllArgsConstructor
     @Getter
     abstract static class StepInfo {
@@ -100,9 +157,18 @@ class JobCount extends StatsCount implements JobTrace {
 
         protected abstract void info(PrintWriter pw, int width);
     }
+    static class StepFail extends StepDone {
+        private final Throwable error;
+
+        public StepFail(String stepName, int rc, Instant tmStart, Instant tmEnd, Throwable error) {
+            super(stepName, rc, tmStart, tmEnd);
+            this.error = error;
+        }
+    }
+
     @ToString
     static class StepDone extends StepInfo {
-        private final int returnCode;
+        protected final int returnCode;
         private final Instant tmEnd;
 
         public StepDone(String stepName, int rc, Instant tmStart, Instant tmEnd) {
@@ -176,6 +242,19 @@ class JobCount extends StatsCount implements JobTrace {
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                             .format(LocalDateTime.ofInstant(tmStart, ZoneId.systemDefault()))
             );
+        }
+    }
+
+    @Getter
+    @ToString
+    private static class PmStepError implements StepError {
+        private final String name;
+        private final int returnCode;
+        private final Throwable error;
+        public PmStepError(StepFail it) {
+            this.name = it.stepName;
+            this.returnCode = it.returnCode;
+            this.error = it.error;
         }
     }
 }

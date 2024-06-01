@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch.step;
 
+import io.github.epi155.pm.batch.job.BatchException;
 import io.github.epi155.pm.batch.job.JCL;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -13,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static io.github.epi155.pm.batch.step.BatchException.placeOf;
+import static io.github.epi155.pm.batch.job.BatchException.placeOf;
 
 @Slf4j
 abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I> {

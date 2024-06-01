@@ -1,7 +1,6 @@
 package io.github.epi155.pm.batch.step;
 
 import io.github.epi155.pm.batch.job.BatchIOException;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,7 +28,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>    type of item produced by the resource
      * @return instance of {@link SourceResource}
      */
-    static <U extends AutoCloseable, I> @NotNull SourceResource<U, I> fromIterator(@NotNull Supplier<U> ctor, Function<U, @NotNull Iterator<I>> reader) {
+    static <U extends AutoCloseable, I> SourceResource<U, I> fromIterator(Supplier<U> ctor, Function<U, Iterator<I>> reader) {
         return new PmSourceResourceIterator<>(ctor, reader);
     }
 
@@ -41,7 +40,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>  type of item produced by the resource
      * @return instance of {@link SourceResource}
      */
-    static <U extends AutoCloseable & Iterable<I>, I> @NotNull SourceResource<U, I> fromIterator(@NotNull Supplier<U> ctor) {
+    static <U extends AutoCloseable & Iterable<I>, I> SourceResource<U, I> fromIterator(Supplier<U> ctor) {
         return new PmSourceResourceIterator<>(ctor, Iterable::iterator);
     }
 
@@ -53,7 +52,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>    type of item produced by the resource
      * @return instance of {@link SourceResource}
      */
-    static <U extends Stream<I>, I> @NotNull SourceResource<U, I> fromStream(@NotNull Stream<I> stream) {
+    static <U extends Stream<I>, I> SourceResource<U, I> fromStream(Stream<I> stream) {
         return new PmSourceResourceStream<>(stream);
     }
 
@@ -64,7 +63,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>      type of item produced by the resource
      * @return instance of {@link SourceResource}
      */
-    static <I> @NotNull SourceResource<?, I> fromIterator(@NotNull Iterable<I> iterable) {
+    static <I> SourceResource<?, I> fromIterator(Iterable<I> iterable) {
         Supplier<PmCloseableIterable<I>> ctor = () -> new PmCloseableIterable<>(iterable);
         return new PmSourceResourceIterator<>(ctor, PmCloseableIterable::iterator);
     }
@@ -78,7 +77,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>    type of item produced by the resource
      * @return instance of {@link SourceResource}
      */
-    static <U extends AutoCloseable, I> @NotNull SourceResource<U, I> fromSupplier(@NotNull Supplier<U> ctor, Function<U, @NotNull Supplier<I>> reader) {
+    static <U extends AutoCloseable, I> SourceResource<U, I> fromSupplier(Supplier<U> ctor, Function<U, Supplier<I>> reader) {
         return new PmSourceResourceSupplier<>(ctor, reader);
     }
 
@@ -90,7 +89,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>  type of item produced by the resource
      * @return instance of {@link SourceResource}
      */
-    static <U extends AutoCloseable & Supplier<I>, I> @NotNull SourceResource<U, I> fromSupplier(@NotNull Supplier<U> ctor) {
+    static <U extends AutoCloseable & Supplier<I>, I> SourceResource<U, I> fromSupplier(Supplier<U> ctor) {
         return new PmSourceResourceSupplier<>(ctor, u -> u);
     }
 
@@ -102,7 +101,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param inc  action after read (usually counter++)
      * @return instance of {@link SourceResource}
      */
-    static @NotNull SourceResource<BufferedReader, String> bufferedReader(File file, Charset cs, Runnable inc) {
+    static SourceResource<BufferedReader, String> bufferedReader(File file, Charset cs, Runnable inc) {
         return SourceResource.fromSupplier(
                 () -> {
                     try {
@@ -130,7 +129,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param inc  action after read (usually counter++)
      * @return instance of {@link SourceResource}
      */
-    static @NotNull SourceResource<BufferedReader, String> bufferedReader(File file, Runnable inc) {
+    static SourceResource<BufferedReader, String> bufferedReader(File file, Runnable inc) {
         return SourceResource.fromSupplier(
                 () -> {
                     try {
@@ -158,7 +157,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param cs   charset
      * @return instance of {@link SourceResource}
      */
-    static @NotNull SourceResource<BufferedReader, String> bufferedReader(File file, Charset cs) {
+    static SourceResource<BufferedReader, String> bufferedReader(File file, Charset cs) {
         return SourceResource.fromSupplier(
                 () -> {
                     try {
@@ -183,7 +182,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param file file
      * @return instance of {@link SourceResource}
      */
-    static @NotNull SourceResource<BufferedReader, String> bufferedReader(File file) {
+    static SourceResource<BufferedReader, String> bufferedReader(File file) {
         return SourceResource.fromSupplier(
                 () -> {
                     try {
@@ -212,7 +211,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>  type read
      * @return instance of {@link SourceResource}
      */
-    static <I> @NotNull SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec, Charset cs, Runnable inc) {
+    static <I> SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec, Charset cs, Runnable inc) {
         return SourceResource.fromSupplier(
                 () -> {
                     try {
@@ -242,7 +241,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>  type read
      * @return instance of {@link SourceResource}
      */
-    static <I> @NotNull SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec, Charset cs) {
+    static <I> SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec, Charset cs) {
         return SourceResource.fromSupplier(
                 () -> {
                     try {
@@ -272,7 +271,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>  type read
      * @return instance of {@link SourceResource}
      */
-    static <I> @NotNull SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec, Runnable inc) {
+    static <I> SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec, Runnable inc) {
         return SourceResource.fromSupplier(
                 () -> {
                     try {
@@ -302,7 +301,7 @@ public interface SourceResource<U extends AutoCloseable, I> {
      * @param <I>  type read
      * @return instance of {@link SourceResource}
      */
-    static <I> @NotNull SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec) {
+    static <I> SourceResource<BufferedReader, I> bufferedReader(File file, Function<String, I> dec) {
         return SourceResource.fromSupplier(
                 () -> {
                     try {

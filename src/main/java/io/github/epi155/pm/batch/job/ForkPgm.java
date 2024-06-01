@@ -5,7 +5,7 @@ import java.util.function.*;
 /**
  * interface for running a program unconditionally
  */
-public interface ForkPgm<S> {
+public interface ForkPgm<S> extends Joinable {
     /**
      * Program launcher in background with user returnCode
      *

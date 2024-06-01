@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch.job;
 
+import java.util.Collection;
 import java.util.ServiceLoader;
 
 class PmJCL implements JCL {
@@ -15,6 +16,21 @@ class PmJCL implements JCL {
     }
 
     public JobStatus job(String name) {
+        Class<?> claz = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
+        JobContext.matcher.set(new JobContext.MatchByLib(claz));
+        return PmJob.of(rcOk(), this, name);
+    }
+
+    @Override
+    public JobStatus job(String name, int w) {
+        Class<?> claz = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
+        JobContext.matcher.set(new JobContext.MatchByPackagePrefix(claz, w));
+        return PmJob.of(rcOk(), this, name);
+    }
+
+    @Override
+    public JobStatus job(String name, Collection<String> prefixes) {
+        JobContext.matcher.set(new JobContext.MatchByPackagePrefixes(prefixes));
         return PmJob.of(rcOk(), this, name);
     }
 

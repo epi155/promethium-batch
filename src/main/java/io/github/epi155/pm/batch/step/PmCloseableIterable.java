@@ -1,7 +1,5 @@
 package io.github.epi155.pm.batch.step;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Iterator;
 
 class PmCloseableIterable<I> implements AutoCloseable, Iterable<I> {
@@ -16,7 +14,6 @@ class PmCloseableIterable<I> implements AutoCloseable, Iterable<I> {
         // noop
     }
 
-    @NotNull
     @Override
     public Iterator<I> iterator() {
         return iterable.iterator();

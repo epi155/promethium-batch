@@ -1,7 +1,5 @@
 package io.github.epi155.pm.batch.step;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Iterator;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -10,7 +8,7 @@ class PmSourceResourceIterator<U extends AutoCloseable, I> implements SourceReso
     private final Supplier<U> ctor;
     private final Function<? super U, Iterator<I>> reader;
 
-    PmSourceResourceIterator(Supplier<U> ctor, Function<? super U, @NotNull Iterator<I>> reader) {
+    PmSourceResourceIterator(Supplier<U> ctor, Function<? super U, Iterator<I>> reader) {
         this.ctor = ctor;
         this.reader = reader;
     }
