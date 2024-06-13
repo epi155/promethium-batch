@@ -3,7 +3,7 @@ package io.github.epi155.test;
 import io.github.epi155.pm.batch.job.JCL;
 import io.github.epi155.pm.batch.job.Proc;
 import io.github.epi155.pm.batch.step.Pgm;
-import io.github.epi155.pm.batch.step.SinkResource;
+import io.github.epi155.pm.batch.step.SinkBufResource;
 import io.github.epi155.pm.batch.step.SourceResource;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -24,7 +24,7 @@ class TestJob2 {
         @Override
         public void run() {
             val src = SourceResource.bufferedReader(inFile);
-            val snk = SinkResource.bufferedWriter(outFile);
+            val snk = SinkBufResource.bufferedWriter(outFile);
             Pgm.from(src).into(snk).forEach(it -> it);
         }
     };
