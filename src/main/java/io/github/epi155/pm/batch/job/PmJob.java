@@ -290,13 +290,13 @@ class PmJob implements JobStatus {
             }
             if (n != 1) return;
         }
-        log.info("Waiting {} running step", r);
+        log.debug("Waiting {} running step", r);
     }
 
     protected int runStep(StatsCount c, IntSupplier step) {
         String name = c.name();
         MDC.put(STEP_NAME, fullName(name));
-        log.info("\\\\\\ Step {} start", name);
+        log.debug("\\\\\\ Step {} start", name);
         Instant tiStart = Instant.now();
         int returnCode = Integer.MAX_VALUE;
         try {
@@ -314,7 +314,7 @@ class PmJob implements JobStatus {
             c.recap(returnCode);  // log returnCode and custom statistics
             Instant tiEnd = Instant.now();
             Duration lapse = Duration.between(tiStart, tiEnd);
-            log.info("/// Step {} end: {}", name, DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
+            log.debug("/// Step {} end: {}", name, DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
             MDC.remove(STEP_NAME);
             Throwable e = c.getError();
             if (e==null) {
@@ -628,7 +628,7 @@ class PmJob implements JobStatus {
     private Integer runProc(String procName, ToIntFunction<JobStatus> fcn) {
         MDC.put(STEP_NAME, fullName(procName));
         JobStatus s = new PmJob(jobName, new PmJobTrace(fullName(procName)));
-        log.info("Proc {} start", procName);
+        log.debug("Proc {} start", procName);
         Instant tiStart = Instant.now();
         int returnCode = Integer.MAX_VALUE;
         try {
@@ -639,7 +639,7 @@ class PmJob implements JobStatus {
         } finally {
             Instant tiEnd = Instant.now();
             Duration lapse = Duration.between(tiStart, tiEnd);
-            log.info("Proc {} end: {}", procName, DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
+            log.debug("Proc {} end: {}", procName, DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
             MDC.remove(STEP_NAME);
             add(Boolean.TRUE.equals(isBackground.get()) ? procName + BG : procName, returnCode, tiStart, tiEnd);
         }

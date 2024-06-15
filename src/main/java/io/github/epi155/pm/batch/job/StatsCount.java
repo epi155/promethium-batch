@@ -39,16 +39,16 @@ public abstract class StatsCount {
             pw.flush();
         }
         if (sw.size() == 0) {
-            log.info(RECAP_MARKER, " ))) Report {} > ReturnCode: {}", name, returnCode);
+            log.info(RECAP_MARKER, " ))) Report ({}) > ReturnCode: {}", name, returnCode);
         } else {
-            log.info(RECAP_MARKER, " ||| Report {}:{}{}ReturnCode: {}", name, System.lineSeparator(), sw, returnCode);
+            log.info(RECAP_MARKER, " ||| Report ({}):{}{}ReturnCode: {}", name, System.lineSeparator(), sw, returnCode);
         }
     }
 
     void recap() {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        pw.println();
+        pw.printf(" ::: Report [%s]:%n", name);
         recap(pw);
         if (error != null) {
             pw.printf("Error: %s%n- at %s%n", error.getMessage(), placeOf(error.getStackTrace()));

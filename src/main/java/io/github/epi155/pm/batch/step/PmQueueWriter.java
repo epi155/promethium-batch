@@ -78,7 +78,7 @@ class PmQueueWriter<T> implements Closeable {
             future.get();
             log.debug("W.--- writer listener successful terminated.");
         } catch (InterruptedException e) {
-            log.info("W.>>> writer listener was interrupted. (dead branch?)");
+            log.debug("W.>>> writer listener was interrupted. (dead branch?)");
             Thread.currentThread().interrupt();
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();

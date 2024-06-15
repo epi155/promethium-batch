@@ -1775,7 +1775,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 try {
                     status.get();
                 } catch (InterruptedException e) {
-                    log.info("*.>>> task was interrupted. (dead branch?)");
+                    log.debug("*.>>> task was interrupted. (dead branch?)");
                     Thread.currentThread().interrupt();
                 } catch (ExecutionException e) {
                     Throwable cause = e.getCause();
@@ -1843,7 +1843,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         if (Thread.currentThread().isInterrupted()) {
                             log.warn("s.>>> Loop interrupted ...");
                         } else {
-                            log.info("s.--- All task submitted ...");
+                            log.debug("s.--- All task submitted ...");
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -1851,10 +1851,10 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         log.warn("s.>>> Internal error.");
                         throw e;
                     } finally {
-                        log.info("s.--- waiting for the end of the tasks ...");
+                        log.debug("s.--- waiting for the end of the tasks ...");
                         awaitEmptyQueue();
                         if (!Thread.currentThread().isInterrupted()) {
-                            log.info("s.--- interrupting the write listener");
+                            log.debug("s.--- interrupting the write listener");
                             main.interrupt();
                         }
                         MDC.clear();
@@ -1867,7 +1867,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         doWrite(action, fo, future);
                     }
                 } catch (InterruptedException e) {
-                    log.info("s.--- write listener interrupted");
+                    log.debug("s.--- write listener interrupted");
 //                    Thread.currentThread().interrupt();
                 }
                 try {
@@ -1989,18 +1989,18 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         if (Thread.currentThread().isInterrupted()) {
                             log.warn("S.>>> Loop interrupted, shutdown taskExecutor ...");
                         } else {
-                            log.info("S.--- All task submitted, shutdown taskExecutor ...");
+                            log.debug("S.--- All task submitted, shutdown taskExecutor ...");
                         }
                     } catch (RuntimeException e) {
                         log.warn("S.>>> Internal error.");
                         throw e;
                     } finally {
                         shutdown(service2);
-                        log.info("S.--- waiting for the end of the tasks ...");
+                        log.debug("S.--- waiting for the end of the tasks ...");
                         awaitEmptyQueue();
                         MDC.clear();
                         if (!Thread.currentThread().isInterrupted()) {
-                            log.info("S.--- interrupting the write listener");
+                            log.debug("S.--- interrupting the write listener");
                             main.interrupt();
                         }
                     }
@@ -2012,7 +2012,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         doWrite(action, fo, future);
                     }
                 } catch (InterruptedException e) {
-                    log.info("S.--- write listener interrupted");
+                    log.debug("S.--- write listener interrupted");
 //                    Thread.currentThread().interrupt();
                 }
                 try {
@@ -2093,9 +2093,9 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 openResources();
                 log.info("W.=== completed successfully.");
             } catch (InterruptedException e) {
-                log.info("W.>>> thread interrupted");
+                log.debug("W.>>> thread interrupted");
             } finally {
-                log.info("W.--- resources closed.");
+                log.debug("W.--- resources closed.");
             }
         }
 
@@ -2129,7 +2129,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     if (Thread.currentThread().isInterrupted()) {
                         log.warn("W.>>> Loop interrupted, shutdown taskExecutor ...");
                     } else {
-                        log.info("W.--- All task submitted, shutdown taskExecutor ...");
+                        log.debug("W.--- All task submitted, shutdown taskExecutor ...");
                     }
                 } catch (RuntimeException e) {
                     log.warn("W.>>> Internal error.");
@@ -2137,9 +2137,9 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 } finally {
                     shutdown(taskService);  // abnormal end on timeout
                 }
-                log.info("W.--- pending futures {}", statuses.size());
+                log.debug("W.--- pending futures {}", statuses.size());
                 probeStatuses(statuses, false);
-                log.info("W.--- tasks terminated, flush & close ...");
+                log.debug("W.--- tasks terminated, flush & close ...");
             } finally {
                 log.debug("W.--- the listener's monitor will be shut down ...");
                 schedule.shutdown();
@@ -2248,7 +2248,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                             if (Thread.currentThread().isInterrupted()) {
                                 log.warn("E.>>> Loop interrupted, shutdown taskExecutor ...");
                             } else {
-                                log.info("E.--- All task submitted, shutdown taskExecutor ...");
+                                log.debug("E.--- All task submitted, shutdown taskExecutor ...");
                             }
                         } catch (RuntimeException e) {
                             log.warn("E.>>> Internal error.");
@@ -2256,12 +2256,12 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         } finally {
                             shutdown(service2);
                         }
-                        log.info("E.--- pending futures {}", statuses.size());
+                        log.debug("E.--- pending futures {}", statuses.size());
                         probeStatuses(statuses, false);
-                        log.info("E.--- tasks terminated, flush & close ...");
+                        log.debug("E.--- tasks terminated, flush & close ...");
                     } finally {
                         awaitEmptyQueue();
-                        log.info("E.--- interrupting the write listener");
+                        log.debug("E.--- interrupting the write listener");
                         MDC.clear();
                         main.interrupt();
                     }
@@ -2273,7 +2273,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         action.accept(r);
                     }
                 } catch (InterruptedException e) {
-                    log.info("E.--- write listener interrupted");
+                    log.debug("E.--- write listener interrupted");
 //                    Thread.currentThread().interrupt();
                 }
                 try {
@@ -2375,14 +2375,14 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                         if (Thread.currentThread().isInterrupted()) {
                             log.warn("Z.>>> Loop interrupted, shutdown taskExecutor ...");
                         } else {
-                            log.info("Z.--- All task submitted, shutdown taskExecutor ...");
+                            log.debug("Z.--- All task submitted, shutdown taskExecutor ...");
                         }
                     } finally {
                         shutdown(service2);
                     }
-                    log.info("Z.--- pending futures {}", statuses.size());
+                    log.debug("Z.--- pending futures {}", statuses.size());
                     probeStatuses(statuses, false);
-                    log.info("Z.--- tasks terminated, flush & close ...");
+                    log.debug("Z.--- tasks terminated, flush & close ...");
                     MDC.clear();
                 });
                 try {
@@ -2438,9 +2438,9 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 openResources();
                 log.info("w.=== completed successfully.");
             } catch (InterruptedException e) {
-                log.info("w.>>> thread interrupted");
+                log.debug("w.>>> thread interrupted");
             } finally {
-                log.info("w.--- resources closed.");
+                log.debug("w.--- resources closed.");
             }
         }
 
@@ -2469,11 +2469,11 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                 if (Thread.currentThread().isInterrupted()) {
                     log.warn("w.>>> Loop interrupted, shutdown taskExecutor ...");
                 } else {
-                    log.info("w.--- All task submitted, shutdown taskExecutor ...");
+                    log.debug("w.--- All task submitted, shutdown taskExecutor ...");
                 }
-                log.info("w.--- pending futures {}", statuses.size());
+                log.debug("w.--- pending futures {}", statuses.size());
                 probeStatuses(statuses, sm, false);
-                log.info("w.--- tasks terminated, flush & close ...");
+                log.debug("w.--- tasks terminated, flush & close ...");
             } catch (RuntimeException e) {
                 log.warn("w.>>> Internal error.");
                 throw e;
@@ -2526,7 +2526,7 @@ abstract class PmPushSource<S extends AutoCloseable, I> implements LoopSource<I>
                     try {
                         status.get();
                     } catch (InterruptedException e) {
-                        log.info("w.>>> task was interrupted. (dead branch?)");
+                        log.debug("w.>>> task was interrupted. (dead branch?)");
                         Thread.currentThread().interrupt();
                     } catch (ExecutionException e) {
                         Throwable cause = e.getCause();

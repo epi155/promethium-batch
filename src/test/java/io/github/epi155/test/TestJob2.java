@@ -4,6 +4,7 @@ import io.github.epi155.pm.batch.job.JCL;
 import io.github.epi155.pm.batch.job.Proc;
 import io.github.epi155.pm.batch.step.Pgm;
 import io.github.epi155.pm.batch.step.SinkBufResource;
+import io.github.epi155.pm.batch.step.SinkResource;
 import io.github.epi155.pm.batch.step.SourceResource;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
