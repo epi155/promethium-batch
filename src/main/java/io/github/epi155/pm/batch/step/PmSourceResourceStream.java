@@ -14,7 +14,7 @@ class PmSourceResourceStream<U extends Stream<I>, I> implements SourceResource<U
     }
 
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public U get() {
         return (U) stream;
     }

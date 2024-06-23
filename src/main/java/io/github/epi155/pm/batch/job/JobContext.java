@@ -9,8 +9,10 @@ import java.util.Collection;
 import java.util.Objects;
 
 class JobContext {
-    private JobContext() {}
     static ThreadLocal<ClassMatcher> matcher = new ThreadLocal<>();
+
+    private JobContext() {
+    }
 
     interface ClassMatcher {
         boolean match(String className);
@@ -21,6 +23,7 @@ class JobContext {
     static class ClassLib {
         private final String jar;
         private final String vrs;
+
         public String toString() {
             return jar.isEmpty() ? vrs : jar + "/" + vrs;
         }
@@ -34,10 +37,6 @@ class JobContext {
             this.lib = libOf(claz);
         }
 
-        @Override
-        public boolean match(String className) {
-            return Objects.equals(lib, libOf(className));
-        }
         static ClassLib libOf(String className) {
             try {
                 Class<?> clazz = Class.forName(className);
@@ -46,18 +45,24 @@ class JobContext {
                 return null;
             }
         }
+
         static ClassLib libOf(Class<?> clazz) {
             String location = clazz.getProtectionDomain().getCodeSource().getLocation().toString();
             int k1 = location.lastIndexOf('/');
             if (k1 >= 0) {
-                int k2 = location.lastIndexOf('/', k1-1);
+                int k2 = location.lastIndexOf('/', k1 - 1);
                 if (k2 >= 0) {
-                    String vrs = location.substring(k2+1, k1);
-                    String lib = location.substring(k1+1);
+                    String vrs = location.substring(k2 + 1, k1);
+                    String lib = location.substring(k1 + 1);
                     return new ClassLib(lib, vrs);
                 }
             }
             return null;
+        }
+
+        @Override
+        public boolean match(String className) {
+            return Objects.equals(lib, libOf(className));
         }
     }
 
@@ -67,9 +72,9 @@ class JobContext {
         public MatchByPackagePrefix(Class<?> claz, int w) {
             String pckName = claz.getPackage().getName();
             int sb = 0;
-            for(int k=0; k<w; k++) {
-                int se = pckName.indexOf('.', sb+1);
-                if (se<0) break;
+            for (int k = 0; k < w; k++) {
+                int se = pckName.indexOf('.', sb + 1);
+                if (se < 0) break;
                 sb = se;
             }
             this.prefix = pckName.substring(0, sb);
@@ -90,7 +95,7 @@ class JobContext {
 
         @Override
         public boolean match(String className) {
-            for (val prefix: prefixes) {
+            for (val prefix : prefixes) {
                 if (className.startsWith(prefix))
                     return true;
             }

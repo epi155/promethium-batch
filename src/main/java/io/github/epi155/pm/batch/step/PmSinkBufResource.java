@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 class PmSinkBufResource<U extends AutoCloseable, O>
-        extends PmSinkResource<U,O> implements SinkBufResource<U,O> {
+        extends PmSinkResource<U, O> implements SinkBufResource<U, O> {
     private final Consumer<U> flusher;
     private U u;
 
@@ -22,7 +22,7 @@ class PmSinkBufResource<U extends AutoCloseable, O>
 
     @Override
     public void flush() {
-        if (u!=null) {
+        if (u != null) {
             flusher.accept(u);
         }
     }

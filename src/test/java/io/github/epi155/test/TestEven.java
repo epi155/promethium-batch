@@ -1,6 +1,6 @@
 package io.github.epi155.test;
 
-import io.github.epi155.pm.batch.job.BatchException;
+import io.github.epi155.pm.batch.step.BatchException;
 import io.github.epi155.pm.batch.step.Pgm;
 import io.github.epi155.pm.batch.step.SinkResource;
 import io.github.epi155.pm.batch.step.SourceResource;

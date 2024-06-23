@@ -29,12 +29,12 @@ public interface SinkBufResource<U extends AutoCloseable, O> extends SinkResourc
      *      wr -> wr::flush);
      * </pre>{@code try/catch} omitted
      *
-     * @param ctor   resource constructor provider
-     * @param writer method of the resource to send data to
+     * @param ctor    resource constructor provider
+     * @param writer  method of the resource to send data to
      * @param flusher method of the resource to flush buffered data
+     * @param <U>     resource type
+     * @param <O>     element type consumed by the resource
      * @return instance of {@link SinkBufResource}
-     * @param <U>    resource type
-     * @param <O>    element type consumed by the resource
      */
     static <U extends AutoCloseable, O>
     SinkBufResource<U, O> of(Supplier<U> ctor, BiConsumer<U, O> writer, Consumer<U> flusher) {
@@ -51,13 +51,13 @@ public interface SinkBufResource<U extends AutoCloseable, O> extends SinkResourc
      *      wr -> wr::flush);
      * </pre>{@code try/catch} omitted
      *
-     * @param ctor   resource constructor provider
-     * @param writer method of the resource to send data to
+     * @param ctor    resource constructor provider
+     * @param writer  method of the resource to send data to
      * @param flusher method of the resource to flush buffered data
-     * @param action action invoked after writing the data
+     * @param action  action invoked after writing the data
+     * @param <U>     resource type
+     * @param <O>     element type consumed by the resource
      * @return instance of {@link SinkBufResource}
-     * @param <U>    resource type
-     * @param <O>    element type consumed by the resource
      */
     static <U extends AutoCloseable, O>
     SinkBufResource<U, O> of(Supplier<U> ctor, BiConsumer<U, O> writer, Consumer<U> flusher, Runnable action) {

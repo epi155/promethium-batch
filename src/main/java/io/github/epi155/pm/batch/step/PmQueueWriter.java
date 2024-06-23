@@ -1,6 +1,5 @@
 package io.github.epi155.pm.batch.step;
 
-import io.github.epi155.pm.batch.job.BatchException;
 import io.github.epi155.pm.batch.job.JCL;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +9,7 @@ import java.io.Closeable;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-import static io.github.epi155.pm.batch.job.BatchException.placeOf;
+import static io.github.epi155.pm.batch.job.BatchStepException.placeOf;
 
 @Slf4j
 class PmQueueWriter<T> implements Closeable {

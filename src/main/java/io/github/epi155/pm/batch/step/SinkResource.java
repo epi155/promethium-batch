@@ -1,15 +1,7 @@
 package io.github.epi155.pm.batch.step;
 
-import io.github.epi155.pm.batch.job.BatchIOException;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -98,12 +90,4 @@ public interface SinkResource<U extends AutoCloseable, O> {
      * @param o data to send (write) to the resource
      */
     void accept(U u, O o);
-
-//    /**
-//     * data consumer
-//     *
-//     * @param u native resource
-//     * @return data consumer (method to send data to)
-//     */
-//    Consumer<? super O> consumer(U u);
 }

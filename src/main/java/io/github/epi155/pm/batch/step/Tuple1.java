@@ -17,7 +17,7 @@ class Tuple1<O1> {
     private final O1 t1;
 
     @SuppressWarnings("unchecked")
-	protected static <T> Tuple1<T> empty() {
+    protected static <T> Tuple1<T> empty() {
         return (Tuple1<T>) EMPTY;
     }
 

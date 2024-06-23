@@ -1,8 +1,6 @@
 package io.github.epi155.pm.batch.step;
 
-import io.github.epi155.pm.batch.job.BatchException;
-
-import java.util.function.Consumer;
+import static io.github.epi155.pm.batch.step.PmPushCore.consumerOf;
 
 class PmPullSource3<S1 extends AutoCloseable, I1,
         S2 extends AutoCloseable, I2,
@@ -16,10 +14,6 @@ class PmPullSource3<S1 extends AutoCloseable, I1,
         this.source1 = source1;
         this.source2 = source2;
         this.source3 = source3;
-    }
-
-    private <O, T extends AutoCloseable> Consumer<? super O> consumerOf(SinkResource<T, O> sink, T t) {
-        return o -> sink.accept(t, o);
     }
 
     @Override

@@ -1,8 +1,7 @@
-package io.github.epi155.pm.batch.job;
+package io.github.epi155.pm.batch.step;
 
+import io.github.epi155.pm.batch.job.JCL;
 import lombok.Getter;
-import lombok.SneakyThrows;
-import lombok.val;
 import org.slf4j.helpers.MessageFormatter;
 
 /**
@@ -11,7 +10,7 @@ import org.slf4j.helpers.MessageFormatter;
 @Getter
 public class BatchException extends RuntimeException {
     private static final long serialVersionUID = -3072557291564118358L;
-	/**
+    /**
      * Error code associated with the exception
      */
     private final int returnCode;
@@ -51,26 +50,4 @@ public class BatchException extends RuntimeException {
         this.returnCode = returnCode;
     }
 
-    /**
-     * Constructs the string with the location where the error occurred
-     *
-     * @param stackTrace full stack trace array
-     * @return String with error position
-     */
-    @SneakyThrows
-    public static String placeOf(StackTraceElement[] stackTrace) {
-        val matcher = JobContext.matcher.get();
-        for (val ste : stackTrace) {
-            if (!ste.isNativeMethod() && !"java.base".equals(ste.getModuleName())) {
-                String claz = ste.getClassName();
-                if (matcher==null || matcher.match(claz)) {
-                    String meth = ste.getMethodName();
-                    String file = ste.getFileName();
-                    int line = ste.getLineNumber();
-                    return String.format("%s->%s(%s:%d) [%s]", claz, meth, file, line, JobContext.MatchByLib.libOf(claz));
-                }
-            }
-        }
-        return "N/A";
-    }
 }

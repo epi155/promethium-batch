@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch.job;
 
+import io.github.epi155.pm.batch.step.BatchException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -35,7 +36,7 @@ class PmJob implements JobStatus {
     private final JobCount jobCount;
     private final JobTrace jobTrace;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
-    private final Map<String,Future<Integer>> futures = new LinkedHashMap<>();
+    private final Map<String, Future<Integer>> futures = new LinkedHashMap<>();
     private int maxcc;
     private Integer lastcc;
 
@@ -317,7 +318,7 @@ class PmJob implements JobStatus {
             log.debug("/// Step {} end: {}", name, DateTimeFormatter.ISO_LOCAL_TIME.format(lapse.addTo(LocalTime.of(0, 0))));
             MDC.remove(STEP_NAME);
             Throwable e = c.getError();
-            if (e==null) {
+            if (e == null) {
                 add(Boolean.TRUE.equals(isBackground.get()) ? name + BG : name, returnCode, tiStart, tiEnd);
             } else {
                 add(Boolean.TRUE.equals(isBackground.get()) ? name + BG : name, returnCode, tiStart, tiEnd, e);
@@ -359,7 +360,7 @@ class PmJob implements JobStatus {
     public JobStatus join(String name) {
         String cmd = "join(" + name + ")";
         Future<Integer> future = futures.get(name);
-        if (future==null) {
+        if (future == null) {
             Instant now = Instant.now();
             int rc = jcl.rcErrorJob();
             maxcc(rc);
@@ -385,7 +386,7 @@ class PmJob implements JobStatus {
     public JobStatus quit(String name) {
         String cmd = "quit(" + name + ")";
         Future<Integer> future = futures.get(name);
-        if (future==null) {
+        if (future == null) {
             Instant now = Instant.now();
             int rc = jcl.rcErrorJob();
             maxcc(rc);
@@ -515,7 +516,6 @@ class PmJob implements JobStatus {
             int rc = jcl.rcErrorJob();
             maxcc(rc);
             jobCount.add(stepName, rc, now, now, new BatchJobException("Duplicate step name: {}", stepName));
-            //throw new BatchException(jcl.rcErrorJob(), "Duplicate step name {}", stepName); // TODO
         } else {
             val jobLib = JobContext.matcher.get();
             futures.put(stepName, executorService.submit(() -> {
@@ -529,7 +529,7 @@ class PmJob implements JobStatus {
                     JobContext.matcher.remove();
                     isBackground.remove();
                 }
-            } ));
+            }));
         }
         return this;
     }
@@ -651,6 +651,15 @@ class PmJob implements JobStatus {
         return forkProc(null, procName, proc);
     }
 
+    @AllArgsConstructor
+    @Getter
+    @ToString
+    private static class PmJobInfo implements JobInfo {
+        private final String name;
+        private final int exitCode;
+        private final List<StepError> errors;
+    }
+
     private class PmJobTrace implements JobTrace {
         @Getter
         private final String prefix;
@@ -665,6 +674,7 @@ class PmJob implements JobStatus {
         public void add(String name, int returnCode, Instant tiStart, Instant tiEnd, Throwable error) {
             trace.add(fullName(name), returnCode, tiStart, tiEnd, error);
         }
+
         @Override
         public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
             trace.add(fullName(name), returnCode, tiStart, tiEnd);
@@ -961,7 +971,7 @@ class PmJob implements JobStatus {
         @Override
         public JobStatus join(String name) {
             if (skip) {
-                add("join("+name+")");
+                add("join(" + name + ")");
                 return PmJob.this;
             } else {
                 return PmJob.this.join(name);
@@ -971,20 +981,11 @@ class PmJob implements JobStatus {
         @Override
         public JobStatus quit(String name) {
             if (skip) {
-                add("quit("+name+")");
+                add("quit(" + name + ")");
                 return PmJob.this;
             } else {
                 return PmJob.this.quit(name);
             }
         }
-    }
-
-    @AllArgsConstructor
-    @Getter
-    @ToString
-    private static class PmJobInfo implements JobInfo {
-        private final String name;
-        private final int exitCode;
-        private final List<StepError> errors;
     }
 }

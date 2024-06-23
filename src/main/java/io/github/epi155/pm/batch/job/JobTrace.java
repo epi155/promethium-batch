@@ -16,6 +16,7 @@ public interface JobTrace {
      * @param error      step exception
      */
     void add(String name, int returnCode, Instant tiStart, Instant tiEnd, Throwable error);
+
     /**
      * provides information on program execution
      *

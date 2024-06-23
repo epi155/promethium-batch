@@ -12,6 +12,7 @@ public interface JobInfo {
      * @return job name
      */
     String getName();
+
     /**
      * provides the exit code of the job
      *

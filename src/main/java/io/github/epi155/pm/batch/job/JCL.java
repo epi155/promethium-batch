@@ -27,7 +27,7 @@ public interface JCL extends ValueFactory {
      * Initialize job environment
      *
      * @param name jobName
-     * @param w number of namespace nodes to use to select the stacktrace
+     * @param w    number of namespace nodes to use to select the stacktrace
      * @return instance of {@link JobStatus}
      */
     JobStatus job(String name, int w);
@@ -35,7 +35,7 @@ public interface JCL extends ValueFactory {
     /**
      * Initialize job environment
      *
-     * @param name jobName
+     * @param name     jobName
      * @param prefixes namespace prefixes to use to select the stacktrace
      * @return instance of {@link JobStatus}
      */

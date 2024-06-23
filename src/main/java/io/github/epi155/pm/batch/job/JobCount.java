@@ -59,7 +59,7 @@ class JobCount extends StatsCount implements JobTrace {
                         .format(lapse.addTo(LocalTime.of(0, 0)))
         );
         List<StepFail> errors = stepInfos.stream().filter(StepFail.class::isInstance).map(it -> (StepFail) it).collect(Collectors.toList());
-        if (! errors.isEmpty()) {
+        if (!errors.isEmpty()) {
             pw.println();
             pw.print("=".repeat(wid));
             pw.printf("+======^===============================^===============================^===================%n");
@@ -80,9 +80,9 @@ class JobCount extends StatsCount implements JobTrace {
 
     private String cause(StepFail fail) {
         Throwable fault = fail.error;
-        for(;;) {
+        for (; ; ) {
             Throwable cause = fault.getCause();
-            if (cause==null)
+            if (cause == null)
                 break;
             fault = cause;
         }
@@ -91,7 +91,7 @@ class JobCount extends StatsCount implements JobTrace {
         for (StackTraceElement ste : stes) {
             String module = ste.getModuleName();
             if (!JAVA_BASE.equals(module) && !ste.isNativeMethod() &&
-                    (matcher==null || matcher.match(ste.getClassName()))) {
+                    (matcher == null || matcher.match(ste.getClassName()))) {
                 String claz = ste.getClassName();
                 String meth = ste.getMethodName();
                 String file = ste.getFileName();
@@ -105,6 +105,7 @@ class JobCount extends StatsCount implements JobTrace {
     public void add(String name, int returnCode, Instant tiStart, Instant tiEnd, Throwable error) {
         stepInfos.add(new StepFail(name, returnCode, tiStart, tiEnd, error));
     }
+
     public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
         stepInfos.add(new StepDone(name, returnCode, tiStart, tiEnd));
     }
@@ -153,10 +154,12 @@ class JobCount extends StatsCount implements JobTrace {
     abstract static class StepInfo {
         protected final String stepName;
         protected final Instant tmStart;
+
         protected abstract Instant tmSort();
 
         protected abstract void info(PrintWriter pw, int width);
     }
+
     static class StepFail extends StepDone {
         private final Throwable error;
 
@@ -251,6 +254,7 @@ class JobCount extends StatsCount implements JobTrace {
         private final String name;
         private final int returnCode;
         private final Throwable error;
+
         public PmStepError(StepFail it) {
             this.name = it.stepName;
             this.returnCode = it.returnCode;
