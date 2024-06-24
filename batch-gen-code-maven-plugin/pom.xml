@@ -4,7 +4,7 @@
 
     <groupId>io.github.epi155</groupId>
     <artifactId>batch-gen-code-maven-plugin</artifactId>
-    <version>0.1-A4</version>
+    <version>0.1-A5-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
 
