@@ -4,7 +4,7 @@
 
     <groupId>io.github.epi155</groupId>
     <artifactId>promethium-batch-parent</artifactId>
-    <version>0.1-A4-SNAPSHOT</version>
+    <version>0.1-A4</version>
     <packaging>pom</packaging>
     <name>Batch Utilities (parent)</name>
 
@@ -31,7 +31,7 @@
         <connection>scm:git:git://github.com/epi155/promethium-batch.git</connection>
         <developerConnection>scm:git:https://github.com/epi155/promethium-batch.git</developerConnection>
         <url>https://github.com/epi155/promethium-batch</url>
-        <tag>HEAD</tag>
+        <tag>0.1-A4</tag>
     </scm>
 
     <build>

@@ -4,7 +4,7 @@
 
     <groupId>io.github.epi155</groupId>
     <artifactId>promethium-batch</artifactId>
-    <version>0.1-A4-SNAPSHOT</version>
+    <version>0.1-A4</version>
 
     <!-- mvn release:clean -->
     <!-- mvn release:prepare -->
@@ -43,7 +43,7 @@
         <connection>scm:git:git://github.com/epi155/promethium-batch.git</connection>
         <developerConnection>scm:git:https://github.com/epi155/promethium-batch.git</developerConnection>
         <url>https://github.com/epi155/promethium-batch/</url>
-        <tag>HEAD</tag>
+        <tag>0.1-A4</tag>
     </scm>
 
     <profiles>
@@ -205,7 +205,7 @@
             <plugin>
                 <groupId>io.github.epi155</groupId>
                 <artifactId>batch-gen-code-maven-plugin</artifactId>
-                <version>0.1-A4-SNAPSHOT</version>
+                <version>0.1-A4</version>
                 <executions>
                     <execution>
                         <goals>
