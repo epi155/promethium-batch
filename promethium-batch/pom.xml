@@ -42,7 +42,7 @@
     <scm>
         <connection>scm:git:git://github.com/epi155/promethium-batch.git</connection>
         <developerConnection>scm:git:https://github.com/epi155/promethium-batch.git</developerConnection>
-        <url>https://github.com/epi155/promethium-batch/main</url>
+        <url>https://github.com/epi155/promethium-batch/</url>
         <tag>HEAD</tag>
     </scm>
 
