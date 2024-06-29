@@ -99,7 +99,7 @@
         <profile>
             <id>analyze</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <build>
                 <plugins>
@@ -214,7 +214,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <maxOut>24</maxOut>
+                    <!-- max 253, jar size: 44M, javadoc size: 19M, compile time: 12:43 min -->
+                    <maxOut>48</maxOut>
                 </configuration>
             </plugin>
 

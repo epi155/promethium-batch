@@ -29,8 +29,7 @@ public class MojoMain extends AbstractMojo {
     @Parameter(defaultValue = "io.github.epi155.pm.batch.step",
             property = "maven.pm.batch.package-name", required = true)
     private String packageName;
-    @Parameter(defaultValue = "8",
-            property = "maven.pm.batch.max-out", required = true)
+    @Parameter(property = "maven.pm.batch.max-out", required = true)
     private int maxOut;
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
@@ -39,7 +38,7 @@ public class MojoMain extends AbstractMojo {
      * of this Maven project.
      */
     @SuppressWarnings("CanBeFinal")
-    @Parameter(defaultValue = "true", property = "maven.emsql.add-compile-source-root")
+    @Parameter(defaultValue = "true", property = "maven.pm.batch.add-compile-source-root")
     private boolean addCompileSourceRoot = true;
 
     /**
@@ -47,7 +46,7 @@ public class MojoMain extends AbstractMojo {
      * this Maven project. Default value is false.
      */
     @SuppressWarnings("CanBeFinal")
-    @Parameter(defaultValue = "false", property = "maven.emsql.add-test-compile-source-root")
+    @Parameter(defaultValue = "false", property = "maven.pm.batch.add-test-compile-source-root")
     private boolean addTestCompileSourceRoot = false;
 
     @Override
