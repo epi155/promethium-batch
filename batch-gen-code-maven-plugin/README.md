@@ -1,9 +1,9 @@
 # batch-gen-code-maven-plugin
 
-In general a batch step has *N* output channels.
-If there are **N** output channels, you need **N** dedicated classes or a class with **N** dedicated methods, or dedicated methods with **N**+ε arguments
+In general a batch step has **N** output channels.
+If there are **N** output channels, you need **N** dedicated classes or a class with **N** dedicated methods, or dedicated methods with **N**+ε arguments.
 These classes are relatively trivial and writing code for them is simple, but it wastes time that could be put to better use.
-In some cases the wasted time is linear, *O(N)*, in other cases it is quadratic, *O(N<sup>2</sup>)*, and this makes writing the classes directly unmanageable.
+In some cases the wasted time is linear, *O(N)*, in other cases it is quadratic, *O(N<sup>2</sup>)*, and directly writing these classes becomes unmanageable..
 
 The plugin allows you to generate all these trivial classes automatically, simply by setting the maximum number of output channels.
 
