@@ -3,7 +3,7 @@
 In general a batch step has **N** output channels.
 If there are **N** output channels, you need **N** dedicated classes or a class with **N** dedicated methods, or dedicated methods with **N**+ε arguments.
 These classes are relatively trivial and writing code for them is simple, but it wastes time that could be put to better use.
-In some cases the wasted time is linear, *O(N)*, in other cases it is quadratic, *O(N<sup>2</sup>)*, and directly writing these classes becomes unmanageable..
+Time waste is quadratic, *O(N<sup>2</sup>)*, and writing these classes directly becomes unmanageable as **N** grows.
 
 The plugin allows you to generate all these trivial classes automatically, simply by setting the maximum number of output channels.
 
