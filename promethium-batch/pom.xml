@@ -17,14 +17,15 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <lombok.version>1.18.32</lombok.version>
+        <juniper.version>5.10.3</juniper.version>
+        <lombok.version>1.18.34</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 
     <name>Batch Utilities</name>
     <description>utilities for batch processing</description>
-    <url>https://github.com/epi155/promethium-batch/main</url>
+    <url>https://github.com/epi155/promethium-batch/tree/main/promethium-batch</url>
 
     <developers>
         <developer>
@@ -187,7 +188,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.2</version>
+            <version>${juniper.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -195,7 +196,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.2</version>
+            <version>${juniper.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -215,7 +216,9 @@
                 </executions>
                 <configuration>
                     <!-- max 253, jar size: 44M, javadoc size: 19M, compile time: 12:43 min -->
-                    <maxOut>48</maxOut>
+                    <maxOut>24</maxOut>
+                    <muMaxInp>4</muMaxInp>
+                    <muMaxOut>12</muMaxOut>
                 </configuration>
             </plugin>
 

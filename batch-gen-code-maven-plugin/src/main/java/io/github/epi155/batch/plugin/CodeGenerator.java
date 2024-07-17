@@ -15,12 +15,11 @@ public class CodeGenerator {
     private CodeGenerator() {
     }
 
-    public static void generate(File generateDirectory, String packageName, int maxOut) throws MojoExecutionException, FileNotFoundException {
+    public static void generateSingle(File generateDirectory, String packageName, int maxOut) throws MojoExecutionException, FileNotFoundException {
         File baseDir = makeDirectory(generateDirectory, packageName);
 
         new PushSourceGenerator(baseDir, packageName).generate("PmPushSource", maxOut);
         new LoopSourceStdGenerator(baseDir, packageName).generate("LoopSourceStd", maxOut);
-
     }
 
     public static @NotNull File makeDirectory(@NotNull File base, @Nullable String packg) throws MojoExecutionException {
@@ -49,4 +48,17 @@ public class CodeGenerator {
             throw new MojoExecutionException("Cannot create directory <" + tmp + ">");
     }
 
+    public static void generateMulti(File generateDirectory, String packageName, int maxInp, int maxOut) throws MojoExecutionException, FileNotFoundException {
+        File baseDir = makeDirectory(generateDirectory, packageName);
+
+        for(int k=2; k<=maxInp; k++) {
+            new PullSourceGenerator(baseDir, packageName, k).generate("PullSource"+k, maxOut);
+            new PmPullSourceGenerator(baseDir, packageName, k).generate("PmPullSource"+k, maxOut);
+        }
+    }
+
+    public static void generatePgm(File generateDirectory, String packageName, int maxInp) throws MojoExecutionException, FileNotFoundException {
+        File baseDir = makeDirectory(generateDirectory, packageName);
+        new PgmGenerator(baseDir, packageName, maxInp).generate("Pgm", 0);
+    }
 }

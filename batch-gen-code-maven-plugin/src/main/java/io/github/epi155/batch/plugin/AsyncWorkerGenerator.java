@@ -28,7 +28,7 @@ public class AsyncWorkerGenerator extends ClassSourceGenerator {
 
     private void writeDocMethod(PrintModel ipw, int k) {
         ipw.javadocOpen();
-        ipw.printf(" * provide 1 input item and 3 writer for asynchronous process%n", k);
+        ipw.printf(" * provide 1 input item and %d writer for asynchronous process%n", k);
         ipw.printf(" *%n");
         ipw.printf(" * @param i  input item%n");
         for (int i = 1; i <= k; i++) {

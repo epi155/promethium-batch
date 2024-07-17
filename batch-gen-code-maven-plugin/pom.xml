@@ -13,19 +13,22 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <maven-plugin.version>3.9.8</maven-plugin.version>
+        <juniper.version>5.10.3</juniper.version>
+        <lombok.version>1.18.34</lombok.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>3.9.8</version>
+            <version>${maven-plugin.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
-            <version>3.9.8</version>
+            <version>${maven-plugin.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -36,7 +39,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.32</version>
+            <version>${lombok.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -63,13 +66,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.2</version>
+            <version>${juniper.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.2</version>
+            <version>${juniper.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -97,6 +100,11 @@
                         </ignoreVersions>
                     </ruleSet>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <version>3.13.1</version>
             </plugin>
         </plugins>
     </build>

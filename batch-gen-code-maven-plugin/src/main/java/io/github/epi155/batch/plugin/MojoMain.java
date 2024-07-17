@@ -4,7 +4,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -31,6 +30,10 @@ public class MojoMain extends AbstractMojo {
     private String packageName;
     @Parameter(property = "maven.pm.batch.max-out", required = true)
     private int maxOut;
+    @Parameter(property = "maven.pm.batch.mu-max-inp", required = true, defaultValue = "3")
+    private int muMaxInp;
+    @Parameter(property = "maven.pm.batch.mu-max-out", required = true, defaultValue = "8")
+    private int muMaxOut;
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
     /**
@@ -50,11 +53,13 @@ public class MojoMain extends AbstractMojo {
     private boolean addTestCompileSourceRoot = false;
 
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException {
         MojoContext.context.set(new MojoContext(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion()));
         try {
             /*-------------------------*/
-            CodeGenerator.generate(generateDirectory, packageName, maxOut);
+            CodeGenerator.generatePgm(generateDirectory, packageName, muMaxInp);
+            CodeGenerator.generateSingle(generateDirectory, packageName, maxOut);
+            CodeGenerator.generateMulti(generateDirectory, packageName, muMaxInp, muMaxOut);
             /*-------------------------*/
             setupMavenPaths(generateDirectory);
 
