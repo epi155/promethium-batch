@@ -112,7 +112,12 @@ public class IterableLoopGenerator extends ClassSourceGenerator {
         }
         ipw.more();
         ipw.more();
-        ipw.printf("extends ParallelLoop%d<I,", k);
+        ipw.printf("extends AsyncLoop%d<I,", k);
+        for (int i = 1; i <= k; i++) {
+            ipw.putf(" O%d", i);
+            ipw.putf(i < k ? "," : ">, ");
+        }
+        ipw.putf("ParallelLoop%d<I,", k);
         for (int i = 1; i <= k; i++) {
             ipw.putf(" O%d", i);
             ipw.putf(i < k ? "," : "> {%n");

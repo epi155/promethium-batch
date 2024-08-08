@@ -23,6 +23,7 @@ public class PushSourceGenerator extends ClassSourceGenerator {
             if (k > 1) {
                 new TupleGenerator(baseDir, packageName).generate("Tuple" + k, k);
             }
+            new AsyncLoopGenerator(baseDir, packageName).generate("AsyncLoop" + k, k);
             new ParallelLoopGenerator(baseDir, packageName).generate("ParallelLoop" + k, k);
             new IterableLoopGenerator(baseDir, packageName).generate("IterableLoop" + k, k);
 

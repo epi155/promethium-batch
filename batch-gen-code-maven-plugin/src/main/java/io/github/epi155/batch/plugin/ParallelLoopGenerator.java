@@ -17,78 +17,7 @@ public class ParallelLoopGenerator extends ClassSourceGenerator {
         writeParallelWorker(ipw, k);
         writeParallelTupleFair(ipw, k);
         writeParallelTupleRaw(ipw, k);
-        writeAsyncWorker(ipw, k);
-        writeAsyncTuple(ipw, k);
         ipw.ends();
-    }
-
-    private void writeAsyncTuple(PrintModel ipw, int k) {
-        ipw.println();
-        ipw.javadocOpen();
-        ipw.printf(" * performs repeated transformation from input to output using asynchronous task%n");
-        ipw.printf(" * <p>first ends first writes%n");
-        ipw.printf(" * <pre>Pgm.from(src).into(");
-        for (int i = 1; i <= k; i++) {
-            ipw.putf("snk%d", i);
-            ipw.putf(i < k ? "," : ").forEachAsync(n,i -> { ... });</pre>%n");
-        }
-        ipw.printf(" *%n");
-        ipw.printf(" * @param maxThread maximum number of parallel processing%n");
-        if (k == 1) {
-            ipw.printf(" * @param asyncTransformer asynchronous function that transforms input into outputs%n");
-        } else {
-            ipw.printf(" * @param asyncTransformer asynchronous function that transforms input into {@link Tuple%d} outputs%n", k);
-        }
-        ipw.javadocClose();
-
-        ipw.printf("void forEachAsync(int maxThread, Function<%n");
-        ipw.more();
-        ipw.more();
-        ipw.printf("? super I,%n");
-        if (k == 1) {
-            ipw.printf("? extends Future<? extends O%d>> asyncTransformer);%n", k);
-        } else {
-            ipw.printf("? extends Future<? extends Tuple%d<%n", k);
-            ipw.more();
-            ipw.more();
-            for (int i = 1; i <= k; i++) {
-                ipw.printf("? extends O%d", i);
-                ipw.putf(i < k ? ",%n" : ">>> asyncTransformer);%n");
-            }
-            ipw.less();
-            ipw.less();
-        }
-        ipw.less();
-        ipw.less();
-    }
-
-    private void writeAsyncWorker(PrintModel ipw, int k) {
-        ipw.println();
-        ipw.javadocOpen();
-        ipw.printf(" * performs repeated action from input to output using asynchronous worker%n");
-        ipw.printf(" * <pre>Pgm.from(src).into(");
-        for (int i = 1; i <= k; i++) {
-            ipw.putf("snk%d", i);
-            ipw.putf(i < k ? "," : ").forEachAsync(n,(i,");
-        }
-        for (int i = 1; i <= k; i++) {
-            ipw.putf("wr%d", i);
-            ipw.putf(i < k ? "," : ") -> { ... });</pre>%n");
-        }
-        ipw.printf(" *%n");
-        ipw.printf(" * @param maxThread maximum number of parallel processing%n");
-        ipw.printf(" * @param asyncWorker asyncWorker who takes the input value and writes the output using the consumer%n");
-        ipw.javadocClose();
-
-        ipw.printf("void forEachAsync(int maxThread, AsyncWorker%d<? super I,%n", k);
-        ipw.more();
-        ipw.more();
-        for (int i = 1; i <= k; i++) {
-            ipw.printf("Consumer<? super O%d>", i);
-            ipw.putf(i < k ? ",%n" : "> asyncWorker);%n");
-        }
-        ipw.less();
-        ipw.less();
     }
 
     private void writeParallelTupleRaw(PrintModel ipw, int k) {
@@ -220,7 +149,6 @@ public class ParallelLoopGenerator extends ClassSourceGenerator {
     }
 
     private void writeImport(PrintModel ipw) {
-        ipw.printf("import java.util.concurrent.Future;%n");
         ipw.printf("import java.util.function.Consumer;%n");
         ipw.printf("import java.util.function.Function;%n");
     }
