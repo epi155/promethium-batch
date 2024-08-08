@@ -1,30 +1,54 @@
 package io.github.epi155.pm.batch.job;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.ServiceLoader;
 
 class PmJCL implements JCL {
     private final ValueFactory factory;
 
     private PmJCL() {
+        ValueFactory wrkFactory = null;
         ServiceLoader<ValueProvider> loader = ServiceLoader.load(ValueProvider.class);
-        this.factory = loader.findFirst().orElseGet(PmValue::new).getInstance();
+        Iterator<ValueProvider> iProvider = loader.iterator();
+        while (iProvider.hasNext()) {
+            ValueProvider provider = iProvider.next();
+            wrkFactory = provider.getInstance();
+            break;
+        }
+        this.factory = wrkFactory == null ? new PmValue().getInstance() : wrkFactory;
+//        this.factory = loader.findFirst().orElseGet(PmValue::new).getInstance();
     }
 
     public static PmJCL getInstance() {
         return PmJCL.Helper.INSTANCE;
     }
 
+    private static String getCallerClassName() {
+        StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
+        for (int i=1; i<stElements.length; i++) {
+            StackTraceElement ste = stElements[i];
+            if (!ste.getClassName().equals(PmJCL.class.getName())&& ste.getClassName().indexOf("java.lang.Thread")!=0) {
+                return ste.getClassName();
+            }
+        }
+        return null;
+    }
+
     public JobStatus job(String name) {
-        Class<?> claz = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
-        JobContext.matcher.set(new JobContext.MatchByLib(claz));
+//        Class<?> claz = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
+//        JobContext.matcher.set(new JobContext.MatchByLib(claz));
+        String className = getCallerClassName();
+        JobContext.matcher.set(new JobContext.MatchByLib(className));
         return PmJob.of(rcOk(), this, name);
     }
 
     @Override
     public JobStatus job(String name, int w) {
-        Class<?> claz = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
-        JobContext.matcher.set(new JobContext.MatchByPackagePrefix(claz, w));
+//        Class<?> claz = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
+//        JobContext.matcher.set(new JobContext.MatchByPackagePrefix(claz, w));
+        String className = getCallerClassName();
+        JobContext.matcher.set(new JobContext.MatchByPackagePrefix(className, w));
         return PmJob.of(rcOk(), this, name);
     }
 

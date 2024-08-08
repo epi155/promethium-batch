@@ -12,6 +12,7 @@ import org.slf4j.helpers.MessageFormatter;
 @Getter
 public class BatchStepException extends BatchException {
     private static final long serialVersionUID = -2689268030962162405L;
+    private static final ClassLoader SYS_CLASS_LOADER = String.class.getClassLoader();
 
     /**
      * batch exception constructor
@@ -42,8 +43,9 @@ public class BatchStepException extends BatchException {
     public static String placeOf(StackTraceElement[] stackTrace) {
         val matcher = JobContext.matcher.get();
         for (val ste : stackTrace) {
-            if (!ste.isNativeMethod() && !"java.base".equals(ste.getModuleName())) {
+            if (!ste.isNativeMethod() /*&& !"java.base".equals(ste.getModuleName())*/) {
                 String claz = ste.getClassName();
+                if (claz.startsWith("java") || claz.startsWith("sun")) continue;
                 if (matcher == null || matcher.match(claz)) {
                     String meth = ste.getMethodName();
                     String file = ste.getFileName();

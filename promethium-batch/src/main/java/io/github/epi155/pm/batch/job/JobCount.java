@@ -6,6 +6,7 @@ import lombok.ToString;
 import lombok.val;
 
 import java.io.PrintWriter;
+import java.nio.CharBuffer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -37,19 +38,19 @@ class JobCount extends StatsCount implements JobTrace {
         int lpad = (wid - L_STEP.length()) / 2;
         int rpad = wid - L_STEP.length() - lpad;
 
-        pw.print(" ".repeat(lpad));
+        pw.print(repeat(' ', lpad));
         pw.print(L_STEP);
-        pw.print(" ".repeat(rpad));
+        pw.print(repeat(' ', rpad));
         pw.printf("!  rc  !     Date-Time Start/Skip      !         Date-Time End         !       Lapse       %n");
 
-        pw.print("-".repeat(wid));
+        pw.print(repeat('-', wid));
         pw.printf("+------+-------------------------------+-------------------------------+-------------------%n");
 
         stepInfos.stream().sorted(Comparator.comparing(a -> a.tmStart)).forEach(it -> it.info(pw, wid));
-        pw.print("-".repeat(wid));
+        pw.print(repeat('-', wid));
         pw.printf("+------+-------------------------------+-------------------------------+-------------------%n");
         pw.print(name());
-        pw.print(".".repeat(wid - name().length()));
+        pw.print(repeat('.', wid - name().length()));
         pw.printf("! %4d ! %-29s ! %-29s ! %s", maxcc,
                 DateTimeFormatter.ISO_LOCAL_DATE_TIME
                         .format(LocalDateTime.ofInstant(tiStart, ZoneId.systemDefault())),
@@ -61,19 +62,19 @@ class JobCount extends StatsCount implements JobTrace {
         List<StepFail> errors = stepInfos.stream().filter(StepFail.class::isInstance).map(it -> (StepFail) it).collect(Collectors.toList());
         if (!errors.isEmpty()) {
             pw.println();
-            pw.print("=".repeat(wid));
+            pw.print(repeat('=', wid));
             pw.printf("+======^===============================^===============================^===================%n");
             errors.forEach(it -> {
                 pw.print(it.stepName);
-                pw.print(".".repeat(wid - it.stepName.length()));
+                pw.print(repeat('.', wid - it.stepName.length()));
                 pw.printf("! %s", cause(it));
             });
             pw.println();
-            pw.print("=".repeat(wid));
+            pw.print(repeat('=', wid));
             pw.print("^==========================================================================================");
         } else {
             pw.println();
-            pw.print("-".repeat(wid));
+            pw.print(repeat('-', wid));
             pw.print("^------^-------------------------------^-------------------------------^-------------------");
         }
     }
@@ -89,14 +90,15 @@ class JobCount extends StatsCount implements JobTrace {
         val stes = fault.getStackTrace();
         val matcher = JobContext.matcher.get();
         for (StackTraceElement ste : stes) {
-            String module = ste.getModuleName();
-            if (!JAVA_BASE.equals(module) && !ste.isNativeMethod() &&
-                    (matcher == null || matcher.match(ste.getClassName()))) {
+            if (!ste.isNativeMethod() /*&& !"java.base".equals(ste.getModuleName())*/) {
                 String claz = ste.getClassName();
-                String meth = ste.getMethodName();
-                String file = ste.getFileName();
-                int line = ste.getLineNumber();
-                return String.format("%s @%s->%s(%s:%d) [%s]", fault, claz, meth, file, line, JobContext.MatchByLib.libOf(claz));
+                if (claz.startsWith("java") || claz.startsWith("sun")) continue;
+                if (matcher == null || matcher.match(claz)) {
+                    String meth = ste.getMethodName();
+                    String file = ste.getFileName();
+                    int line = ste.getLineNumber();
+                    return String.format("%s->%s(%s:%d) [%s]", claz, meth, file, line, JobContext.MatchByLib.libOf(claz));
+                }
             }
         }
         return fault.toString();
@@ -189,7 +191,7 @@ class JobCount extends StatsCount implements JobTrace {
         protected void info(PrintWriter pw, int width) {
             Duration lapse = Duration.between(tmStart, tmEnd);
             pw.print(stepName);
-            pw.print(".".repeat(width - stepName.length()));
+            pw.print(repeat('.', width - stepName.length()));
             pw.printf("! %4d ! %-29s ! %-29s ! %s%n", returnCode,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                             .format(LocalDateTime.ofInstant(tmStart, ZoneId.systemDefault())),
@@ -216,7 +218,7 @@ class JobCount extends StatsCount implements JobTrace {
         @Override
         protected void info(PrintWriter pw, int width) {
             pw.print(stepName);
-            pw.print(".".repeat(width - stepName.length()));
+            pw.print(repeat('.', width - stepName.length()));
             pw.printf("! skip ! %-29s !                               !%n",
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                             .format(LocalDateTime.ofInstant(tmStart, ZoneId.systemDefault())));
@@ -240,7 +242,7 @@ class JobCount extends StatsCount implements JobTrace {
         @Override
         protected void info(PrintWriter pw, int width) {
             pw.print(stepName);
-            pw.print(".".repeat(width - stepName.length()));
+            pw.print(repeat('.', width - stepName.length()));
             pw.printf("! %4d ! %-29s !                               !%n", returnCode,
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                             .format(LocalDateTime.ofInstant(tmStart, ZoneId.systemDefault()))
@@ -260,5 +262,8 @@ class JobCount extends StatsCount implements JobTrace {
             this.returnCode = it.returnCode;
             this.error = it.error;
         }
+    }
+    private static String repeat(char c, int len) {
+        return CharBuffer.allocate(len).toString().replace('\u0000', c);
     }
 }

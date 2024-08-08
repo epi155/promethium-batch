@@ -36,6 +36,9 @@ class JobContext {
         public MatchByLib(Class<?> claz) {
             this.lib = libOf(claz);
         }
+        public MatchByLib(String className) {
+            this.lib = libOf(className);
+        }
 
         static ClassLib libOf(String className) {
             try {
@@ -71,6 +74,18 @@ class JobContext {
 
         public MatchByPackagePrefix(Class<?> claz, int w) {
             String pckName = claz.getPackage().getName();
+            int sb = 0;
+            for (int k = 0; k < w; k++) {
+                int se = pckName.indexOf('.', sb + 1);
+                if (se < 0) break;
+                sb = se;
+            }
+            this.prefix = pckName.substring(0, sb);
+        }
+
+        public MatchByPackagePrefix(String className, int w) {
+            int ku = className.lastIndexOf('.');
+            String pckName = className.substring(0, ku);
             int sb = 0;
             for (int k = 0; k < w; k++) {
                 int se = pckName.indexOf('.', sb + 1);

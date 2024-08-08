@@ -12,7 +12,7 @@ class PmLoopSource<S extends AutoCloseable, I> extends PmPushSource<S, I> {
 
     @Override
     public <J> LoopSource<J> map(Function<? super I, ? extends J> map) {
-        SourceResource<S, J> mapSource = new SourceResource<>() {
+        SourceResource<S, J> mapSource = new SourceResource<S,J>() {
             private S s;
             private Supplier<I> supplier;
             private Iterator<I> iterator;
@@ -28,7 +28,7 @@ class PmLoopSource<S extends AutoCloseable, I> extends PmPushSource<S, I> {
             @Override
             public Iterator<J> iterator(S s) {
                 if (!s.equals(this.s)) throw new IllegalStateException();
-                return new Iterator<>() {
+                return new Iterator<J>() {
                     @Override
                     public boolean hasNext() {
                         return iterator.hasNext();

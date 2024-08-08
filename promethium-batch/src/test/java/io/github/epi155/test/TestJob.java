@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -347,7 +348,7 @@ class TestJob {
 
     private void step02(MyCount c) {
         try {
-            Files.delete(Path.of("/dev/null"));
+            Files.delete(new File("/dev/null").toPath());
         } catch (IOException e) {
             throw new BatchIOException(e);
         }

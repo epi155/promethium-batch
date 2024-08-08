@@ -21,7 +21,7 @@ class PmSourceResourceSupplier<U extends AutoCloseable, I> implements SourceReso
 
     @Override
     public Iterator<I> iterator(U u) {
-        return new Iterator<>() {
+        return new Iterator<I>() {
             private I readyItem;
 
             @Override

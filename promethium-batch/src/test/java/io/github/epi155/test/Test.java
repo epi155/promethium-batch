@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +38,7 @@ class Test {
         SourceResource<BufferedReader, String> src = SourceResource.fromSupplier(
                 () -> {
                     try {
-                        return Files.newBufferedReader(Path.of("foo-in.txt"));
+                        return Files.newBufferedReader(new File("foo-in.txt").toPath());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -52,7 +53,7 @@ class Test {
         val snk = SinkResource.of(
                 () -> {
                     try {
-                        return Files.newBufferedWriter(Path.of("foo-out.txt"));
+                        return Files.newBufferedWriter(new File("foo-out.txt").toPath());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
