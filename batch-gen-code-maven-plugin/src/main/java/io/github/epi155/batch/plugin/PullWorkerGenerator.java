@@ -7,7 +7,7 @@ public class PullWorkerGenerator extends ClassSourceGenerator {
     private final int nmInp;
 
     protected PullWorkerGenerator(File baseDir, String packageName, int nmInp) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
         this.nmInp = nmInp;
     }
 

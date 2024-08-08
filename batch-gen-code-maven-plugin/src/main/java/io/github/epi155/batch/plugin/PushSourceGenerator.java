@@ -8,8 +8,8 @@ import java.io.FileNotFoundException;
 @Slf4j
 public class PushSourceGenerator extends ClassSourceGenerator {
 
-    public PushSourceGenerator(File baseDir, String packageName) {
-        super(baseDir, packageName);
+    public PushSourceGenerator(File baseDir, String jobPackageName, String stepPackageName) {
+        super(baseDir, jobPackageName, stepPackageName);
     }
 
     protected void createClass(PrintModel ipw, int maxOut) throws FileNotFoundException {
@@ -18,16 +18,16 @@ public class PushSourceGenerator extends ClassSourceGenerator {
         writeConstructor(ipw);
 
         for (int k = 1; k <= maxOut; k++) {
-            new AsyncWorkerGenerator(baseDir, packageName).generate("AsyncWorker" + k, k);
-            new WorkerGenerator(baseDir, packageName).generate("Worker" + k, k);
+            new AsyncWorkerGenerator(baseDir, stepPackageName).generate("AsyncWorker" + k, k);
+            new WorkerGenerator(baseDir, stepPackageName).generate("Worker" + k, k);
             if (k > 1) {
-                new TupleGenerator(baseDir, packageName).generate("Tuple" + k, k);
+                new TupleGenerator(baseDir, stepPackageName).generate("Tuple" + k, k);
             }
-            new AsyncLoopGenerator(baseDir, packageName).generate("AsyncLoop" + k, k);
-            new ParallelLoopGenerator(baseDir, packageName).generate("ParallelLoop" + k, k);
-            new IterableLoopGenerator(baseDir, packageName).generate("IterableLoop" + k, k);
+            new AsyncLoopGenerator(baseDir, stepPackageName).generate("AsyncLoop" + k, k);
+            new ParallelLoopGenerator(baseDir, stepPackageName).generate("ParallelLoop" + k, k);
+            new IterableLoopGenerator(baseDir, stepPackageName).generate("IterableLoop" + k, k);
 
-            new PmIterableLoopGenerator(baseDir, packageName).generate("PmIterableLoop" + k, k);
+            new PmIterableLoopGenerator(baseDir, jobPackageName, stepPackageName).generate("PmIterableLoop" + k, k);
             writeMethodInto(ipw, k);
         }
         ipw.ends();

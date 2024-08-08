@@ -7,7 +7,7 @@ public class PullSourceGenerator extends ClassSourceGenerator {
     private final int nmInp;
 
     public PullSourceGenerator(File baseDir, String packageName, int nmInp) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
         this.nmInp =  nmInp;
     }
 

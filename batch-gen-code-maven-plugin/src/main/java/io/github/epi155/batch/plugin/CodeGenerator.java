@@ -15,11 +15,11 @@ public class CodeGenerator {
     private CodeGenerator() {
     }
 
-    public static void generateSingle(File generateDirectory, String packageName, int maxOut) throws MojoExecutionException, FileNotFoundException {
-        File baseDir = makeDirectory(generateDirectory, packageName);
+    public static void generateSingle(File generateDirectory, String jobPackageName, String stepPackageName, int maxOut) throws MojoExecutionException, FileNotFoundException {
+        File baseDir = makeDirectory(generateDirectory, stepPackageName);
 
-        new PushSourceGenerator(baseDir, packageName).generate("PmPushSource", maxOut);
-        new LoopSourceStdGenerator(baseDir, packageName).generate("LoopSourceStd", maxOut);
+        new PushSourceGenerator(baseDir, jobPackageName, stepPackageName).generate("PmPushSource", maxOut);
+        new LoopSourceStdGenerator(baseDir, stepPackageName).generate("LoopSourceStd", maxOut);
     }
 
     public static @NotNull File makeDirectory(@NotNull File base, @Nullable String packg) throws MojoExecutionException {
@@ -48,12 +48,12 @@ public class CodeGenerator {
             throw new MojoExecutionException("Cannot create directory <" + tmp + ">");
     }
 
-    public static void generateMulti(File generateDirectory, String packageName, int maxInp, int maxOut) throws MojoExecutionException, FileNotFoundException {
-        File baseDir = makeDirectory(generateDirectory, packageName);
+    public static void generateMulti(File generateDirectory, String jobPackageName, String stepPackageName, int maxInp, int maxOut) throws MojoExecutionException, FileNotFoundException {
+        File baseDir = makeDirectory(generateDirectory, stepPackageName);
 
         for(int k=2; k<=maxInp; k++) {
-            new PullSourceGenerator(baseDir, packageName, k).generate("PullSource"+k, maxOut);
-            new PmPullSourceGenerator(baseDir, packageName, k).generate("PmPullSource"+k, maxOut);
+            new PullSourceGenerator(baseDir, stepPackageName, k).generate("PullSource"+k, maxOut);
+            new PmPullSourceGenerator(baseDir, jobPackageName, stepPackageName, k).generate("PmPullSource"+k, maxOut);
         }
     }
 

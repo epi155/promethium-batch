@@ -4,7 +4,7 @@ import java.io.File;
 
 public class AsyncLoopGenerator extends ClassSourceGenerator {
     public AsyncLoopGenerator(File baseDir, String packageName) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
     }
 
     @Override

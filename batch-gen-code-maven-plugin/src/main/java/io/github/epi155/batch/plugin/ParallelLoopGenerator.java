@@ -4,7 +4,7 @@ import java.io.File;
 
 public class ParallelLoopGenerator extends ClassSourceGenerator {
     public ParallelLoopGenerator(File baseDir, String packageName) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
     }
 
     @Override

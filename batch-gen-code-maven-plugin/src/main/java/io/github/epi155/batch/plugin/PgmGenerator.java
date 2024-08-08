@@ -7,7 +7,7 @@ public class PgmGenerator extends ClassSourceGenerator{
     private final int maxInp;
 
     public PgmGenerator(File baseDir, String packageName, int maxInp) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
         this.maxInp = maxInp;
     }
 

@@ -3,8 +3,8 @@ package io.github.epi155.batch.plugin;
 import java.io.File;
 
 public class PmIterableLoopGenerator extends ClassSourceGenerator {
-    public PmIterableLoopGenerator(File baseDir, String packageName) {
-        super(baseDir, packageName);
+    public PmIterableLoopGenerator(File baseDir, String jobPackageName, String stepPackageName) {
+        super(baseDir, jobPackageName, stepPackageName);
     }
 
     @Override
@@ -491,6 +491,7 @@ public class PmIterableLoopGenerator extends ClassSourceGenerator {
     }
 
     private void writeImport(PrintModel ipw) {
+        ipw.printf("import %s.BatchException;%n", jobPackageName);
         ipw.printf("import lombok.extern.slf4j.Slf4j;%n");
         ipw.printf("import lombok.val;%n");
         ipw.println();
@@ -504,6 +505,6 @@ public class PmIterableLoopGenerator extends ClassSourceGenerator {
         ipw.printf("import java.util.stream.Stream;%n");
 
         ipw.println();
-        ipw.printf("import static %s.PmPushCore.consumerOf;%n", packageName);
+        ipw.printf("import static %s.PmPushCore.consumerOf;%n", stepPackageName);
     }
 }

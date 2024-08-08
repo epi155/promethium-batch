@@ -32,7 +32,7 @@ class TestMojo {
                 return "TEST";
             }
         });
-        mojo.setPackageName("io.github.epi155.pm.batch.step");
+        mojo.setStepPackageName("io.github.epi155.pm.batch.step");
         mojo.setMaxOut(8);
 
         File pomFile = new File("pom.xml");

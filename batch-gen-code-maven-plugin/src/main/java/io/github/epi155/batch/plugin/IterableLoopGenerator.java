@@ -5,7 +5,7 @@ import java.io.File;
 public class IterableLoopGenerator extends ClassSourceGenerator {
 
     public IterableLoopGenerator(File baseDir, String packageName) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
     }
 
     @Override

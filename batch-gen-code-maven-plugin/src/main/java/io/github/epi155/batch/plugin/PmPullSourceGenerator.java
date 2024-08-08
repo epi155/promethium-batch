@@ -7,8 +7,8 @@ public class PmPullSourceGenerator extends ClassSourceGenerator {
     private static final String END_ARGS = ") {%n";
     private final int nmInp;
 
-    public PmPullSourceGenerator(File baseDir, String packageName, int nmInp) {
-        super(baseDir, packageName);
+    public PmPullSourceGenerator(File baseDir, String jobPackageName, String stepPackageName, int nmInp) {
+        super(baseDir, jobPackageName, stepPackageName);
         this.nmInp = nmInp;
     }
 
@@ -20,11 +20,11 @@ public class PmPullSourceGenerator extends ClassSourceGenerator {
         writeConstructor(ipw);
 
         for(int k=0; k<=max; k++) {
-            new PullWorkerGenerator(baseDir, packageName, nmInp).generate("PullWorker"+nmInp+"o" + k, k);
+            new PullWorkerGenerator(baseDir, stepPackageName, nmInp).generate("PullWorker"+nmInp+"o" + k, k);
             if (k==0) {
                 writeMethodProceed(ipw);
             } else {
-                new PullProcessGenerator(baseDir, packageName, nmInp).generate("PullProcess"+nmInp+"o" + k, k);
+                new PullProcessGenerator(baseDir, stepPackageName, nmInp).generate("PullProcess"+nmInp+"o" + k, k);
                 writeMethodInto(ipw, k);
             }
         }
@@ -174,6 +174,7 @@ public class PmPullSourceGenerator extends ClassSourceGenerator {
     }
 
     private void writeImport(PrintModel ipw) {
-        ipw.printf("import static io.github.epi155.pm.batch.step.PmPushCore.consumerOf;%n");
+        ipw.printf("import %s.BatchException;%n", jobPackageName);
+        ipw.printf("import static %s.PmPushCore.consumerOf;%n", stepPackageName);
     }
 }

@@ -4,7 +4,7 @@ import java.io.File;
 
 public class TupleGenerator extends ClassSourceGenerator {
     public TupleGenerator(File baseDir, String packageName) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
 
     }
 

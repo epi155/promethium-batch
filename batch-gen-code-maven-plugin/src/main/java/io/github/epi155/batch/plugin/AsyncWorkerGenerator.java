@@ -4,7 +4,7 @@ import java.io.File;
 
 public class AsyncWorkerGenerator extends ClassSourceGenerator {
     public AsyncWorkerGenerator(File baseDir, String packageName) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
     }
 
     @Override

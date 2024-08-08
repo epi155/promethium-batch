@@ -13,17 +13,19 @@ import static io.github.epi155.batch.plugin.CommonWriter.writePackage;
 public abstract class ClassSourceGenerator {
     private static final String DOT_JAVA = ".java";
     protected final File baseDir;
-    protected final String packageName;
+    protected final String jobPackageName;
+    protected final String stepPackageName;
 
-    protected ClassSourceGenerator(File baseDir, String packageName) {
+    protected ClassSourceGenerator(File baseDir, String jobPackageName, String stepPackageName) {
         this.baseDir = baseDir;
-        this.packageName = packageName;
+        this.jobPackageName = jobPackageName;
+        this.stepPackageName = stepPackageName;
     }
 
     public void generate(String className, int maxOut) throws FileNotFoundException {
         File clsFile = new File(baseDir, className + DOT_JAVA);
         try (PrintWriter pw = new PrintWriter(clsFile)) {
-            writePackage(pw, packageName);
+            writePackage(pw, stepPackageName);
             StringWriter swCls = new StringWriter();
             IndentPrintWriter ipw = new IndentPrintWriter(4, swCls);
 

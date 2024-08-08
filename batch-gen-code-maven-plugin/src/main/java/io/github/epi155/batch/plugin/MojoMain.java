@@ -26,8 +26,11 @@ public class MojoMain extends AbstractMojo {
             property = "maven.pm.batch.generate-directory", required = true)
     private File generateDirectory;
     @Parameter(defaultValue = "io.github.epi155.pm.batch.step",
-            property = "maven.pm.batch.package-name", required = true)
-    private String packageName;
+            property = "maven.pm.batch.step-package-name", required = true)
+    private String stepPackageName;
+    @Parameter(defaultValue = "io.github.epi155.pm.batch.job",
+            property = "maven.pm.batch.job-package-name", required = true)
+    private String jobPackageName;
     @Parameter(property = "maven.pm.batch.max-out", required = true)
     private int maxOut;
     @Parameter(property = "maven.pm.batch.mu-max-inp", required = true, defaultValue = "3")
@@ -57,9 +60,9 @@ public class MojoMain extends AbstractMojo {
         MojoContext.context.set(new MojoContext(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion()));
         try {
             /*-------------------------*/
-            CodeGenerator.generatePgm(generateDirectory, packageName, muMaxInp);
-            CodeGenerator.generateSingle(generateDirectory, packageName, maxOut);
-            CodeGenerator.generateMulti(generateDirectory, packageName, muMaxInp, muMaxOut);
+            CodeGenerator.generatePgm(generateDirectory, stepPackageName, muMaxInp);
+            CodeGenerator.generateSingle(generateDirectory, jobPackageName, stepPackageName, maxOut);
+            CodeGenerator.generateMulti(generateDirectory, jobPackageName, stepPackageName, muMaxInp, muMaxOut);
             /*-------------------------*/
             setupMavenPaths(generateDirectory);
 

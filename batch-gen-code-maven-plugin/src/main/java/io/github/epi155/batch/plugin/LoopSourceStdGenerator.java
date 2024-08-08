@@ -4,7 +4,7 @@ import java.io.File;
 
 public class LoopSourceStdGenerator extends ClassSourceGenerator {
     public LoopSourceStdGenerator(File baseDir, String packageName) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
     }
 
     @Override

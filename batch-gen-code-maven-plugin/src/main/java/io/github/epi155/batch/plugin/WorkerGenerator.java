@@ -4,7 +4,7 @@ import java.io.File;
 
 public class WorkerGenerator extends ClassSourceGenerator {
     public WorkerGenerator(File baseDir, String packageName) {
-        super(baseDir, packageName);
+        super(baseDir, null, packageName);
     }
 
     @Override
