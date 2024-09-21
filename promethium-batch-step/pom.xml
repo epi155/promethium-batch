@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.epi155</groupId>
-    <artifactId>promethium-batch-pgm</artifactId>
+    <artifactId>promethium-batch-step</artifactId>
     <version>0.1-A5-SNAPSHOT</version>
+
+    <!-- mvn release:clean -->
+    <!-- mvn release:prepare -->
+    <!-- git checkout ${tag} -->
+    <!-- mvn deploy -->
+    <!-- git checkout main -->
+    <!-- mvn dependency:tree -->
+    <!-- mvn versions:display-dependency-updates -->
 
     <properties>
         <juniper.version>5.10.3</juniper.version>
         <lombok.version>1.18.34</lombok.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 
-    <name>Batch Utilities (pgm x16 output)</name>
+    <name>Batch Utilities (step)</name>
     <description>utilities for batch processing</description>
     <url>https://github.com/epi155/promethium-batch/tree/main/promethium-batch</url>
 
@@ -161,11 +168,6 @@
             <version>0.1-A5-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>io.github.epi155</groupId>
-            <artifactId>promethium-batch-step</artifactId>
-            <version>0.1-A5-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
@@ -267,14 +269,17 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
-                        <phase>generate-sources</phase>
+                        <phase>generate-test-sources</phase>
                     </execution>
                 </executions>
                 <configuration>
                     <!-- max 253, jar size: 44M, javadoc size: 19M, compile time: 12:43 min -->
-                    <maxOut>16</maxOut>
-                    <muMaxInp>3</muMaxInp>
-                    <muMaxOut>8</muMaxOut>
+                    <maxOut>6</maxOut>
+                    <muMaxInp>2</muMaxInp>
+                    <muMaxOut>4</muMaxOut>
+                    <generateDirectory>${project.build.directory}/generated-test-sources/batch</generateDirectory>
+                    <addCompileSourceRoot>false</addCompileSourceRoot>
+                    <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
                 </configuration>
             </plugin>
 

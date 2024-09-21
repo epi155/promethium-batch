@@ -23,8 +23,9 @@
     </properties>
 
     <modules>
-        <module>batch-gen-code-maven-plugin</module>
+        <module>promethium-batch-pgm-maven-plugin</module>
         <module>promethium-batch-job</module>
+        <module>promethium-batch-step</module>
         <module>promethium-batch-pgm</module>
     </modules>
 
