@@ -15,6 +15,8 @@
     <!-- mvn versions:display-dependency-updates -->
 
     <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <juniper.version>5.10.3</juniper.version>
         <lombok.version>1.18.34</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -206,60 +208,6 @@
 
     <build>
         <plugins>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <!-- recompile with Java 9 only the module-info.java -->
-                        <configuration>
-                            <includes>
-                                <include>module-info.java</include>
-                            </includes>
-                            <outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>java8-compile</id>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                        <!-- recompile everything with Java 8 except the module-info.java -->
-                        <configuration>
-                            <release>8</release>
-                            <excludes>
-                                <exclude>module-info.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
-                <configuration>
-                    <release>9</release>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                    <!-- still need this for IntelliJ -->
-                    <source>9</source>
-                    <target>9</target>
-                </configuration>
-                <dependencies>
-                    <!-- upgrade to final ASM 6.0 release -->
-                    <!-- https://mvnrepository.com/artifact/org.ow2.asm/asm -->
-                    <dependency>
-                        <groupId>org.ow2.asm</groupId>
-                        <artifactId>asm</artifactId>
-                        <version>9.6</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-
             <plugin>
                 <groupId>io.github.epi155</groupId>
                 <artifactId>promethium-batch-pgm-maven-plugin</artifactId>
@@ -325,6 +273,34 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.10.1</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <!-- still need this for IntelliJ -->
+                    <release>${maven.compiler.target}</release>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+                <dependencies>
+                    <!-- upgrade to final ASM 6.0 release -->
+                    <!-- https://mvnrepository.com/artifact/org.ow2.asm/asm -->
+                    <dependency>
+                        <groupId>org.ow2.asm</groupId>
+                        <artifactId>asm</artifactId>
+                        <version>9.7</version>
+                    </dependency>
+                </dependencies>
             </plugin>
 
             <plugin>

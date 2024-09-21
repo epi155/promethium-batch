@@ -90,15 +90,14 @@ class JobCount extends StatsCount implements JobTrace {
         val stes = fault.getStackTrace();
         val matcher = JobContext.matcher.get();
         for (StackTraceElement ste : stes) {
-            if (!ste.isNativeMethod() /*&& !"java.base".equals(ste.getModuleName())*/) {
+            String module = ste.getModuleName();
+            if (!JAVA_BASE.equals(module) && !ste.isNativeMethod() &&
+                    (matcher == null || matcher.match(ste.getClassName()))) {
                 String claz = ste.getClassName();
-                if (claz.startsWith("java") || claz.startsWith("sun")) continue;
-                if (matcher == null || matcher.match(claz)) {
-                    String meth = ste.getMethodName();
-                    String file = ste.getFileName();
-                    int line = ste.getLineNumber();
-                    return String.format("%s->%s(%s:%d) [%s]", claz, meth, file, line, JobContext.MatchByLib.libOf(claz));
-                }
+                String meth = ste.getMethodName();
+                String file = ste.getFileName();
+                int line = ste.getLineNumber();
+                return String.format("%s @%s->%s(%s:%d) [%s]", fault, claz, meth, file, line, JobContext.MatchByLib.libOf(claz));
             }
         }
         return fault.toString();

@@ -36,9 +36,6 @@ class JobContext {
         public MatchByLib(Class<?> claz) {
             this.lib = libOf(claz);
         }
-        public MatchByLib(String className) {
-            this.lib = libOf(className);
-        }
 
         static ClassLib libOf(String className) {
             try {
