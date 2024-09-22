@@ -36,18 +36,12 @@ public class MojoMain extends AbstractMojo {
     @Parameter(defaultValue = "io.github.epi155.pm.batch.job",
             property = "maven.pm.batch.job-package-name", required = true)
     private String jobPackageName;
-    @Parameter(property = "maven.pm.batch.min-out", required = true, defaultValue = "1")
-    private int minOut;
-    @Parameter(property = "maven.pm.batch.max-out", required = true)
-    private int maxOut;
-    @Parameter(property = "maven.pm.batch.mu-min-inp", required = true, defaultValue = "2")
-    private int muMinInp;
-    @Parameter(property = "maven.pm.batch.mu-max-inp", required = true, defaultValue = "3")
-    private int muMaxInp;
-    @Parameter(property = "maven.pm.batch.mu-min-out", required = true, defaultValue = "0")
-    private int muMinOut;
-    @Parameter(property = "maven.pm.batch.mu-max-out", required = true, defaultValue = "8")
-    private int muMaxOut;
+    @Parameter(property = "maven.pm.batch.max-out", required = true, defaultValue = "0..12")
+    private String rangeOut;
+    @Parameter(property = "maven.pm.batch.mu-max-inp", required = true, defaultValue = "2,3")
+    private String muRangeInp;
+    @Parameter(property = "maven.pm.batch.mu-range-out", required = true, defaultValue = "0..8")
+    private String muRangeOut;
     @Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
     /**
@@ -70,9 +64,9 @@ public class MojoMain extends AbstractMojo {
     public void execute() throws MojoExecutionException {
         MojoContext.context.set(new MojoContext(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion()));
         GenerateContext gcx = new GenerateContext(generateDirectory, jobPackageName, stepPackageName, pgmPackageName);
-        Range range = new Range(minOut, maxOut);
-        Range muInpRange = new Range(max(2,muMinInp), muMaxInp);
-        Range muOutRange = new Range(max(0,muMinOut), muMaxOut);
+        Range range = Range.of(rangeOut);
+        Range muInpRange = Range.of(muRangeInp);    // 2..
+        Range muOutRange = Range.of(muRangeOut);    // 0..
         try {
             /*-------------------------*/
             CodeGenerator.generatePgm(gcx, muInpRange);

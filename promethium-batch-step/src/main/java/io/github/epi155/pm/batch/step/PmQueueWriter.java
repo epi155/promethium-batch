@@ -22,12 +22,12 @@ public class PmQueueWriter<T> implements Closeable {
         STEP_NAME = JCL.getInstance().stepName();
     }
 
-    private final BlockingQueue<Tuple1<T>> queue;
+    private final BlockingQueue<Wrap<T>> queue;
     @Getter
     private final Future<?> future;
 
 
-    private PmQueueWriter(BlockingQueue<Tuple1<T>> queue, Future<?> promise) {
+    private PmQueueWriter(BlockingQueue<Wrap<T>> queue, Future<?> promise) {
         this.queue = queue;
         this.future = promise;
     }
@@ -37,14 +37,14 @@ public class PmQueueWriter<T> implements Closeable {
             int maxThread,
             ExecutorService pool,
             SinkResource<T, O> sink, T t) {
-        BlockingQueue<Tuple1<O>> queue = new LinkedBlockingDeque<>(2 * maxThread + 1);
+        BlockingQueue<Wrap<O>> queue = new LinkedBlockingDeque<>(2 * maxThread + 1);
         String jobName = MDC.get(JOB_NAME);
         String stepName = MDC.get(STEP_NAME);
         Future<?> promise = pool.submit(() -> {
             MDC.put(JOB_NAME, jobName);
             MDC.put(STEP_NAME, stepName);
             try {
-                Tuple1<O> o;
+                Wrap<O> o;
                 do {
                     o = queue.take();
                 } while (o.onT1(it -> sink.accept(t, it)));
@@ -60,10 +60,10 @@ public class PmQueueWriter<T> implements Closeable {
     }
 
     public void write(T t) {
-        put(Tuple1.of(Objects.requireNonNull(t)));
+        put(Wrap.of(Objects.requireNonNull(t)));
     }
 
-    private void put(Tuple1<T> t1) {
+    private void put(Wrap<T> t1) {
         try {
             queue.put(t1);
         } catch (InterruptedException e) {
@@ -72,7 +72,7 @@ public class PmQueueWriter<T> implements Closeable {
     }
 
     public void close() {
-        put(Tuple1.empty());   // send End Of Write
+        put(Wrap.empty());   // send End Of Write
         try {
             log.debug("W.--- waiting for the writer listener to terminate ...");
             future.get();

@@ -21,7 +21,8 @@ public class PullSourceGenerator extends ClassSourceGeneratorLot {
         ipw.more();
         writeDocProceedMethod(ipw);
         writeProceedMethodApi(ipw);
-        for(int k = max(1,range.min); k<= range.max; k++) {
+        for(int k: range) {
+            if (k<1) continue;
             writeDocIntoMethod(ipw, k);
             writeIntoMethodApi(ipw, k);
         }

@@ -12,13 +12,13 @@ import java.util.function.Consumer;
  */
 @Getter
 @AllArgsConstructor(staticName = "of")
-class Tuple1<O1> {
-    private static final Tuple1<?> EMPTY = new Tuple1<>(null);
+class Wrap<O1> {
+    private static final Wrap<?> EMPTY = new Wrap<>(null);
     private final O1 t1;
 
     @SuppressWarnings("unchecked")
-    protected static <T> Tuple1<T> empty() {
-        return (Tuple1<T>) EMPTY;
+    protected static <T> Wrap<T> empty() {
+        return (Wrap<T>) EMPTY;
     }
 
     /**

@@ -21,7 +21,8 @@ public class PushSourceGenerator extends ClassSourceGeneratorLot {
         writeConstructor(ipw);
         writeMethodImpl(ipw);
 
-        for (int k = range.min; k <= range.max; k++) {
+        for (int k: range) {
+            if (k<1) continue;
             new AsyncWorkerGenerator(baseDir, gcx).generate("AsyncWorker" + k, k);
             new WorkerGenerator(baseDir, gcx).generate("Worker" + k, k);
             if (k > 1) {

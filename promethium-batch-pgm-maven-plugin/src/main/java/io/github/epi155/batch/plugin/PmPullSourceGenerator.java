@@ -21,7 +21,7 @@ public class PmPullSourceGenerator extends ClassSourceGeneratorLot {
         writeFields(ipw);
         writeConstructor(ipw);
 
-        for(int k = range.min; k<= range.max; k++) {
+        for(int k: range) {
             new PullWorkerGenerator(baseDir, gcx, nmInp).generate("PullWorker"+nmInp+"o" + k, k);
             if (k==0) {
                 writeMethodProceed(ipw);

@@ -55,7 +55,7 @@ public class CodeGenerator {
     public static void generateMulti(File generateDirectory, GenerateContext gcx, Range rangeInp, Range rangeOut) throws MojoExecutionException, FileNotFoundException {
         File baseDir = makeDirectory(generateDirectory, gcx.pgm);
 
-        for(int k= rangeInp.min; k<= rangeInp.max; k++) {
+        for(int k: rangeInp) {
             new PullSourceGenerator(baseDir, gcx, k).generate("PullSource"+k, rangeOut);
             new PmPullSourceGenerator(baseDir, gcx, k).generate("PmPullSource"+k, rangeOut);
         }

@@ -13,7 +13,8 @@ public class LoopSourceStdGenerator extends ClassSourceGeneratorLot {
         writeDocInterface(ipw);
         writeDeclareInterface(ipw);
         ipw.more();
-        for (int k = range.min; k <= range.max; k++) {
+        for (int k: range) {
+            if (k<1) continue;
             writeDocInto(ipw, k);
             writeMethodInto(ipw, k);
         }
@@ -29,6 +30,31 @@ public class LoopSourceStdGenerator extends ClassSourceGeneratorLot {
     }
 
     private void writeMethodInto(PrintModel ipw, int k) {
+        methodGenerics(ipw, k);
+        methodSignature(ipw, k);
+        methodArguments(ipw, k);
+    }
+
+    private void methodArguments(PrintModel ipw, int k) {
+        ipw.more();
+        ipw.more();
+        for (int i = 1; i <= k; i++) {
+            ipw.printf("SinkResource<T%1$d, O%1$d> sink%1$d", i);
+            ipw.putf(i < k ? ",%n" : ");%n");
+        }
+        ipw.less();
+        ipw.less();
+    }
+
+    private void methodSignature(PrintModel ipw, int k) {
+        ipw.printf("IterableLoop%d<I,", k);
+        for (int i = 1; i <= k; i++) {
+            ipw.putf(" O%d", i);
+            ipw.putf(i < k ? "," : "> into(%n");
+        }
+    }
+
+    private void methodGenerics(PrintModel ipw, int k) {
         ipw.printf("<");
         for (int i = 1; i <= k; i++) {
             if (i == 1) {
@@ -46,19 +72,6 @@ public class LoopSourceStdGenerator extends ClassSourceGeneratorLot {
             ipw.less();
             ipw.less();
         }
-        ipw.printf("IterableLoop%d<I,", k);
-        for (int i = 1; i <= k; i++) {
-            ipw.putf(" O%d", i);
-            ipw.putf(i < k ? "," : "> into(%n");
-        }
-        ipw.more();
-        ipw.more();
-        for (int i = 1; i <= k; i++) {
-            ipw.printf("SinkResource<T%1$d, O%1$d> sink%1$d", i);
-            ipw.putf(i < k ? ",%n" : ");%n");
-        }
-        ipw.less();
-        ipw.less();
     }
 
     private void writeDocInto(PrintModel ipw, int k) {

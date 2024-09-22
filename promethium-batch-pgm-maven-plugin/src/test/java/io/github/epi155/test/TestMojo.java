@@ -35,7 +35,9 @@ class TestMojo {
         mojo.setPgmPackageName("io.github.epi155.pm.batch.pgm");
         mojo.setStepPackageName("io.github.epi155.pm.batch.step");
         mojo.setJobPackageName("io.github.epi155.pm.batch.job");
-        mojo.setMaxOut(8);
+        mojo.setRangeOut("0..4");
+        mojo.setMuRangeInp("2, 3");
+        mojo.setMuRangeOut("0,2,4");
 
         File pomFile = new File("pom.xml");
         MavenProject project = getProject(pomFile.toPath());
