@@ -40,3 +40,33 @@ job01....!    0 ! 2024-05-17T14:59:12.028019213 ! 2024-05-17T14:59:12.590998545 
 \caption{esempio report fine esecuzione job}
 \label{lst:demoLog}
 \end{elisting}
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+La libreria è divisa in 2 moduli:
+\texttt{promethium-batch-job} e \texttt{promethium-batch-pgm}.
+La prima contiene le implementazioni per gestire i job e le API per gestire gli
+step. 
+Non è presente la classe \verb!Pgm! e le relative funzionalità.
+Queste funzionalità sono presenti nella seconda libreria (che richiede la prima).
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Se non è opportuno sviluppare gli step con la struttura della classe \verb!Pgm!
+si può utilizzare solo la prima libreria \texttt{promethium-batch-job}.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+La libreria \texttt{promethium-batch-pgm} fornisce le implementazioni nel caso 
+di elaborazioni $1 \to N$ con $N$ da $0$ a $12$, 
+e per le elaborazioni $N_I \to N_O$ con $N_I$ da $2$ a $3$ e $N_O$ da $0$ a $8$.
+Questi valori sono normalmente sufficienti, aumentare i valori di $N, N_I, N_O$
+porta a un aumento \textsl{quadratico} delle dimensioni di questa libreria.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Se fossero necessari valori $N, N_I, N_O$ superiori a quelli usati dalla
+libreria \texttt{promethium-batch-pgm}, è possibile utilizzare al suo posto il
+plugin \texttt{promethium-batch-pgm-maven-plugin} che è in grado di generare le
+classi \textsl{pgm} in modo personalizzato.
+Anziché implementate un range completo (\texttt{0..12}) è possibile implementare
+un range ristretto (\texttt{20..24}), o un numero preciso di valori
+(\texttt{5,12,18}).
+In questo modo vengono generate solo le implementazioni che servono e la
+dimensione del codice rimane limitata.

@@ -72,8 +72,36 @@ vengono forniti i \texttt{Supplier} per leggere i dati dalle origini, e i
 
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
-Nel caso di una sorgente possono essere usate da 0 a 24 destinazioni,
-nel caso di più sorgenti, da 2 a 4, si possono avere da 0 a 12 destinazioni.
+Nel caso di una sorgente possono essere usate da 0 a 12 destinazioni,
+nel caso di più sorgenti, da 2 a 3, si possono avere da 0 a 8 destinazioni.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+Il codice di questa libreria è interamente generato dal plugin con le
+configurazioni di default, lst.~\ref{lst:plugin-conf}.
+
+\begin{elisting}[!htb]
+\begin{xmlcode}
+<plugin>
+    <groupId>io.github.epi155</groupId>
+    <artifactId>promethium-batch-pgm-maven-plugin</artifactId>
+    <version>...</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>generate</goal>
+            </goals>
+        </execution>
+    </executions>
+    <configuration>
+        <rangeOut>0..12</rangeOut>
+        <muRangeInp>2,3</muRangeInp>
+        <muRangeOut>0..8</muRangeOut>
+    </configuration>
+</plugin>
+\end{xmlcode}
+\caption{plugin per generare il codice della libreria}
+\label{lst:plugin-conf}
+\end{elisting}
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
 Nel caso di elaborazione sequenziale la separazione della elaborazione in una
