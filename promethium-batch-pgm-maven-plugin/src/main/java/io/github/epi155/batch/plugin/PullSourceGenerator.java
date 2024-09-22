@@ -3,8 +3,6 @@ package io.github.epi155.batch.plugin;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import static java.lang.Math.max;
-
 public class PullSourceGenerator extends ClassSourceGeneratorLot {
     private final int nmInp;
 

@@ -5,6 +5,7 @@ import io.github.epi155.pm.batch.job.ValueProvider;
  */
 module promethium.batch.job {
     exports io.github.epi155.pm.batch.job;
+    exports io.github.epi155.pm.batch.step;
     uses ValueProvider;
 
     requires static lombok;

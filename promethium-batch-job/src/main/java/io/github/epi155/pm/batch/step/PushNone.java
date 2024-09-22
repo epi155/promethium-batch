@@ -9,18 +9,41 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * class to manage elements of a single input resource without explicit output resources
+ *
+ * @param <S> source resource type
+ * @param <I> input type
+ */
 @Slf4j
-public abstract class PmPushNone<S extends AutoCloseable, I> extends PmPushCore<I> implements /*LoopSource<I>*/ LoopSourceZro<I> {
-
+public abstract class PushNone<S extends AutoCloseable, I> extends PmPushCore<I> implements LoopSourceZro<I> {
+    /**
+     * source resource to read data from
+     */
     protected final SourceResource<S, I> source;
 
-    protected PmPushNone(SourceResource<S, I> source) {
+    /**
+     * constructor
+     *
+     * @param source source resource to read data from
+     */
+    protected PushNone(SourceResource<S, I> source) {
         this.source = source;
     }
 
+    /**
+     *
+     * @return used source resource
+     */
     public S getSource() {
         return source.get();
     }
+
+    /**
+     *
+     * @param s source resource
+     * @return element iterator
+     */
     public Iterator<I> srcIterator(S s) {
         return source.iterator(s);
     }

@@ -26,29 +26,33 @@ abstract class PmPushCore<I> /*implements LoopSource<I>*/ {
         STEP_NAME = JCL.getInstance().stepName();
     }
 
+    /**
+     * action to be performed before the main loop
+     */
     protected Runnable beforeAction;
     long time = 30;
     TimeUnit unit = TimeUnit.SECONDS;
+    /**
+     * condition to break the main loop
+     */
     protected Predicate<? super I> terminateTest = null;
 
+    /**
+     * evaluates the termination condition on the element
+     *
+     * @param i element
+     * @return {@code true} terminate condition, {@code false} indefinite or unsatisfied termination condition
+     */
     public boolean isTerminate(I i) {
         return terminateTest != null && terminateTest.test(i);
     }
+
+    /**
+     * action performed (if defined) before the main loop
+     */
     public void doBefore() {
         if (beforeAction != null) beforeAction.run();
     }
-
-//    @Override
-//    public LoopSourceLayer<I> terminate(Predicate<? super I> test) {
-//        this.terminateTest = test;
-//        return this;
-//    }
-
-//    @Override
-//    public LoopSourceStd<I> before(Runnable action) {
-//        this.beforeAction = action;
-//        return this;
-//    }
 
     private void shutdown(ExecutorService pool) {
         pool.shutdown();
@@ -63,6 +67,12 @@ abstract class PmPushCore<I> /*implements LoopSource<I>*/ {
         }
     }
 
+    /**
+     * Set shutdown timeout when multi-task processing is complete
+     *
+     * @param time timeout
+     * @param unit time unit
+     */
     public void setShutdownTimeout(long time, TimeUnit unit) {
         this.time = time;
         this.unit = unit;
@@ -461,8 +471,8 @@ abstract class PmPushCore<I> /*implements LoopSource<I>*/ {
             }
         }
 
-        protected <T extends AutoCloseable, O> PmQueueWriter<O> openQueue(SinkResource<T, O> sink, T t) {
-            return PmQueueWriter.of(maxThread, writerService, sink, t);
+        protected <T extends AutoCloseable, O> QueueWriter<O> openQueue(SinkResource<T, O> sink, T t) {
+            return QueueWriter.of(maxThread, writerService, sink, t);
         }
 
         protected void doWork(
@@ -806,8 +816,8 @@ abstract class PmPushCore<I> /*implements LoopSource<I>*/ {
             }
         }
 
-        protected <T extends AutoCloseable, O> PmQueueWriter<O> openQueue(SinkResource<T, O> sink, T t) {
-            return PmQueueWriter.of(maxThread, writerService, sink, t);
+        protected <T extends AutoCloseable, O> QueueWriter<O> openQueue(SinkResource<T, O> sink, T t) {
+            return QueueWriter.of(maxThread, writerService, sink, t);
         }
 
         protected void doWork(

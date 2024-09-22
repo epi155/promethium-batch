@@ -116,13 +116,13 @@ public class PushSourceGenerator extends ClassSourceGeneratorLot {
     private void writeDeclareClass(PrintModel ipw) {
         ipw.println();
         ipw.println("@Slf4j");
-        ipw.println("abstract class PmPushSource<S extends AutoCloseable, I> extends PmPushNone<S, I> implements LoopSource<I> {");
+        ipw.println("abstract class PmPushSource<S extends AutoCloseable, I> extends PushNone<S, I> implements LoopSource<I> {");
         ipw.more();
     }
 
     private void writeImport(PrintModel ipw) {
         if (! pgmPackageName.equals(stepPackageName)) {
-            ipw.printf("import %s.PmPushNone;%n", stepPackageName);
+            ipw.printf("import %s.PushNone;%n", stepPackageName);
             ipw.printf("import %s.SinkResource;%n", stepPackageName);
             ipw.printf("import %s.SourceResource;%n", stepPackageName);
             ipw.println();

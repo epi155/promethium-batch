@@ -6,7 +6,7 @@ import lombok.val;
 import org.slf4j.helpers.MessageFormatter;
 
 /**
- * batch wrapper IO exception
+ * batch step exception
  */
 @Getter
 public class BatchStepException extends BatchException {

@@ -22,8 +22,4 @@ class PmSinkResource<U extends AutoCloseable, O> implements SinkResource<U, O> {
         consumer.accept(u, o);
     }
 
-//    @Override
-//    public Consumer<? super O> consumer(U u) {
-//        return o -> accept(u, o);
-//    }
 }

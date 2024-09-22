@@ -12,8 +12,13 @@ import java.util.concurrent.*;
 
 import static io.github.epi155.pm.batch.job.BatchStepException.placeOf;
 
+/**
+ * class for queuing output elements in multi-task processing
+ *
+ * @param <T> queue element type
+ */
 @Slf4j
-public class PmQueueWriter<T> implements Closeable {
+public class QueueWriter<T> implements Closeable {
     private static final String JOB_NAME;
     private static final String STEP_NAME;
 
@@ -27,13 +32,13 @@ public class PmQueueWriter<T> implements Closeable {
     private final Future<?> future;
 
 
-    private PmQueueWriter(BlockingQueue<Wrap<T>> queue, Future<?> promise) {
+    private QueueWriter(BlockingQueue<Wrap<T>> queue, Future<?> promise) {
         this.queue = queue;
         this.future = promise;
     }
 
     static <T extends AutoCloseable, O>
-    PmQueueWriter<O> of(
+    QueueWriter<O> of(
             int maxThread,
             ExecutorService pool,
             SinkResource<T, O> sink, T t) {
@@ -56,9 +61,14 @@ public class PmQueueWriter<T> implements Closeable {
                 MDC.clear();
             }
         });
-        return new PmQueueWriter<>(queue, promise);
+        return new QueueWriter<>(queue, promise);
     }
 
+    /**
+     * adds an item to the queue
+     *
+     * @param t element to add
+     */
     public void write(T t) {
         put(Wrap.of(Objects.requireNonNull(t)));
     }

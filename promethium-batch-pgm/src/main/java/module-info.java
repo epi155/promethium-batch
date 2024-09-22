@@ -7,6 +7,5 @@ module promethium.batch.pgm {
     requires static lombok;
     requires org.slf4j;
     requires transitive java.sql;
-    requires promethium.batch.step;
     requires promethium.batch.job;
 }

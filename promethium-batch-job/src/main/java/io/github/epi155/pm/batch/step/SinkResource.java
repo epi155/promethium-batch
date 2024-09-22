@@ -76,6 +76,15 @@ public interface SinkResource<U extends AutoCloseable, O> {
         return new PmSinkResourceTriggerable<>(ctor, PmCloseableConsumer::writer, action);
     }
 
+    /**
+     * extracts the consumer from the sink's resource
+     *
+     * @param sink  sink resource
+     * @param t     sink
+     * @return      element consumer
+     * @param <O>   element type
+     * @param <T>   sink type
+     */
     static <O, T extends AutoCloseable> Consumer<? super O> consumerOf(SinkResource<T, O> sink, T t) {
         return o -> sink.accept(t, o);
     }

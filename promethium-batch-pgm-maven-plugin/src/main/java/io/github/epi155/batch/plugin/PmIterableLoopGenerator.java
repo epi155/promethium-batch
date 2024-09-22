@@ -54,22 +54,22 @@ public class PmIterableLoopGenerator extends ClassSourceGeneratorOne {
         ipw.more();
         ipw.more();
         for (int i = 1; i <= k; i++) {
-            ipw.printf("T%1$d t%d = sink%1$d.get(); PmQueueWriter<O%1$d> w%1$d = openQueue(sink%1$d, t%1$d);%n", i);
+            ipw.printf("T%1$d t%d = sink%1$d.get(); QueueWriter<O%1$d> w%1$d = openQueue(sink%1$d, t%1$d);%n", i);
         }
         ipw.printf("S s = par.getSource()) {%n");
         ipw.less();
 // -- if java > 9
-//        ipw.printf("doWork(List.of(");
-//        for (int i = 1; i <= k; i++) {
-//            ipw.putf("w%d.getFuture()", i);
-//            ipw.putf(i < k ? ", " : "),%n");
-//        }
-// -- else if java == 8
-        ipw.printf("doWork(Stream.of(");
+        ipw.printf("doWork(List.of(");
         for (int i = 1; i <= k; i++) {
             ipw.putf("w%d.getFuture()", i);
-            ipw.putf(i < k ? ", " : ").collect(Collectors.toList()),%n");
+            ipw.putf(i < k ? ", " : "),%n");
         }
+// -- else if java == 8
+//        ipw.printf("doWork(Stream.of(");
+//        for (int i = 1; i <= k; i++) {
+//            ipw.putf("w%d.getFuture()", i);
+//            ipw.putf(i < k ? ", " : ").collect(Collectors.toList()),%n");
+//        }
 // -- end-if
         ipw.more();
         ipw.more();
@@ -169,20 +169,23 @@ public class PmIterableLoopGenerator extends ClassSourceGeneratorOne {
         ipw.more();
         ipw.more();
         for (int i = 1; i <= k; i++) {
-            ipw.printf("T%1$d t%d = sink%1$d.get(); PmQueueWriter<O%1$d> w%1$d = openQueue(sink%1$d, t%1$d);%n", i);
+            ipw.printf("T%1$d t%d = sink%1$d.get(); QueueWriter<O%1$d> w%1$d = openQueue(sink%1$d, t%1$d);%n", i);
         }
         ipw.printf("S s = par.getSource()) {%n");
         ipw.less();
-//        ipw.printf("doWork(List.of(");
-//        for (int i = 1; i <= k; i++) {
-//            ipw.putf("w%d.getFuture()", i);
-//            ipw.putf(i < k ? ", " : "),%n");
-//        }
-        ipw.printf("doWork(Stream.of(");
+// -- if java > 9
+        ipw.printf("doWork(List.of(");
         for (int i = 1; i <= k; i++) {
             ipw.putf("w%d.getFuture()", i);
-            ipw.putf(i < k ? ", " : ").collect(Collectors.toList()),%n");
+            ipw.putf(i < k ? ", " : "),%n");
         }
+// -- else if java == 8
+//        ipw.printf("doWork(Stream.of(");
+//        for (int i = 1; i <= k; i++) {
+//            ipw.putf("w%d.getFuture()", i);
+//            ipw.putf(i < k ? ", " : ").collect(Collectors.toList()),%n");
+//        }
+// -- end-if
         ipw.more();
         ipw.more();
         ipw.printf("par.srcIterator(s),%n");
@@ -493,7 +496,7 @@ public class PmIterableLoopGenerator extends ClassSourceGeneratorOne {
     private void writeImport(PrintModel ipw) {
         ipw.printf("import %s.BatchException;%n", jobPackageName);
         if (! stepPackageName.equals(pgmPackageName)) {
-            ipw.printf("import %s.PmQueueWriter;%n", stepPackageName);
+            ipw.printf("import %s.QueueWriter;%n", stepPackageName);
             ipw.printf("import %s.SinkResource;%n", stepPackageName);
         }
         ipw.printf("import lombok.extern.slf4j.Slf4j;%n");

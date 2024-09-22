@@ -15,9 +15,10 @@
         <lombok.version>1.18.34</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.deploy.skip>false</maven.deploy.skip>
+        <pgm.max-out>12</pgm.max-out>
     </properties>
 
-    <name>Batch Utilities (pgm x16 output)</name>
+    <name>Batch Utilities (pgm x${pgm.max-out} output)</name>
     <description>utilities for batch processing</description>
     <url>https://github.com/epi155/promethium-batch/tree/main/promethium-batch</url>
 
@@ -164,11 +165,6 @@
             <version>0.1-A5-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>io.github.epi155</groupId>
-            <artifactId>promethium-batch-step</artifactId>
-            <version>0.1-A5-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
@@ -222,7 +218,7 @@
                 </executions>
                 <configuration>
                     <!-- max 253, jar size: 44M, javadoc size: 19M, compile time: 12:43 min -->
-                    <rangeOut>0..16</rangeOut>
+                    <rangeOut>0..${pgm.max-out}</rangeOut>
                 </configuration>
             </plugin>
 

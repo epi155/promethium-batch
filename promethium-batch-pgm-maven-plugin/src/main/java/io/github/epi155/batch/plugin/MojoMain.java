@@ -12,8 +12,6 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 
-import static java.lang.Math.max;
-
 @Setter
 @Mojo(name = "generate",
         defaultPhase = LifecyclePhase.GENERATE_SOURCES,
@@ -67,6 +65,8 @@ public class MojoMain extends AbstractMojo {
         Range range = Range.of(rangeOut);
         Range muInpRange = Range.of(muRangeInp);    // 2..
         Range muOutRange = Range.of(muRangeOut);    // 0..
+        log.info("Processing 1 to N: N in [{}]", rangeOut);
+        log.info("Processing Ni to No: Ni in [{}], No in [{}]", muRangeInp, muRangeOut);
         try {
             /*-------------------------*/
             CodeGenerator.generatePgm(gcx, muInpRange);

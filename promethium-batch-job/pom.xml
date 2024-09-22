@@ -23,7 +23,7 @@
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 
-    <name>Batch Utilities (job)</name>
+    <name>Batch Utilities (job/step)</name>
     <description>utilities for batch processing</description>
     <url>https://github.com/epi155/promethium-batch/tree/main/promethium-batch</url>
 
@@ -203,6 +203,28 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>io.github.epi155</groupId>
+                <artifactId>promethium-batch-pgm-maven-plugin</artifactId>
+                <version>0.1-A5-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-test-sources</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- max 253, jar size: 44M, javadoc size: 19M, compile time: 12:43 min -->
+                    <rangeOut>0..6</rangeOut>
+                    <muRangeInp>2,3</muRangeInp>
+                    <muRangeOut>0..4</muRangeOut>
+                    <generateDirectory>${project.build.directory}/generated-test-sources/batch</generateDirectory>
+                    <addCompileSourceRoot>false</addCompileSourceRoot>
+                    <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
+                </configuration>
+            </plugin>
 
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
