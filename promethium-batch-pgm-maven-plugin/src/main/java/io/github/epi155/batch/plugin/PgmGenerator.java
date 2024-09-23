@@ -20,6 +20,7 @@ public class PgmGenerator extends ClassSourceGeneratorZro {
         writeDocPushMethod(ipw);
         writePushMethodApi(ipw);
         for(int k: range) {
+            if (k<2) continue;
             writeDocPullMethod(ipw, k);
             writePullMethodApi(ipw, k);
         }

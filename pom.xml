@@ -26,6 +26,7 @@
         <module>promethium-batch-pgm-maven-plugin</module>
         <module>promethium-batch-job</module>
         <module>promethium-batch-pgm</module>
+        <module>promethium-batch</module>
     </modules>
 
     <scm>

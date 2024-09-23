@@ -2,6 +2,7 @@ package io.github.epi155.batch.plugin;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -14,6 +15,7 @@ import java.util.stream.IntStream;
 public class Range implements Iterable<Integer> {
     private static final Pattern P_RANGE = Pattern.compile("(\\d+)\\s*[.][.]\\s*(\\d+)");
     private static final Pattern P_LIST = Pattern.compile("(\\d+)\\s*(,\\s*\\d+){0,250}");
+    private static final Pattern P_EMPTY = Pattern.compile("(-|NULL|NIL|VOID|EMPTY)", Pattern.CASE_INSENSITIVE);
     private SortedSet<Integer> items;
     public static Range of(String s) {
         Matcher matchRange = P_RANGE.matcher(s);
@@ -34,6 +36,12 @@ public class Range implements Iterable<Integer> {
             }
             Range range = new Range();
             range.items = set;
+            return range;
+        }
+        Matcher matchEmpty = P_EMPTY.matcher(s);
+        if (matchEmpty.find()) {
+            Range range = new Range();
+            range.items = Collections.emptySortedSet();
             return range;
         }
         throw new IllegalArgumentException(s);

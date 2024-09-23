@@ -56,6 +56,7 @@ public class CodeGenerator {
         File baseDir = makeDirectory(generateDirectory, gcx.pgm);
 
         for(int k: rangeInp) {
+            if (k<2) continue;
             new PullSourceGenerator(baseDir, gcx, k).generate("PullSource"+k, rangeOut);
             new PmPullSourceGenerator(baseDir, gcx, k).generate("PmPullSource"+k, rangeOut);
         }
