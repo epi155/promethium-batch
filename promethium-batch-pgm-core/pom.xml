@@ -1,18 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.epi155</groupId>
-    <artifactId>promethium-batch-job</artifactId>
+    <artifactId>promethium-batch-pgm-core</artifactId>
     <version>0.1-A5-SNAPSHOT</version>
-
-    <!-- mvn release:clean -->
-    <!-- mvn release:prepare -->
-    <!-- git checkout ${tag} -->
-    <!-- mvn deploy -->
-    <!-- git checkout main -->
-    <!-- mvn dependency:tree -->
-    <!-- mvn versions:display-dependency-updates -->
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -23,7 +17,7 @@
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 
-    <name>Batch Utilities (job/step)</name>
+    <name>Batch Utilities (pgm-core)</name>
     <description>utilities for batch processing</description>
     <url>https://github.com/epi155/promethium-batch/tree/main/promethium-batch</url>
 
@@ -125,12 +119,50 @@
                         </executions>
                     </plugin>
 
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.12</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.2.5</version>
+                        <configuration>
+                            <useModulePath>false</useModulePath>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.2.5</version>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
 
     <dependencies>
+        <dependency>
+            <groupId>io.github.epi155</groupId>
+            <artifactId>promethium-batch-fault</artifactId>
+            <version>0.1-A5-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -165,11 +197,6 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>${juniper.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.epi155</groupId>
-            <artifactId>promethium-batch-fault</artifactId>
-            <version>0.1-A5-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

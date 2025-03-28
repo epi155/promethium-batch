@@ -161,7 +161,7 @@
     <dependencies>
         <dependency>
             <groupId>io.github.epi155</groupId>
-            <artifactId>promethium-batch-job</artifactId>
+            <artifactId>promethium-batch-fault</artifactId>
             <version>0.1-A5-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -198,6 +198,12 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>${juniper.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.epi155</groupId>
+            <artifactId>promethium-batch-pgm-core</artifactId>
+            <version>0.1-A5-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

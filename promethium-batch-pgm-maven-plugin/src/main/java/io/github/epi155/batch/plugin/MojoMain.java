@@ -28,12 +28,12 @@ public class MojoMain extends AbstractMojo {
     @Parameter(defaultValue = "io.github.epi155.pm.batch.pgm",
             property = "maven.pm.batch.pgm-package-name", required = true)
     private String pgmPackageName;
-    @Parameter(defaultValue = "io.github.epi155.pm.batch.step",
-            property = "maven.pm.batch.step-package-name", required = true)
-    private String stepPackageName;
-    @Parameter(defaultValue = "io.github.epi155.pm.batch.job",
-            property = "maven.pm.batch.job-package-name", required = true)
-    private String jobPackageName;
+    @Parameter(defaultValue = "io.github.epi155.pm.batch.core",
+            property = "maven.pm.batch.core-package-name", required = true)
+    private String corePackageName;
+    @Parameter(defaultValue = "io.github.epi155.pm.batch.fault",
+            property = "maven.pm.batch.fault-package-name", required = true)
+    private String faultPackageName;
     @Parameter(property = "maven.pm.batch.max-out", required = true, defaultValue = "0..12")
     private String rangeOut;
     @Parameter(property = "maven.pm.batch.mu-max-inp", required = true, defaultValue = "2,3")
@@ -61,7 +61,7 @@ public class MojoMain extends AbstractMojo {
     @Override
     public void execute() throws MojoExecutionException {
         MojoContext.context.set(new MojoContext(plugin.getGroupId(), plugin.getArtifactId(), plugin.getVersion()));
-        GenerateContext gcx = new GenerateContext(generateDirectory, jobPackageName, stepPackageName, pgmPackageName);
+        GenerateContext gcx = new GenerateContext(generateDirectory, faultPackageName, corePackageName, pgmPackageName);
         Range range = Range.of(rangeOut);
         Range muInpRange = Range.of(muRangeInp);    // 2..
         Range muOutRange = Range.of(muRangeOut);    // 0..

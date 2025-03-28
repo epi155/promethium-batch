@@ -8,7 +8,7 @@ import java.io.CharArrayWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static io.github.epi155.pm.batch.job.BatchStepException.placeOf;
+import static io.github.epi155.pm.batch.fault.BatchStepException.placeOf;
 
 /**
  * super class to manage the execution statistics

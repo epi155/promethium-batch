@@ -33,8 +33,8 @@ class TestMojo {
             }
         });
         mojo.setPgmPackageName("io.github.epi155.pm.batch.pgm");
-        mojo.setStepPackageName("io.github.epi155.pm.batch.step");
-        mojo.setJobPackageName("io.github.epi155.pm.batch.job");
+        mojo.setCorePackageName("io.github.epi155.pm.batch.step");
+        mojo.setFaultPackageName("io.github.epi155.pm.batch.job");
         mojo.setRangeOut("0..4");
         mojo.setMuRangeInp("2, 3");
         mojo.setMuRangeOut("0,2,4");

@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.epi155</groupId>
-    <artifactId>promethium-batch</artifactId>
+    <artifactId>promethium-batch-parent</artifactId>
     <version>0.1-A5-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Batch Utilities (parent)</name>
 
-    <!-- mvn versions:set -DnewVersion=0.1-A4-SNAPSHOT -->
+    <!-- mvn versions:set -DnewVersion=0.7.1-SNAPSHOT -->
     <!-- mvn release:clean -->
     <!-- mvn versions:display-dependency-updates -->
     <!-- mvn release:prepare -->
@@ -23,12 +23,8 @@
     </properties>
 
     <modules>
-        <module>promethium-batch-fault</module>
-        <module>promethium-batch-job</module>
-        <module>promethium-batch-pgm-core</module>
-        <module>promethium-batch-pgm-maven-plugin</module>
-        <module>promethium-batch-pgm</module>
-        <module>promethium-batch-test</module>
+        <module>batch-gen-code-maven-plugin</module>
+        <module>promethium-batch</module>
     </modules>
 
     <scm>
@@ -38,17 +34,4 @@
         <tag>HEAD</tag>
     </scm>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>3.0.1</version>
-                <configuration>
-                    <tagNameFormat>@{version}</tagNameFormat>
-                    <pushChanges>false</pushChanges>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

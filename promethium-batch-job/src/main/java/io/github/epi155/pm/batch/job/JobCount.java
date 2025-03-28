@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch.job;
 
+import io.github.epi155.pm.batch.fault.MatchContext;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -68,8 +69,8 @@ class JobCount extends StatsCount implements JobTrace {
                 pw.print(it.stepName);
                 pw.print(repeat('.', wid - it.stepName.length()));
                 pw.printf("! %s", cause(it));
+                pw.println();
             });
-            pw.println();
             pw.print(repeat('=', wid));
             pw.print("^==========================================================================================");
         } else {
@@ -88,7 +89,7 @@ class JobCount extends StatsCount implements JobTrace {
             fault = cause;
         }
         val stes = fault.getStackTrace();
-        val matcher = JobContext.matcher.get();
+        val matcher = MatchContext.matcher.get();
         for (StackTraceElement ste : stes) {
             String module = ste.getModuleName();
             if (!JAVA_BASE.equals(module) && !ste.isNativeMethod() &&
@@ -97,7 +98,7 @@ class JobCount extends StatsCount implements JobTrace {
                 String meth = ste.getMethodName();
                 String file = ste.getFileName();
                 int line = ste.getLineNumber();
-                return String.format("%s @%s->%s(%s:%d) [%s]", fault, claz, meth, file, line, JobContext.MatchByLib.libOf(claz));
+                return String.format("%s @%s->%s(%s:%d) [%s]", fault, claz, meth, file, line, MatchContext.MatchByLib.libOf(claz));
             }
         }
         return fault.toString();
@@ -109,6 +110,13 @@ class JobCount extends StatsCount implements JobTrace {
 
     public void add(String name, int returnCode, Instant tiStart, Instant tiEnd) {
         stepInfos.add(new StepDone(name, returnCode, tiStart, tiEnd));
+    }
+
+    public void add(String name, Instant tiStart, String label) {
+        stepInfos.add(new StepBegin(name, tiStart, label));
+    }
+    public void add(String name, int returnCode, Instant tiEnd, Duration lapse) {
+        stepInfos.add(new StepStop(name, returnCode, tiEnd, lapse));
     }
 
     public void add(String name, int returnCode) {
@@ -221,6 +229,60 @@ class JobCount extends StatsCount implements JobTrace {
             pw.printf("! skip ! %-29s !                               !%n",
                     DateTimeFormatter.ISO_LOCAL_DATE_TIME
                             .format(LocalDateTime.ofInstant(tmStart, ZoneId.systemDefault())));
+        }
+    }
+    @ToString
+    static class StepBegin extends StepInfo {
+
+        private final String label;
+
+        public StepBegin(String stepName, Instant tmStart, String label) {
+            super(stepName, tmStart);
+            this.label = label;
+        }
+
+        @Override
+        protected Instant tmSort() {
+            return tmStart;
+        }
+
+        @Override
+        protected void info(PrintWriter pw, int width) {
+            pw.print(stepName);
+            pw.print(repeat('.', width - stepName.length()));
+            pw.printf("! %4s ! %-29s !                               !%n", label,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                            .format(LocalDateTime.ofInstant(tmStart, ZoneId.systemDefault())));
+        }
+    }
+    @ToString
+    static class StepStop extends StepInfo {
+        protected final int returnCode;
+        private final Instant tmEnd;
+        private final Duration lapse;
+
+        public StepStop(String stepName, int rc, Instant tmEnd, Duration lapse) {
+            super(stepName, tmEnd);
+            this.returnCode = rc;
+            this.tmEnd = tmEnd;
+            this.lapse = lapse;
+        }
+
+        @Override
+        protected Instant tmSort() {
+            return tmStart; // or tmEnd ?
+        }
+
+        @Override
+        protected void info(PrintWriter pw, int width) {
+            pw.print(stepName);
+            pw.print(repeat('.', width - stepName.length()));
+            pw.printf("! %4d !                               ! %-29s ! %s%n", returnCode,
+                    DateTimeFormatter.ISO_LOCAL_DATE_TIME
+                            .format(LocalDateTime.ofInstant(tmEnd, ZoneId.systemDefault())),
+                    DateTimeFormatter.ISO_LOCAL_TIME
+                            .format(lapse.addTo(LocalTime.of(0, 0)))
+            );
         }
     }
 

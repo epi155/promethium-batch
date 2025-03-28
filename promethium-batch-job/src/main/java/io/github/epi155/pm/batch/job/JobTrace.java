@@ -1,5 +1,6 @@
 package io.github.epi155.pm.batch.job;
 
+import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -26,6 +27,24 @@ public interface JobTrace {
      * @param tiEnd      step end timestamp
      */
     void add(String name, int returnCode, Instant tiStart, Instant tiEnd);
+
+    /**
+     * provides information on program execution
+     *
+     * @param name       step name
+     * @param tiStart    step start timestamp
+     * @param label      label for rc column
+     */
+    void add(String name, Instant tiStart, String label);
+    /**
+     * provides information on program execution
+     *
+     * @param name       step name
+     * @param returnCode step return code
+     * @param tiEnd      step end timestamp
+     * @param lapse      step lapse time
+     */
+    void add(String name, int returnCode, Instant tiEnd, Duration lapse);
 
     /**
      * provides information on command execution

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.epi155</groupId>
-    <artifactId>promethium-batch-job</artifactId>
+    <artifactId>promethium-batch-fault</artifactId>
     <version>0.1-A5-SNAPSHOT</version>
 
     <!-- mvn release:clean -->
@@ -23,7 +25,7 @@
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 
-    <name>Batch Utilities (job/step)</name>
+    <name>Batch Utilities (fault)</name>
     <description>utilities for batch processing</description>
     <url>https://github.com/epi155/promethium-batch/tree/main/promethium-batch</url>
 
@@ -97,37 +99,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>analyze</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-pmd-plugin</artifactId>
-                        <version>3.19.0</version>
-                        <configuration>
-                            <linkXRef>false</linkXRef>
-                            <inputEncoding>utf-8</inputEncoding>
-                            <minimumTokens>100</minimumTokens>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>aggregate</id>
-                                <goals>
-                                    <goal>aggregate-pmd</goal>
-                                    <goal>aggregate-cpd</goal>
-                                </goals>
-                                <phase>prepare-package</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
     <dependencies>
@@ -151,26 +122,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${juniper.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${juniper.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.epi155</groupId>
-            <artifactId>promethium-batch-fault</artifactId>
-            <version>0.1-A5-SNAPSHOT</version>
-        </dependency>
     </dependencies>
 
     <build>
