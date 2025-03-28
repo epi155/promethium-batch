@@ -7,16 +7,17 @@ import java.util.Collection;
 import static io.github.epi155.pm.batch.fault.Fixed.RC_OK;
 
 /**
- * root interface to launch the job control language
+ * job creator
  */
-public interface JCL {
+public class Job {
+    private Job() {}
     /**
      * Initialize job environment
      *
      * @param name jobName
      * @return instance of {@link JobStatus}
      */
-    static JobStatus job(String name) {
+    public static JobStatus create(String name) {
         Class<?> claz = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
         MatchContext.matcher.set(new MatchContext.MatchByLib(claz));
         return PmJob.of(RC_OK, name);
@@ -29,7 +30,7 @@ public interface JCL {
      * @param w    number of namespace nodes to use to select the stacktrace
      * @return instance of {@link JobStatus}
      */
-    static JobStatus job(String name, int w) {
+    public static JobStatus create(String name, int w) {
         Class<?> claz = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
         MatchContext.matcher.set(new MatchContext.MatchByPackagePrefix(claz, w));
         return PmJob.of(RC_OK, name);
@@ -42,7 +43,7 @@ public interface JCL {
      * @param prefixes namespace prefixes to use to select the stacktrace
      * @return instance of {@link JobStatus}
      */
-    static JobStatus job(String name, Collection<String> prefixes) {
+    public static JobStatus create(String name, Collection<String> prefixes) {
         MatchContext.matcher.set(new MatchContext.MatchByPackagePrefixes(prefixes));
         return PmJob.of(RC_OK, name);
     }

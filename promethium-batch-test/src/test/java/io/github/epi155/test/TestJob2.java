@@ -1,6 +1,6 @@
 package io.github.epi155.test;
 
-import io.github.epi155.pm.batch.job.JCL;
+import io.github.epi155.pm.batch.job.Job;
 import io.github.epi155.pm.batch.job.Cond;
 import io.github.epi155.pm.batch.job.Proc;
 import io.github.epi155.pm.batch.pgm.Pgm;
@@ -26,7 +26,7 @@ class TestJob2 {
 
     @Test
     void job01() {
-        int x = JCL.job("job01")
+        int x = Job.create("job01")
                 .execPgm("step01", this::step00)
                 .cond(0, Cond.NE).execPgm("step02", this::step03)
                 .cond(0, Cond.EQ, "step02").execPgm("step03", this::step02)
@@ -42,7 +42,7 @@ class TestJob2 {
                 .join()
                 .when(0, Cond.EQ).execPgm("step23", this::step23)
         );
-        int x = JCL.job("job02")
+        int x = Job.create("job02")
                 .forkProc("proc01", proc01)
                 .execPgm("step00", this::step00)
                 .join()
@@ -53,7 +53,7 @@ class TestJob2 {
 
     @Test
     void job03() {
-        int x = JCL.job("job03")
+        int x = Job.create("job03")
                 .forkPgm("sort1", this::sort1)
                 .execPgm("sort2", this::sort2)
                 .cond(0, Cond.EQ).quit("sort1")
@@ -64,7 +64,7 @@ class TestJob2 {
     }
     @Test
     void job13() {
-        int x = JCL.job("job13")
+        int x = Job.create("job13")
                 .forkPgm("sort1", this::sort1)
                 .forkPgm("sort1", this::sort2)
                 .join()
@@ -79,7 +79,7 @@ class TestJob2 {
 //    }
 
     public Integer call() {
-        return JCL.job("job01")
+        return Job.create("job01")
                 .execPgm("step01", step01::run)
                 .complete();
     }

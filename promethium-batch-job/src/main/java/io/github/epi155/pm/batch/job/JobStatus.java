@@ -12,7 +12,7 @@ public interface JobStatus
      * Action on JobStatus
      * <p>used for conditional step
      * <pre>
-     * int xc = JCL.getInstance(),job("job")
+     * int xc = Job.getInstance(),job("job")
      *             .execPgm(count1, this::step01)
      *             .exec(s -> s.isSuccess() ? s.execPgm(count2, this::step02)
      *                                     : s.execPgm(count3, this::step03))

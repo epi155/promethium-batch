@@ -8,7 +8,7 @@ A minimal example of a single step batch job is:
 
 ~~~java
 public Integer call() {
-    return JCL.getInstance().job("job01")
+    return Job.create("job01")
         .execPgm("step01", step01::run)
         .complete();
 }
@@ -45,7 +45,7 @@ These examples are just a starting point, the javadoc documentation provides exp
 
 ~~~java
 public Integer call() {
-    return JCL.getInstance().job("job02")
+    return Job.create("job02")
         .forkPgm("sort1", this::sort1)
         .forkPgm("sort2", this::sort2)
         .join()

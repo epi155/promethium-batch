@@ -11,7 +11,7 @@ public interface CondAction<T> {
      * <p>
      * example
      * <pre>
-     * JCL.getInstance().job("job01")
+     * Job.getInstance().job("job01")
      *     .execPgm("step01", this::step01)
      *     <b>.cond(0,NE)</b>.execPgm("step02", this::step02)
      *     .complete();
@@ -30,7 +30,7 @@ public interface CondAction<T> {
      * <p>
      * example
      * <pre>
-     * JCL.getInstance().job("job01")
+     * Job.getInstance().job("job01")
      *     .execPgm("step01", this::step01)
      *     <b>.when(0,EQ)</b>.execPgm("step02", this::step02)
      *     .complete();
@@ -53,7 +53,7 @@ public interface CondAction<T> {
      * <p>
      * example
      * <pre>
-     * JCL.getInstance().job("job01")
+     * Job.getInstance().job("job01")
      *     .execPgm("step01", this::step01)
      *     <b>.cond(0,NE,"step01")</b>
      *         .execPgm("step02", this::step02)
@@ -76,7 +76,7 @@ public interface CondAction<T> {
      * <p>
      * example
      * <pre>
-     * JCL.getInstance().job("job01")
+     * Job.getInstance().job("job01")
      *     .execPgm("step01", this::step01)
      *     <b>.when(0,EQ,"step01")</b>
      *         .execPgm("step02", this::step02)

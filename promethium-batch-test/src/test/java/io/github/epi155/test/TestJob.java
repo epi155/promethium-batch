@@ -27,7 +27,7 @@ class TestJob {
 
     @Test
     void job00() {
-        int x = JCL.job("job01")
+        int x = Job.create("job01")
                 .execPgm("step01", this::step00)
                 .cond(0, Cond.NE).execPgm("step02", this::step00)
                 .complete();
@@ -42,7 +42,7 @@ class TestJob {
         MyCount count3 = new MyCount(STEP03);
         MyCount count4 = new MyCount("Step04");
         MyCount count5 = new MyCount("Step05");
-        int x = JCL.job("Job01")
+        int x = Job.create("Job01")
                 .when(0, Cond.NE).execPgm(count1, this::step01)
                 .forkPgm(count1, this::step01)
                 .forkPgm(count2, this::step01)
@@ -85,7 +85,7 @@ class TestJob {
                 .when(0, Cond.EQ).execPgm(pa02, count1, this::step21)
         );
 
-        int rc = JCL.job("Job01")
+        int rc = Job.create("Job01")
                 .execPgm(count3, this::step01)
                 .cond(0, Cond.NE).execProc(pa02, "Proc02", proc02)
                 .cond(0, Cond.EQ, "Proc02.proc1.Step01").execPgm(count3, this::step01)
@@ -114,7 +114,7 @@ class TestJob {
         MyCount count3 = new MyCount("Step03");
         MyCount count4 = new MyCount("Step04");
         MyCount count5 = new MyCount("Step05");
-        int rc = JCL.job("Job01")
+        int rc = Job.create("Job01")
 //                .execProc("Proc01", it -> it
 //                        .execPgm(count1, this::step01)
 //                        .nextPgm(count2, this::step01)
@@ -132,7 +132,7 @@ class TestJob {
 
     @Test
     void job04() {
-        int rc = JCL.job("Job04")
+        int rc = Job.create("Job04")
                 .execPgm(new MyCount("Step01"), this::step03e)
 //                .nextPgm(new MyCount("Step03s"), this::step03s)
 //                .nextPgm(new MyCount("Step03w"), this::step03w)
@@ -143,7 +143,7 @@ class TestJob {
     @Test
     void job05() {
         List<String> ls = new ArrayList<>();
-        int rc = JCL.job("JobPk")
+        int rc = Job.create("JobPk")
                 .execPgm(ls, "list", this::step41)
                 .cond(0, Cond.NE).forEachPgm(ls, s -> s, this::step42)
 //                .push()
@@ -168,7 +168,7 @@ class TestJob {
         MyCount count1 = new MyCount("Step01");
         MyCount count2 = new MyCount("Step02");
         MyCount count3 = new MyCount("Step03");
-        JobInfo xc = JCL.job("job06")
+        JobInfo xc = Job.create("job06")
                 .execPgm(count1, this::step03s)
 //                .exec(s -> {
 //                    if (s.isSuccess())
@@ -183,7 +183,7 @@ class TestJob {
     @Test
     void job07() {
         List<String> ls = new ArrayList<>();
-        int rc = JCL.job("JobPk")
+        int rc = Job.create("JobPk")
                 .execPgm("lock", this::step00)
                 .when(4, Cond.LE).execPgm(ls, new MyCount("list"), this::step04)
 //                .nextLoopProc(ls, )
@@ -202,7 +202,7 @@ class TestJob {
     void job08() {
         MyCount count1 = new MyCount("Step01");
         List<String> ls = new ArrayList<>();
-        int rc = JCL.job("JobPk")
+        int rc = Job.create("JobPk")
                 .execPgm("lock", this::step00)
 //                .nextPgm(ls, new MyCount("list"), this::step04)
 //                .execProc("Proc01", it -> it

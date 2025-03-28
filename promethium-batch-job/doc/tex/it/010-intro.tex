@@ -13,7 +13,7 @@ Un esempio minimale di batch con un singolo step è:
 \begin{elisting}[!htb]
 \begin{javacode}
 public Integer call() {
-    return JCL.getInstance().job("job01")
+    return Job.create("job01")
         .execPgm("step01", step01::run)
         .complete();
 }

@@ -55,7 +55,7 @@ termina in errore con valore maggiore di $4$.
 \begin{elisting}[!htb]
 \begin{javacode}
 public Integer call() {
-    return JCL.getInstance().job("job01")
+    return Job.create("job01")
         .execPgm("step01", step01::run)
         .cond(0,NE).execPgm("step02", step02::run)
         .cond(0,NE).execPgm("step03", step03::run)
@@ -105,7 +105,7 @@ procedura.
 \begin{javacode}
 public Integer call() {
     Proc<Prm1> proc1 = ...
-    return JCL.getInstance().job("job01")
+    return Job.create("job01")
         .execPgm("step01", step01::run)
         .cond(0,NE).execPgm("step02", step02::run)
         .cond(0,EQ,"step01").execProc(prm1, "proc01", proc1)
@@ -126,7 +126,7 @@ In queste librerie è presente anche qualche funzionalità aggiuntiva.
 \begin{elisting}[!htb]
 \begin{javacode}
 public Integer call() {
-    return JCL.getInstance().job("job01")
+    return Job.create("job01")
         .forkPgm("sort1", this::sort1)
         .forkPgm("sort2", this::sort2)
         .join()
@@ -185,7 +185,7 @@ parametro dello step (o della procedura).
 \begin{javacode}
 public Integer call() {
     List<String> ls = new ArrayList<>();
-    return JCL.getInstance().job("job01")
+    return Job.create("job01")
         .execPgm(ls, "list", step01::run)
         .cond(0,NE).forEachPgm(ls, s->s, step02::run)
         .complete();
