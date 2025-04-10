@@ -1,0 +1,58 @@
+\chapter{Libreria \texttt{fault}}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+La libreria contiene delle eccezioni specifiche e la definizione dei codici di
+errore.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+public class Fixed {
+    public static final int RC_OK       =  0;
+    public static final int RC_WARN     =  4;
+    public static final int RC_ERR_IO   =  8;
+    public static final int RC_ERR_SQL  = 12;
+    public static final int RC_ERR_STEP = 16;
+    public static final int RC_ERR_JOB  = 20;
+    public static final IntBinaryOperator MAX_CC = Math::max;
+}
+\end{javacode}
+\caption{Codici di errore, valori di default}
+\label{lst:rc-def}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+I codici di errore sono definiti mediante una service provider interface (SPI)
+in questo modo fornendo una definizione custom dell'\,interfaccia è possibile
+ridefinire i valori dei codici di errore.
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+public interface ValueProvider {
+    ValueFactory getInstance();
+}
+\end{javacode}
+\caption{Interfaccia per fornire il generatore del valore degli errori}
+\label{lst:val-prov}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+
+
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\begin{elisting}[!htb]
+\begin{javacode}
+public interface ValueFactory {
+    int rcOk();
+    int rcWarning();
+    int rcErrorIO();
+    int rcErrorSQL();
+    int rcErrorStep();
+    int rcErrorJob();
+    int rcMax(int a, int b);
+}
+\end{javacode}
+\caption{Interfaccia per fornire il valore dei codici di errore}
+\label{lst:val-fact}
+\end{elisting}
+%--------1---------2---------3---------4---------5---------6---------7---------8

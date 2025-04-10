@@ -8,8 +8,6 @@ delle elaborazioni dei singoli step e di coordinale l'\,esecuzione degli step.
 %--------1---------2---------3---------4---------5---------6---------7---------8
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
-Un esempio minimale di batch con un singolo step è:
-%--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
 \begin{javacode}
 public Integer call() {
@@ -22,16 +20,18 @@ public Integer call() {
 \label{lst:demoJob}
 \end{elisting}
 %--------1---------2---------3---------4---------5---------6---------7---------8
+Un esempio minimale di batch con un singolo step è nel lis.~\ref{lst:demoJob}
 dove \texttt{job01} è il nome del job, \texttt{step01} è il come dello step e
 \texttt{step01::run} è il riferimento al metodo che esegue lo step.
 %--------1---------2---------3---------4---------5---------6---------7---------8
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
-L'\,esecuzione del job produce nel log un report finale del tipo:
+L'\,esecuzione del job produce nel log un report finale del tipo del
+lis.~\ref{lst:demoLog}.
 %--------1---------2---------3---------4---------5---------6---------7---------8
 \begin{elisting}[!htb]
 \begin{Verbatim}[fontsize=\small,frame=single]
-   Name   !  rc  !     Date-Time Start/Skip      !         Date-Time End         !       Lapse
+  Name   !  rc  !     Date-Time Start/Skip      !         Date-Time End         !       Lapse
 ---------+------+-------------------------------+-------------------------------+-------------------
 step01...!    0 ! 2024-05-17T14:59:12.03243396  ! 2024-05-17T14:59:12.590157083 ! 00:00:00.557723123
 ---------+------+-------------------------------+-------------------------------+-------------------
@@ -42,29 +42,46 @@ job01....!    0 ! 2024-05-17T14:59:12.028019213 ! 2024-05-17T14:59:12.590998545 
 \end{elisting}
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
-La libreria è divisa in 2 moduli:
-\texttt{promethium-batch-job} e \texttt{promethium-batch-pgm}.
-La prima contiene le implementazioni per gestire i job e le API per gestire gli
-step. 
-Non è presente la classe \verb!Pgm! e le relative funzionalità.
-Queste funzionalità sono presenti nella seconda libreria (che richiede la prima).
+La libreria è divisa in 5 moduli:
+\begin{itemize}
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\item \texttt{promethium-batch-fault} contiene le classi per la gestione degli
+  errori e i codici di errori;
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\item \texttt{promethium-batch-job} contiene le classi per la definizione del
+  job e la coordinazione degli step (richiede \texttt{promethium-batch-fault});
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\item \texttt{promethium-batch-pgm-core} contiene le classi usate per la gestione
+  dei dati di input e di output (richiede \texttt{promethium-batch-fault});
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\item \texttt{promethium-batch-pgm-maven-plugin} è un plugin per la generazione
+  delle classi per gestire la elaborazione dei dati all'\,interno di uno step
+  (il codice generato richiede \texttt{promethium-batch-pgm-core});
+%--------1---------2---------3---------4---------5---------6---------7---------8
+\item \texttt{promethium-batch-pgm} contiene le classi generati dal plugin
+  nel caso di elaborazioni $1 \to N$ con $N$ da $0$ a $12$, e per le
+  elaborazioni $N_I \to N_O$ con $N_I$ da $2$ a $3$ e $N_O$ da $0$ a $8$
+  (richiede \texttt{promethium-batch-pgm-core}).
+\end{itemize}
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
-Se non è opportuno sviluppare gli step con la struttura della classe \verb!Pgm!
-si può utilizzare solo la prima libreria \texttt{promethium-batch-job}.
+Se non è opportuno sviluppare gli step con la struttura delle classi
+\verb!pgm*! si può utilizzare solo la prima libreria
+\texttt{promethium-batch-job}.
 
 %--------1---------2---------3---------4---------5---------6---------7---------8
-La libreria \texttt{promethium-batch-pgm} fornisce le implementazioni nel caso 
-di elaborazioni $1 \to N$ con $N$ da $0$ a $12$, 
-e per le elaborazioni $N_I \to N_O$ con $N_I$ da $2$ a $3$ e $N_O$ da $0$ a $8$.
-Questi valori sono normalmente sufficienti, aumentare i valori di $N, N_I, N_O$
-porta a un aumento \textsl{quadratico} delle dimensioni di questa libreria.
+Se l'\,elaborazione usa un singolo step si può ritenere di poca utilità
+l'\,introduzione della struttura della libreria \verb!job! e utilizzare soltanto
+la libreria \texttt{promethium-batch-pgm}.
 
+%--------1---------2---------3---------4---------5---------6---------7---------8
+I valori $N, N_I, N_O$ usati dalla libreria \verb!pgm! sono normalmente
+sufficienti, aumentare questi valori porta a un aumento \textsl{quadratico}
+delle dimensioni di questa libreria.
 %--------1---------2---------3---------4---------5---------6---------7---------8
 Se fossero necessari valori $N, N_I, N_O$ superiori a quelli usati dalla
 libreria \texttt{promethium-batch-pgm}, è possibile utilizzare al suo posto il
-plugin \texttt{promethium-batch-pgm-maven-plugin} che è in grado di generare le
-classi \textsl{pgm} in modo personalizzato.
+plugin che è in grado di generare le classi \textsl{pgm} in modo personalizzato.
 Anziché implementate un range completo (\texttt{0..12}) è possibile implementare
 un range ristretto (\texttt{20..24}), o un numero preciso di valori
 (\texttt{5,12,18}).
