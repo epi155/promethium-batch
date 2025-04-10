@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.epi155</groupId>
     <artifactId>promethium-batch-test</artifactId>
-    <version>0.1-A5-SNAPSHOT</version>
+    <version>0.1-A5</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -45,7 +43,7 @@
         <connection>scm:git:git://github.com/epi155/promethium-batch.git</connection>
         <developerConnection>scm:git:https://github.com/epi155/promethium-batch.git</developerConnection>
         <url>https://github.com/epi155/promethium-batch/</url>
-        <tag>HEAD</tag>
+        <tag>0.1-A5</tag>
     </scm>
 
     <profiles>
@@ -168,12 +166,12 @@
         <dependency>
             <groupId>io.github.epi155</groupId>
             <artifactId>promethium-batch-job</artifactId>
-            <version>0.1-A5-SNAPSHOT</version>
+            <version>0.1-A5</version>
         </dependency>
         <dependency>
             <groupId>io.github.epi155</groupId>
             <artifactId>promethium-batch-pgm-core</artifactId>
-            <version>0.1-A5-SNAPSHOT</version>
+            <version>0.1-A5</version>
         </dependency>
 
         <dependency>
@@ -218,7 +216,7 @@
             <plugin>
                 <groupId>io.github.epi155</groupId>
                 <artifactId>promethium-batch-pgm-maven-plugin</artifactId>
-                <version>0.1-A5-SNAPSHOT</version>
+                <version>0.1-A5</version>
                 <executions>
                     <execution>
                         <goals>
