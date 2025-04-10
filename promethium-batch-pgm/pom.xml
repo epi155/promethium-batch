@@ -4,7 +4,7 @@
 
     <groupId>io.github.epi155</groupId>
     <artifactId>promethium-batch-pgm</artifactId>
-    <version>0.1-A5</version>
+    <version>0.1-A6-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -44,7 +44,7 @@
         <connection>scm:git:git://github.com/epi155/promethium-batch.git</connection>
         <developerConnection>scm:git:https://github.com/epi155/promethium-batch.git</developerConnection>
         <url>https://github.com/epi155/promethium-batch/</url>
-        <tag>0.1-A5</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <profiles>
@@ -167,7 +167,7 @@
         <dependency>
             <groupId>io.github.epi155</groupId>
             <artifactId>promethium-batch-fault</artifactId>
-            <version>0.1-A5</version>
+            <version>0.1-A6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -207,7 +207,7 @@
         <dependency>
             <groupId>io.github.epi155</groupId>
             <artifactId>promethium-batch-pgm-core</artifactId>
-            <version>0.1-A5</version>
+            <version>0.1-A6-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -218,7 +218,7 @@
             <plugin>
                 <groupId>io.github.epi155</groupId>
                 <artifactId>promethium-batch-pgm-maven-plugin</artifactId>
-                <version>0.1-A5</version>
+                <version>0.1-A6-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
