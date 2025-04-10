@@ -13,9 +13,15 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <logback.version>1.5.18</logback.version>
+        <apache-text.version>1.13.0</apache-text.version>
+        <mvn-annotation.version>3.15.1</mvn-annotation.version>
+        <jb-annotation.version>26.0.2</jb-annotation.version>
+        <juniper.version>5.12.1</juniper.version>
+        <lombok.version>1.18.38</lombok.version>
+        <slf4j.version>2.0.17</slf4j.version>
+
         <maven-plugin.version>3.9.9</maven-plugin.version>
-        <juniper.version>5.11.0</juniper.version>
-        <lombok.version>1.18.34</lombok.version>
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 
@@ -128,7 +134,7 @@
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
-            <version>3.15.0</version>
+            <version>${mvn-annotation.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -138,18 +144,18 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.16</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>24.1.0</version>
+            <version>${jb-annotation.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.12.0</version>
+            <version>${apache-text.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -172,7 +178,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.8</version>
+            <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -188,7 +194,7 @@
                         <ignoreVersions>
                             <ignoreVersion>
                                 <type>regex</type>
-                                <version>.+-(alpha|beta|M)(-?\d+)?</version>
+                                <version>.+-(alpha|beta|M|rc)(-?\d+)?</version>
                             </ignoreVersion>
                         </ignoreVersions>
                     </ruleSet>

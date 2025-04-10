@@ -11,9 +11,16 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <juniper.version>5.11.0</juniper.version>
-        <lombok.version>1.18.34</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <logback.version>1.5.18</logback.version>
+        <apache-text.version>1.13.0</apache-text.version>
+        <mvn-annotation.version>3.15.1</mvn-annotation.version>
+        <jb-annotation.version>26.0.2</jb-annotation.version>
+        <juniper.version>5.12.1</juniper.version>
+        <lombok.version>1.18.38</lombok.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <asm.version>9.8</asm.version>
+
         <maven.deploy.skip>false</maven.deploy.skip>
         <pgm.max-out>12</pgm.max-out>
     </properties>
@@ -174,13 +181,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.16</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.8</version>
+            <version>${logback.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -294,7 +301,7 @@
                     <dependency>
                         <groupId>org.ow2.asm</groupId>
                         <artifactId>asm</artifactId>
-                        <version>9.7</version>
+                        <version>${asm.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
