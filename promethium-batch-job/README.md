@@ -55,3 +55,19 @@ public Integer call() {
 }
 ~~~
 
+~~~java
+    Job.create("SmokeTest")
+        .execProc("App1", Proc.create(it -> it
+            .execPgm("FrontEnd", app1::testFE)
+            .execPgm("Balancer", app1::testBal)
+            .execPgm("BackEnd1", app1::testBe1)
+            .execPgm("BackEnd2", app1::testBe2)
+        ))
+        .execProc("App2", Proc.create(it -> it
+            .execPgm("FrontEnd", app2::testFE)
+            .execPgm("Balancer", app2::testBal)
+            .execPgm("BackEnd1", app2::testBe1)
+            .execPgm("BackEnd2", app2::testBe2)
+        ))
+        .complete();
+~~~

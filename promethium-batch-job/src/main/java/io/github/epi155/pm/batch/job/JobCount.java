@@ -15,7 +15,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -84,13 +83,7 @@ class JobCount extends StatsCount implements JobTrace {
     }
 
     private String cause(StepFail fail) {
-        Throwable fault = fail.error;
-        for (; ; ) {
-            Throwable cause = fault.getCause();
-            if (cause == null)
-                break;
-            fault = cause;
-        }
+        Throwable fault = lastCauseOf(fail.error);
         val stes = fault.getStackTrace();
         val matcher = MatchContext.matcher.get();
         for (StackTraceElement ste : stes) {
@@ -114,6 +107,16 @@ class JobCount extends StatsCount implements JobTrace {
         }
         log.debug("fail-safe result: {}", fault.toString());
         return fault.toString();
+    }
+
+    private Throwable lastCauseOf(Throwable fault) {
+        for (; ; ) {
+            Throwable cause = fault.getCause();
+            if (cause == null)
+                break;
+            fault = cause;
+        }
+        return fault;
     }
 
     public void add(String name, int returnCode, Instant tiStart, Instant tiEnd, Throwable error) {

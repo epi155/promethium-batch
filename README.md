@@ -3,7 +3,7 @@
 The project is divided into some modules.
 
 * [promethium-batch-fault](.) module to handle errors
-* [promethium-batch-job](.) module for managing steps in the job
+* [promethium-batch-job](./promethium-batch-job/README.md) module for managing steps in the job
 * [promethium-batch-pgm-core](.) generic module for program execution
 * [promethium-batch-pgm](.) pre-generate module use programs with up to 12 outputs
 * [promethium-batch-pgm-maven-plugin](.) plugin to generate dedicated code with the necessary outputs
