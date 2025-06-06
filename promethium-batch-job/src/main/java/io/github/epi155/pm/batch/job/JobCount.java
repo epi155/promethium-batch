@@ -4,6 +4,7 @@ import io.github.epi155.pm.batch.fault.MatchContext;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 import java.io.PrintWriter;
@@ -14,9 +15,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Slf4j
 class JobCount extends StatsCount implements JobTrace {
     private static final String JAVA_BASE = "java.base";
     private static final String L_STEP = "Name";
@@ -92,15 +95,24 @@ class JobCount extends StatsCount implements JobTrace {
         val matcher = MatchContext.matcher.get();
         for (StackTraceElement ste : stes) {
             String module = ste.getModuleName();
-            if (!JAVA_BASE.equals(module) && !ste.isNativeMethod() &&
-                    (matcher == null || matcher.match(ste.getClassName()))) {
+            if (JAVA_BASE.equals(module)) {
+                log.trace("{} skip by module name {}", ste, module);
+            } else if (ste.isNativeMethod()) {
+                log.trace("{} skip by native", ste);
+            } else if (matcher != null && !matcher.match(ste.getClassName())) {
+                log.trace("{} skip by mismatch", ste);
+            } else {
+                if (matcher==null) log.warn("recap w/o match !!");
                 String claz = ste.getClassName();
                 String meth = ste.getMethodName();
                 String file = ste.getFileName();
                 int line = ste.getLineNumber();
-                return String.format("%s @%s->%s(%s:%d) [%s]", fault, claz, meth, file, line, MatchContext.MatchByLib.libOf(claz));
+                String mesg = fail.error.getMessage();
+                if (mesg==null) mesg = fault.toString();
+                return String.format("%s @%s->%s(%s:%d) [%s]", mesg, claz, meth, file, line, MatchContext.MatchByLib.nameOf(claz));
             }
         }
+        log.debug("fail-safe result: {}", fault.toString());
         return fault.toString();
     }
 

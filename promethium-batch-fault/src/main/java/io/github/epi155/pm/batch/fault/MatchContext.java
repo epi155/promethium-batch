@@ -1,9 +1,7 @@
 package io.github.epi155.pm.batch.fault;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.val;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URL;
 import java.security.CodeSource;
@@ -12,6 +10,7 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 
+@Slf4j
 public class MatchContext {
     public static final ThreadLocal<ClassMatcher> matcher = new ThreadLocal<>();
 
@@ -41,13 +40,20 @@ public class MatchContext {
             this.lib = libOf(claz);
         }
 
-        public static /*ClassLib*/ String libOf(String className) {
+        static ClassLib /*String*/ libOf(String className) {
             try {
                 Class<?> clazz = Class.forName(className);
-                return Objects.requireNonNull(libOf(clazz)).toString();
+                return libOf(clazz);
+//                return Objects.requireNonNull(libOf(clazz)).toString();
             } catch (ClassNotFoundException e) {
+                log.error("Errore Interno su <{}> ", className, e);
                 return null;
             }
+        }
+        public static String nameOf(String className) {
+            if (className==null) return null;
+            val lib = libOf(className);
+            return lib==null ? null : lib.toString();
         }
 
         static ClassLib libOf(Class<?> clazz) {

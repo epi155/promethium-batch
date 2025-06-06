@@ -243,10 +243,11 @@ class PmJob implements JobStatus {
     public int complete() {
         jobCount.maxcc(maxcc);
         jobCount.recap();
-        if (jobTrace == null)
+        if (jobTrace == null) {
             MDC.remove(JOB_NAME);
+            MatchContext.matcher.remove();
+        }
         stack.clear();
-        MatchContext.matcher.remove();
         return maxcc;
     }
 
