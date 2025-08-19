@@ -22,7 +22,6 @@ import static io.github.epi155.pm.batch.fault.Fixed.*;
 @Slf4j
 class PmJob implements JobStatus {
     private static final String BG = "&";
-    private static final ThreadLocal<Boolean> isBackground = new ThreadLocal<>();
     private static final String UNHANDLED_ERROR = "Unhandled Error";
     private static final String JOIN_CMD = "join()";
 
@@ -30,6 +29,8 @@ class PmJob implements JobStatus {
     private final Deque<Integer> stack = new LinkedList<>();
     private final JobCount jobCount;
     private final JobTrace jobTrace;
+    private final Set<String> bgSet = new HashSet<>();
+    private final Set<String> steps = new HashSet<>();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final Map<String, Future<Integer>> futures = new LinkedHashMap<>();
     private int maxcc;
@@ -41,7 +42,6 @@ class PmJob implements JobStatus {
         this.jobCount = new JobCount(jobName);
         this.jobTrace = null;
         MDC.put(JOB_NAME, jobName);
-        isBackground.set(false);
     }
 
     protected PmJob(String name, JobTrace jobTrace) {
@@ -95,8 +95,12 @@ class PmJob implements JobStatus {
 
     @Override
     public <P> JobStatus execProc(P p, String procName, Proc<P> proc) {
-        int returnCode = runProc(procName, s -> proc.call(p, s));
-        maxcc(returnCode);
+        if (steps.add(procName)) {
+            int returnCode = runProc(procName, s -> proc.call(p, s));
+            maxcc(returnCode);
+        } else {
+            duplicateError(procName);
+        }
         return this;
     }
 
@@ -313,9 +317,9 @@ class PmJob implements JobStatus {
             MDC.remove(STEP_NAME);
             Throwable e = c.getError();
             if (e == null) {
-                add(Boolean.TRUE.equals(isBackground.get()) ? name + BG : name, returnCode, tiStart, tiEnd);
+                add(isBg(name) ? name + BG : name, returnCode, tiStart, tiEnd);
             } else {
-                add(Boolean.TRUE.equals(isBackground.get()) ? name + BG : name, returnCode, tiStart, tiEnd, e);
+                add(isBg(name) ? name + BG : name, returnCode, tiStart, tiEnd, e);
             }
         }
         return returnCode;
@@ -459,7 +463,11 @@ class PmJob implements JobStatus {
 
     @Override
     public <P, C extends StatsCount> JobStatus execPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
-        wrapper(c, () -> pgm.apply(p, c));
+        if (steps.add(c.name())) {
+            wrapper(c, () -> pgm.apply(p, c));
+        } else {
+            duplicateError(c.name());
+        }
         return this;
     }
 
@@ -472,7 +480,11 @@ class PmJob implements JobStatus {
 
     @Override
     public <C extends StatsCount> JobStatus execPgm(C c, ToIntFunction<C> pgm) {
-        wrapper(c, () -> pgm.applyAsInt(c));
+        if (steps.add(c.name())) {
+            wrapper(c, () -> pgm.applyAsInt(c));
+        } else {
+            duplicateError(c.name());
+        }
         return this;
     }
 
@@ -485,10 +497,14 @@ class PmJob implements JobStatus {
 
     @Override
     public <P, C extends StatsCount> JobStatus execPgm(P p, C c, BiConsumer<P, C> pgm) {
-        wrapper(c, () -> {
-            pgm.accept(p, c);
-            return RC_OK;
-        });
+        if (steps.add(c.name())) {
+            wrapper(c, () -> {
+                pgm.accept(p, c);
+                return RC_OK;
+            });
+        } else {
+            duplicateError(c.name());
+        }
         return this;
     }
 
@@ -501,10 +517,14 @@ class PmJob implements JobStatus {
 
     @Override
     public <C extends StatsCount> JobStatus execPgm(C c, Consumer<C> pgm) {
-        wrapper(c, () -> {
-            pgm.accept(c);
-            return RC_OK;
-        });
+        if (steps.add(c.name())) {
+            wrapper(c, () -> {
+                pgm.accept(c);
+                return RC_OK;
+            });
+        } else {
+            duplicateError(c.name());
+        }
         return this;
     }
 
@@ -515,33 +535,52 @@ class PmJob implements JobStatus {
         });
     }
 
+    /**
+     *
+     * @param stepName  step name
+     * @param step      pgm or proc to run
+     * @return          status
+     */
     private JobStatus submit(String stepName, Callable<Integer> step) {
         if (futures.containsKey(stepName)) {
-            Instant now = Instant.now();
-            int rc = RC_ERR_JOB;
-            maxcc(rc);
-            jobCount.add(stepName, rc, now, now, new BatchJobException("Duplicate step name: {}", stepName));
+            duplicateError(stepName);
         } else {
             val jobLib = MatchContext.matcher.get();
             futures.put(stepName, executorService.submit(() -> {
                 try {
                     MDC.put(JOB_NAME, jobName);
                     MatchContext.matcher.set(jobLib);
-                    isBackground.set(true);
+                    bgAdd(stepName);
                     return step.call();
                 } finally {
                     MDC.remove(JOB_NAME);
                     MatchContext.matcher.remove();
-                    isBackground.remove();
                 }
             }));
         }
         return this;
     }
 
+    private void duplicateError(String stepName) {
+        Instant now = Instant.now();
+        int rc = RC_ERR_JOB;
+        maxcc(rc);
+        add(stepName, rc, now, now, new BatchJobException("Duplicate step name: {}", stepName));
+//        jobCount.add(stepName, rc, now, now, new BatchJobException("Duplicate step name: {}", stepName));
+    }
+
+    private void bgAdd(String name) {
+        bgSet.add(name);
+    }
+
     @Override
     public <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiFunction<P, C, Integer> pgm) {
-        return submit(c.name(), () -> runStep(c, () -> pgm.apply(p, c)));
+        if (steps.add(c.name())) {
+            return submit(c.name(), () -> runStep(c, () -> pgm.apply(p, c)));
+        } else {
+            duplicateError(c.name());
+            return this;
+        }
     }
 
     @Override
@@ -553,7 +592,12 @@ class PmJob implements JobStatus {
 
     @Override
     public <C extends StatsCount> JobStatus forkPgm(C c, ToIntFunction<C> pgm) {
-        return submit(c.name(), () -> runStep(c, () -> pgm.applyAsInt(c)));
+        if (steps.add(c.name())) {
+            return submit(c.name(), () -> runStep(c, () -> pgm.applyAsInt(c)));
+        } else {
+            duplicateError(c.name());
+            return this;
+        }
     }
 
     @Override
@@ -565,10 +609,15 @@ class PmJob implements JobStatus {
 
     @Override
     public <P, C extends StatsCount> JobStatus forkPgm(P p, C c, BiConsumer<P, C> pgm) {
-        return submit(c.name(), () -> runStep(c, () -> {
-            pgm.accept(p, c);
-            return RC_OK;
-        }));
+        if (steps.add(c.name())) {
+            return submit(c.name(), () -> runStep(c, () -> {
+                pgm.accept(p, c);
+                return RC_OK;
+            }));
+        } else {
+            duplicateError(c.name());
+            return this;
+        }
     }
 
     @Override
@@ -580,10 +629,15 @@ class PmJob implements JobStatus {
 
     @Override
     public <C extends StatsCount> JobStatus forkPgm(C c, Consumer<C> pgm) {
-        return submit(c.name(), () -> runStep(c, () -> {
-            pgm.accept(c);
-            return RC_OK;
-        }));
+        if (steps.add(c.name())) {
+            return submit(c.name(), () -> runStep(c, () -> {
+                pgm.accept(c);
+                return RC_OK;
+            }));
+        } else {
+            duplicateError(c.name());
+            return this;
+        }
     }
 
     @Override
@@ -648,10 +702,14 @@ class PmJob implements JobStatus {
             MDC.remove(STEP_NAME);
             String aName = procName + "\\";
             String zName = procName + "/";
-            add(Boolean.TRUE.equals(isBackground.get()) ? aName + BG : aName, tiStart, "::::");
-            add(Boolean.TRUE.equals(isBackground.get()) ? zName + BG : zName, returnCode, tiEnd, lapse);
+            add(isBg(procName) ? aName + BG : aName, tiStart, "::::");
+            add(isBg(procName) ? zName + BG : zName, returnCode, tiEnd, lapse);
         }
         return returnCode;
+    }
+
+    private boolean isBg(String name) {
+        return bgSet.contains(name);
     }
 
     @Override

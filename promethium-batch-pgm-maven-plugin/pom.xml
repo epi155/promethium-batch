@@ -14,14 +14,14 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.deploy.skip>true</maven.deploy.skip>
         <logback.version>1.5.18</logback.version>
-        <apache-text.version>1.13.0</apache-text.version>
+        <apache-text.version>1.14.0</apache-text.version>
         <mvn-annotation.version>3.15.1</mvn-annotation.version>
         <jb-annotation.version>26.0.2</jb-annotation.version>
-        <juniper.version>5.12.1</juniper.version>
+        <juniper.version>5.13.4</juniper.version>
         <lombok.version>1.18.38</lombok.version>
         <slf4j.version>2.0.17</slf4j.version>
 
-        <maven-plugin.version>3.9.9</maven-plugin.version>
+        <maven-plugin.version>3.9.11</maven-plugin.version>
         <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 
@@ -157,7 +157,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.17.0</version>
+            <version>3.18.0</version>
         </dependency>
 
         <dependency>
