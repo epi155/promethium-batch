@@ -16,7 +16,7 @@
         <logback.version>1.5.18</logback.version>
         <apache-text.version>1.14.0</apache-text.version>
         <mvn-annotation.version>3.15.1</mvn-annotation.version>
-        <jb-annotation.version>26.0.2</jb-annotation.version>
+        <jb-annotation.version>26.0.2-1</jb-annotation.version>
         <juniper.version>5.13.4</juniper.version>
         <lombok.version>1.18.38</lombok.version>
         <slf4j.version>2.0.17</slf4j.version>
@@ -191,12 +191,13 @@
                         <ignoreVersions>
                             <ignoreVersion>
                                 <type>regex</type>
-                                <version>.+-(alpha|beta|M|rc)(-?\d+)?</version>
+                                <version>.+-(alpha|beta|M|RC|rc)(-?\d+)?</version>
                             </ignoreVersion>
                         </ignoreVersions>
                     </ruleSet>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>

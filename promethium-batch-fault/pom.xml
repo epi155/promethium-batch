@@ -122,21 +122,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>versions-maven-plugin</artifactId>
-                <version>2.16.0</version>
-                <configuration>
-                    <ruleSet>
-                        <ignoreVersions>
-                            <ignoreVersion>
-                                <type>regex</type>
-                                <version>.+-(alpha|beta|M)(-?\d+)?</version>
-                            </ignoreVersion>
-                        </ignoreVersions>
-                    </ruleSet>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <version>3.0.1</version>
@@ -230,6 +215,22 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.16.0</version>
+                <configuration>
+                    <ruleSet>
+                        <ignoreVersions>
+                            <ignoreVersion>
+                                <type>regex</type>
+                                <version>.+-(alpha|beta|M|RC)(-?\d+)?</version>
+                            </ignoreVersion>
+                        </ignoreVersions>
+                    </ruleSet>
+                </configuration>
             </plugin>
 
         </plugins>
