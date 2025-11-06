@@ -2,12 +2,12 @@
 
 The project is divided into some modules.
 
-* <u>promethium-batch-fault</u> module to handle errors
+* [promethium-batch-fault](.) module to handle errors
 * [promethium-batch-job](./promethium-batch-job/README.md) module for managing steps in the job
-* <u>promethium-batch-pgm-core</u> generic module for program execution
-* <u>promethium-batch-pgm</u> pre-generate module use programs with up to 12 outputs
-* <u>promethium-batch-pgm-maven-plugin</u> plugin to generate dedicated code with the necessary outputs
-* <u>promethium-batch-test</u> Internal Test Module (not released)
+* [promethium-batch-pgm-core](.) generic module for program execution
+* [promethium-batch-pgm](.) pre-generate module use programs with up to 12 outputs
+* [promethium-batch-pgm-maven-plugin](.) plugin to generate dedicated code with the necessary outputs
+* [promethium-batch-test](.) Internal Test Module (not released)
 
 *fault* has no dependencies.<br>
 *job* requires *fault*.<br>
