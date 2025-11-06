@@ -4,7 +4,7 @@
 
     <groupId>io.github.epi155</groupId>
     <artifactId>promethium-batch-fault</artifactId>
-    <version>0.1-A6-SNAPSHOT</version>
+    <version>0.1-A6</version>
 
     <!-- mvn release:clean -->
     <!-- mvn release:prepare -->
@@ -44,7 +44,7 @@
         <connection>scm:git:git://github.com/epi155/promethium-batch.git</connection>
         <developerConnection>scm:git:https://github.com/epi155/promethium-batch.git</developerConnection>
         <url>https://github.com/epi155/promethium-batch/</url>
-        <tag>HEAD</tag>
+        <tag>0.1-A6</tag>
     </scm>
 
     <profiles>
